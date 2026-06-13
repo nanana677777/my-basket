@@ -918,24 +918,55 @@
 
             document.getElementById("modal-throne").onclick = () => {
               const status = document.getElementById("throne-status");
-
-              // Remove any previous Throne script
-              const existing = document.querySelector('script[src="https://throne.com/bookmarklet/inject.js"]');
-              if (existing) existing.remove();
-
               status.textContent = "⏳ Loading Throne...";
-              const script = document.createElement("script");
-              script.setAttribute("charset", "UTF-8");
-              script.setAttribute("src", "https://throne.com/bookmarklet/inject.js");
-              script.setAttribute("data-add-to", "wishlist");
-              script.onload = () => { status.textContent = ""; };
-              script.onerror = () => { status.textContent = "❌ Could not load Throne. Are you logged in?"; };
-              document.body.appendChild(script);
 
-              const onMsg = (t) => {
-                const key = t.message ? "message" : "data";
-                if (t[key] === "closeBookmarklet") {
-                  script.parentNode && script.parentNode.removeChild(script);
+              // Run Throne inside a sandboxed iframe so its globals never pollute the main page
+              // This also means re-running it always works cleanly
+              const existingFrame = document.getElementById("throne-frame");
+              if (existingFrame) existingFrame.remove();
+
+              const frame = document.createElement("iframe");
+              frame.id = "throne-frame";
+              frame.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;background:transparent;";
+              frame.setAttribute("allow", "same-origin");
+
+              // Build the iframe content: set page URL meta + load Throne script
+              const priceVal = (product.price || "0").replace(",", ".");
+              const iframeHTML = `<!DOCTYPE html><html><head>
+                <meta property="og:type" content="product">
+                <meta property="og:title" content="${(product.title||"").replace(/"/g,"&quot;")}">
+                <meta property="og:image" content="${product.image||""}">
+                <meta property="og:url" content="${product.link||""}">
+                <meta property="og:price:amount" content="${priceVal}">
+                <meta property="og:price:currency" content="EUR">
+                <script type="application/ld+json">${JSON.stringify({
+                  "@context":"https://schema.org/","@type":"Product",
+                  "name":product.title||"","image":product.image||"","url":product.link||"",
+                  "offers":{"@type":"Offer","price":priceVal,"priceCurrency":"EUR",
+                             "availability":"https://schema.org/InStock","url":product.link||""}
+                })}<\/script>
+              </head><body>
+                <script>
+                  const s = document.createElement("script");
+                  s.src = "https://throne.com/bookmarklet/inject.js";
+                  s.setAttribute("data-add-to","wishlist");
+                  s.setAttribute("charset","UTF-8");
+                  document.body.appendChild(s);
+                  window.addEventListener("message", (e) => {
+                    if ((e.data||e.message) === "closeBookmarklet") {
+                      window.parent.postMessage("throneClose","*");
+                    }
+                  });
+                <\/script>
+              </body></html>`;
+
+              frame.srcdoc = iframeHTML;
+              document.body.appendChild(frame);
+              status.textContent = "";
+
+              const onMsg = (e) => {
+                if (e.data === "throneClose") {
+                  frame.remove();
                   status.textContent = "✅ Added to wishlist!";
                   setTimeout(() => { status.textContent = ""; }, 3000);
                   window.removeEventListener("message", onMsg);
