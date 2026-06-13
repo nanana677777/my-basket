@@ -594,7 +594,8 @@
         <br>
         <a id="modal-link" class="modal-store-btn" href="#" target="_blank">🛒 View on Temu</a>
         <br><br>
-        <button id="modal-newwindow" class="modal-store-btn" style="border:none;cursor:pointer;background:linear-gradient(135deg,#ff9ecb,#c9a6ff);color:#121218;">↗ Open product page</button>
+        <button id="modal-throne" class="modal-store-btn" style="border:none;cursor:pointer;background:linear-gradient(135deg,#ff9ecb,#c9a6ff);color:#121218;">👑 Add to Throne wishlist</button>
+        <div id="throne-status" style="margin-top:12px;font-size:12px;color:#c9a6ff;min-height:18px;"></div>
       </div>
     </div>
 
@@ -854,14 +855,55 @@
             document.getElementById("modal-title").textContent = product.title || "";
             document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
             document.getElementById("modal-link").href = product.link;
-            document.getElementById("modal-newwindow").onclick = () => {
-              const params = new URLSearchParams({
-                title: product.title || "",
-                price: product.price || "",
-                image: product.image || "",
-                link:  product.link  || ""
+            document.getElementById("modal-throne").onclick = () => {
+              const status = document.getElementById("throne-status");
+
+              // Temporarily set meta tags on the main page so Throne can read them
+              const setMeta = (prop, val) => {
+                let el = document.querySelector('meta[property="' + prop + '"]');
+                if (!el) { el = document.createElement("meta"); el.setAttribute("property", prop); document.head.appendChild(el); }
+                el.setAttribute("content", val);
+              };
+              setMeta("og:type",           "product");
+              setMeta("og:title",          product.title || "");
+              setMeta("og:image",          product.image || "");
+              setMeta("og:url",            product.link  || "");
+              setMeta("og:price:amount",   (product.price || "0").replace(",", "."));
+              setMeta("og:price:currency", "EUR");
+
+              // Inject Schema.org JSON-LD
+              let ldEl = document.getElementById("throne-ld");
+              if (!ldEl) { ldEl = document.createElement("script"); ldEl.id = "throne-ld"; ldEl.type = "application/ld+json"; document.head.appendChild(ldEl); }
+              ldEl.textContent = JSON.stringify({
+                "@context": "https://schema.org/",
+                "@type": "Product",
+                "name": product.title || "",
+                "image": product.image || "",
+                "url": product.link || "",
+                "offers": { "@type": "Offer", "price": (product.price || "0").replace(",", "."), "priceCurrency": "EUR", "availability": "https://schema.org/InStock", "url": product.link || "" }
               });
-              window.open("product.html?" + params.toString(), "_blank");
+
+              // Inject and run the Throne bookmarklet script
+              const existing = document.querySelector('script[src="https://throne.com/bookmarklet/inject.js"]');
+              if (existing) existing.remove();
+
+              status.textContent = "⏳ Loading Throne...";
+              const script = document.createElement("script");
+              script.setAttribute("charset", "UTF-8");
+              script.setAttribute("src", "https://throne.com/bookmarklet/inject.js");
+              script.setAttribute("data-add-to", "wishlist");
+              script.onload = () => { status.textContent = ""; };
+              script.onerror = () => { status.textContent = "❌ Could not load Throne. Are you logged in?"; };
+              document.body.appendChild(script);
+
+              window.addEventListener("message", (t) => {
+                const key = t.message ? "message" : "data";
+                if (key === "data" && t[key] === "closeBookmarklet") {
+                  script.parentNode && script.parentNode.removeChild(script);
+                  status.textContent = "✅ Added to wishlist!";
+                  setTimeout(() => { status.textContent = ""; }, 3000);
+                }
+              }, { once: true });
             };
             document.getElementById("product-modal").classList.add("open");
           });
