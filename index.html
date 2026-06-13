@@ -920,59 +920,35 @@
               const status = document.getElementById("throne-status");
               status.textContent = "⏳ Loading Throne...";
 
-              // Run Throne inside a sandboxed iframe so its globals never pollute the main page
-              // This also means re-running it always works cleanly
-              const existingFrame = document.getElementById("throne-frame");
-              if (existingFrame) existingFrame.remove();
+              // Remove any previous Throne script tags
+              document.querySelectorAll('script[src*="throne.com"], script[data-throne]').forEach(s => s.remove());
 
-              const frame = document.createElement("iframe");
-              frame.id = "throne-frame";
-              frame.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;background:transparent;";
-              frame.setAttribute("allow", "same-origin");
+              // Fetch Throne's script and re-execute via blob URL each time
+              // This gives it a fresh JS module scope, avoiding "already declared" errors
+              fetch("https://throne.com/bookmarklet/inject.js?_=" + Date.now())
+                .then(r => r.text())
+                .then(code => {
+                  const blob = new Blob([code], { type: "application/javascript" });
+                  const blobUrl = URL.createObjectURL(blob);
+                  const script = document.createElement("script");
+                  script.setAttribute("data-throne", "1");
+                  script.setAttribute("data-add-to", "wishlist");
+                  script.src = blobUrl;
+                  script.onload = () => { URL.revokeObjectURL(blobUrl); status.textContent = ""; };
+                  script.onerror = () => { status.textContent = "❌ Could not load Throne."; };
+                  document.body.appendChild(script);
 
-              // Build the iframe content: set page URL meta + load Throne script
-              const priceVal = (product.price || "0").replace(",", ".");
-              const iframeHTML = `<!DOCTYPE html><html><head>
-                <meta property="og:type" content="product">
-                <meta property="og:title" content="${(product.title||"").replace(/"/g,"&quot;")}">
-                <meta property="og:image" content="${product.image||""}">
-                <meta property="og:url" content="${product.link||""}">
-                <meta property="og:price:amount" content="${priceVal}">
-                <meta property="og:price:currency" content="EUR">
-                <script type="application/ld+json">${JSON.stringify({
-                  "@context":"https://schema.org/","@type":"Product",
-                  "name":product.title||"","image":product.image||"","url":product.link||"",
-                  "offers":{"@type":"Offer","price":priceVal,"priceCurrency":"EUR",
-                             "availability":"https://schema.org/InStock","url":product.link||""}
-                })}<\/script>
-              </head><body>
-                <script>
-                  const s = document.createElement("script");
-                  s.src = "https://throne.com/bookmarklet/inject.js";
-                  s.setAttribute("data-add-to","wishlist");
-                  s.setAttribute("charset","UTF-8");
-                  document.body.appendChild(s);
-                  window.addEventListener("message", (e) => {
-                    if ((e.data||e.message) === "closeBookmarklet") {
-                      window.parent.postMessage("throneClose","*");
+                  const onMsg = (t) => {
+                    if ((t.data || t.message) === "closeBookmarklet") {
+                      script.parentNode && script.parentNode.removeChild(script);
+                      status.textContent = "✅ Added to wishlist!";
+                      setTimeout(() => { status.textContent = ""; }, 3000);
+                      window.removeEventListener("message", onMsg);
                     }
-                  });
-                <\/script>
-              </body></html>`;
-
-              frame.srcdoc = iframeHTML;
-              document.body.appendChild(frame);
-              status.textContent = "";
-
-              const onMsg = (e) => {
-                if (e.data === "throneClose") {
-                  frame.remove();
-                  status.textContent = "✅ Added to wishlist!";
-                  setTimeout(() => { status.textContent = ""; }, 3000);
-                  window.removeEventListener("message", onMsg);
-                }
-              };
-              window.addEventListener("message", onMsg);
+                  };
+                  window.addEventListener("message", onMsg);
+                })
+                .catch(() => { status.textContent = "❌ Could not load Throne. Are you logged in?"; });
             };
             document.getElementById("product-modal").classList.add("open");
           });
