@@ -56,6 +56,7 @@
       })();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 
     <style>
@@ -469,6 +470,92 @@
         100% { transform: scale(1); opacity: 1; }
       }
 
+      /* 📸 Screenshot button */
+      #screenshot-btn {
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #7df9ff, #c9a6ff);
+        color: #121218;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(125, 249, 255, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+      #screenshot-btn:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 18px rgba(125, 249, 255, 0.6), 0 0 18px rgba(201, 166, 255, 0.5);
+      }
+      #screenshot-btn:active { transform: scale(0.95); }
+      #screenshot-btn:disabled {
+        opacity: 0.6;
+        cursor: wait;
+        transform: none;
+      }
+
+      /* 📸 Screenshot overlay */
+      #screenshot-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: rgba(10, 10, 18, 0.92);
+        backdrop-filter: blur(8px);
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 16px;
+      }
+      #screenshot-overlay.open { display: flex; }
+      #screenshot-overlay img {
+        max-width: 90vw;
+        max-height: 70vh;
+        border-radius: 20px;
+        box-shadow: 0 0 40px rgba(255, 158, 203, 0.3), 0 0 80px rgba(201, 166, 255, 0.15);
+      }
+      .screenshot-actions {
+        display: flex;
+        gap: 12px;
+      }
+      .screenshot-actions a, .screenshot-actions button {
+        padding: 10px 22px;
+        border-radius: 999px;
+        border: none;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+      #screenshot-download {
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        color: #121218;
+      }
+      #screenshot-close-btn {
+        background: #2a2a3a;
+        color: #f3f3f7;
+      }
+      #screenshot-download:hover, #screenshot-close-btn:hover {
+        transform: translateY(-2px) scale(1.04);
+      }
+
+      /* 🖼️ Capture area styling */
+      #capture-area {
+        background: #121218;
+        padding: 24px;
+        border-radius: 24px;
+      }
+      #capture-area h2 {
+        text-align: center;
+        color: #ff9ecb;
+        text-shadow: 0 0 12px rgba(255, 158, 203, 0.5);
+        margin: 0 0 16px;
+        font-size: 20px;
+      }
+
       /* 🛍️ Product modal */
       #product-modal {
         display: none;
@@ -619,6 +706,7 @@
     <div class="action-bar">
       <div id="wishlist-toggle">Show Wishlist ❤️</div>
       <button id="clear-basket">Reset Basket</button>
+      <button id="screenshot-btn">📸 Screenshot</button>
     </div>
 
     <div
@@ -673,6 +761,15 @@
         <br><br>
         <button id="modal-throne" class="modal-store-btn" style="border:none;cursor:pointer;background:linear-gradient(135deg,#ff9ecb,#c9a6ff);color:#121218;">👑 Add to Throne wishlist</button>
         <div id="throne-status" style="margin-top:12px;font-size:12px;color:#c9a6ff;min-height:18px;"></div>
+      </div>
+    </div>
+
+    <!-- 📸 Screenshot overlay -->
+    <div id="screenshot-overlay">
+      <img id="screenshot-preview" src="" alt="Basket screenshot">
+      <div class="screenshot-actions">
+        <a id="screenshot-download" download="my-basket.png">⬇️ Download</a>
+        <button id="screenshot-close-btn">✕ Close</button>
       </div>
     </div>
 
@@ -1161,6 +1258,62 @@
         );
 
         displayProducts(filtered);
+      });
+
+      // 📸 Screenshot logic
+      document.getElementById("screenshot-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("screenshot-btn");
+        btn.disabled = true;
+        btn.textContent = "⏳ Capturing...";
+
+        // Build a clean capture area with just the gallery
+        const captureArea = document.createElement("div");
+        captureArea.id = "capture-area";
+
+        const heading = document.createElement("h2");
+        heading.textContent = "🧺 My Temu Basket";
+        captureArea.appendChild(heading);
+
+        const counter = document.getElementById("counter").cloneNode(true);
+        captureArea.appendChild(counter);
+
+        const galleryClone = document.getElementById("gallery").cloneNode(true);
+        // Remove Masonry inline styles so the clone lays out naturally in a grid
+        galleryClone.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;justify-content:center;";
+        captureArea.appendChild(galleryClone);
+
+        // Append off-screen
+        captureArea.style.cssText = "position:fixed;left:-9999px;top:0;width:900px;";
+        document.body.appendChild(captureArea);
+
+        // Wait a tick for layout
+        await new Promise(r => setTimeout(r, 100));
+
+        try {
+          const canvas = await html2canvas(captureArea, {
+            backgroundColor: "#121218",
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+          });
+
+          const dataURL = canvas.toDataURL("image/png");
+          document.getElementById("screenshot-preview").src = dataURL;
+          document.getElementById("screenshot-download").href = dataURL;
+          document.getElementById("screenshot-overlay").classList.add("open");
+        } catch (err) {
+          console.error("Screenshot failed:", err);
+          alert("Screenshot failed — try again!");
+        } finally {
+          captureArea.remove();
+          btn.disabled = false;
+          btn.textContent = "📸 Screenshot";
+        }
+      });
+
+      document.getElementById("screenshot-close-btn").addEventListener("click", () => {
+        document.getElementById("screenshot-overlay").classList.remove("open");
       });
     </script>
   </body>
