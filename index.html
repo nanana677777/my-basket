@@ -667,7 +667,7 @@
       // Load saved favorites once
       let rawProducts = []; // 🌟 make this global so sorting and wishlist can use it
       let favorites = JSON.parse(localStorage.getItem("temuFavorites")) || [];
-      let showingWishlist = false;
+      let showingWishlist = sessionStorage.getItem("showingWishlist") === "1";
 
       // Fetch JSON
       document
@@ -733,7 +733,8 @@
       }
 
       // 🥧 Pie chart — price range breakdown
-      let activeRangeFilter = null; // null = show all, 0/1/2 = range index
+      const _savedRange = sessionStorage.getItem("activeRangeFilter");
+      let activeRangeFilter = (_savedRange !== null && _savedRange !== "") ? parseInt(_savedRange) : null; // null = show all, 0/1/2 = range index
 
       const PIE_RANGES = [
         { label: "< 5 €",  color: "#7df9ff", test: v => v < 5 },
@@ -808,6 +809,7 @@
           el.style.transition = "opacity 0.25s, transform 0.25s";
           el.addEventListener("click", () => {
             activeRangeFilter = (activeRangeFilter === i) ? null : i;
+            sessionStorage.setItem("activeRangeFilter", activeRangeFilter === null ? "" : String(activeRangeFilter));
             applyRangeFilter();
           });
           svg.appendChild(el);
@@ -827,6 +829,7 @@
           `;
           item.addEventListener("click", () => {
             activeRangeFilter = (activeRangeFilter === i) ? null : i;
+            sessionStorage.setItem("activeRangeFilter", activeRangeFilter === null ? "" : String(activeRangeFilter));
             applyRangeFilter();
           });
           legend.appendChild(item);
@@ -853,7 +856,7 @@
           txt.style.cursor = "pointer";
           txt.style.pointerEvents = "all";
           txt.textContent = "✕";
-          txt.addEventListener("click", () => { activeRangeFilter = null; applyRangeFilter(); });
+          txt.addEventListener("click", () => { activeRangeFilter = null; sessionStorage.removeItem("activeRangeFilter"); applyRangeFilter(); });
           svg.appendChild(txt);
         }
 
@@ -998,7 +1001,12 @@
       if (savedBasket) {
         try {
           rawProducts = JSON.parse(savedBasket);
-          displayProducts(rawProducts);
+          // Re-apply saved filters after load
+          if (showingWishlist || activeRangeFilter !== null) {
+            applyRangeFilter();
+          } else {
+            displayProducts(rawProducts);
+          }
 
           // 👻 hide the file picker
           jsonLoader.style.display = "none";
@@ -1006,6 +1014,11 @@
           console.error("Saved basket corrupted");
         }
       }
+      // Restore wishlist toggle button label
+      if (showingWishlist) {
+        document.getElementById("wishlist-toggle").innerText = "Show All Products 🛒";
+      }
+
       // Reset basket button
       document.getElementById("clear-basket").addEventListener("click", () => {
         localStorage.removeItem("temuBasketData");
@@ -1016,6 +1029,7 @@
         .getElementById("wishlist-toggle")
         .addEventListener("click", () => {
           showingWishlist = !showingWishlist;
+          sessionStorage.setItem("showingWishlist", showingWishlist ? "1" : "0");
           activeRangeFilter = null;
           document.getElementById("wishlist-toggle").innerText = showingWishlist
             ? "Show All Products 🛒"
