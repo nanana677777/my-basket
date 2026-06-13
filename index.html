@@ -916,33 +916,62 @@
                           "availability": "https://schema.org/InStock", "url": product.link || "" }
             });
 
-            document.getElementById("modal-throne").onclick = () => {
+            document.getElementById("modal-throne").onclick = async () => {
               const status = document.getElementById("throne-status");
               const INJECT_URL = "https://throne.com/bookmarklet/inject.js";
 
-              // If Throne script already exists, just re-trigger its init (avoids re-declaration)
-              const existing = document.querySelector(`script[src="${INJECT_URL}"]`);
-              if (existing) {
-                // Throne adds a div/iframe to the DOM — remove it so it re-opens fresh
-                document.querySelectorAll('iframe[src*="throne.com"], div[id*="throne"], div[class*="throne"]').forEach(el => el.remove());
-                // Re-run the bookmarklet logic directly
+              // Clean up any leftover Throne UI from previous uses
+              document.querySelectorAll(
+                'iframe[src*="throne"], div[id*="throne"], div[class*="throne"], script[src*="throne"]'
+              ).forEach(el => el.remove());
+
+              status.textContent = "⏳ Loading Throne...";
+
+              try {
+                // Fetch the script text fresh each time — avoids const re-declaration in page scope
+                const res = await fetch(INJECT_URL + "?_=" + Date.now());
+                const code = await res.text();
+
+                // Inject a real <script> tag with src so Throne's self-selector works,
+                // but stamp data-add-to before appending so it's readable on DOMContentLoaded
+                const scriptElem = document.createElement("script");
+                scriptElem.setAttribute("charset", "UTF-8");
+                scriptElem.setAttribute("data-add-to", "wishlist");
+
+                // Run code via blob URL — fresh scope every time, no const clash
+                const blob = new Blob([code], { type: "application/javascript" });
+                const blobURL = URL.createObjectURL(blob);
+
+                // Throne looks for script[src="https://throne.com/bookmarklet/inject.js"]
+                // Patch the code so it finds itself via data-add-to instead
+                const patched = code.replace(
+                  /document\.querySelector\([^)]*inject\.js[^)]*\)/g,
+                  'document.querySelector("script[data-add-to]")'
+                );
+                const patchedBlob = new Blob([patched], { type: "application/javascript" });
+                const patchedURL = URL.createObjectURL(patchedBlob);
+
+                scriptElem.src = patchedURL;
+                scriptElem.onload = () => {
+                  status.textContent = "";
+                  URL.revokeObjectURL(patchedURL);
+                };
+                scriptElem.onerror = () => {
+                  status.textContent = "❌ Could not load Throne. Are you logged in?";
+                };
+                document.body.appendChild(scriptElem);
+
+              } catch (err) {
+                // Fallback: direct script injection (works on first use)
+                status.textContent = "⏳ Opening Throne...";
                 const scriptElem = document.createElement("script");
                 scriptElem.setAttribute("charset", "UTF-8");
                 scriptElem.setAttribute("src", INJECT_URL);
                 scriptElem.setAttribute("data-add-to", "wishlist");
+                scriptElem.onload = () => { status.textContent = ""; };
+                scriptElem.onerror = () => { status.textContent = "❌ Could not load Throne."; };
                 document.body.appendChild(scriptElem);
-                return;
               }
-
-              // First time: inject fresh
-              status.textContent = "⏳ Loading Throne...";
-              const scriptElem = document.createElement("script");
-              scriptElem.setAttribute("charset", "UTF-8");
-              scriptElem.setAttribute("src", INJECT_URL);
-              scriptElem.setAttribute("data-add-to", "wishlist");
-              scriptElem.onload = () => { status.textContent = ""; };
-              scriptElem.onerror = () => { status.textContent = "❌ Could not load Throne. Are you logged in?"; };
-              document.body.appendChild(scriptElem);
 
               const onMsg = (t) => {
                 if ((t.data || t.message) === "closeBookmarklet") {
