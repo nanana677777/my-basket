@@ -1028,6 +1028,12 @@
             fitWidth: true,
           });
           gallery.style.margin = "0 auto";
+          // Restore scroll after Throne reload — layout is now settled
+          const _masonryScroll = sessionStorage.getItem("throneScroll");
+          if (_masonryScroll) {
+            sessionStorage.removeItem("throneScroll");
+            window.scrollTo({ top: parseInt(_masonryScroll), behavior: "instant" });
+          }
         });
       }
       const jsonLoader = document.getElementById("jsonLoader");
@@ -1056,13 +1062,7 @@
         document.getElementById("wishlist-toggle").innerText = "Show All Products 🛒";
       }
 
-      // Restore scroll position after Throne reload
-      const _throneScroll = sessionStorage.getItem("throneScroll");
-      if (_throneScroll) {
-        sessionStorage.removeItem("throneScroll");
-        // Wait for Masonry to finish laying out, then scroll
-        setTimeout(() => window.scrollTo({ top: parseInt(_throneScroll), behavior: "instant" }), 300);
-      }
+
 
       // Reset basket button
       document.getElementById("clear-basket").addEventListener("click", () => {
