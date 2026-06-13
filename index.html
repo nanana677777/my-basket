@@ -954,6 +954,9 @@
               // Pass a flag so the iframe page auto-triggers Throne on load
               const throneURL = currentURL + (currentURL.includes("?") ? "&" : "?") + "_throne=1";
 
+              // Save scroll position before Throne opens
+              const savedScroll = window.scrollY;
+
               // Listen for Throne's close message from the iframe
               const onMsg = (t) => {
                 const val = t.data || t.message;
@@ -962,6 +965,8 @@
                   status.textContent = "✅ Added to wishlist!";
                   setTimeout(() => { status.textContent = ""; }, 3000);
                   window.removeEventListener("message", onMsg);
+                  // Restore scroll position
+                  window.scrollTo({ top: savedScroll, behavior: "instant" });
                 }
               };
               window.addEventListener("message", onMsg);
