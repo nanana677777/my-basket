@@ -1031,8 +1031,10 @@
           // Restore scroll after Throne reload — layout is now settled
           const _masonryScroll = sessionStorage.getItem("throneScroll");
           if (_masonryScroll) {
-            sessionStorage.removeItem("throneScroll");
             window.scrollTo({ top: parseInt(_masonryScroll), behavior: "instant" });
+            // Clear on next manual scroll so it doesn't persist forever
+            window.addEventListener("wheel",    () => sessionStorage.removeItem("throneScroll"), { once: true });
+            window.addEventListener("touchmove", () => sessionStorage.removeItem("throneScroll"), { once: true });
           }
         });
       }
