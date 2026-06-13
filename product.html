@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Product</title>
+
+  <!-- These get replaced by JS on load, but we pre-fill for bots that execute JS -->
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="" id="og-title">
+  <meta property="og:image" content="" id="og-image">
+  <meta property="og:url" content="" id="og-url">
+  <meta property="og:price:amount" content="" id="og-price">
+  <meta property="og:price:currency" content="EUR">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script type="application/ld+json" id="ld-json">{}</script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #121218;
+      color: #f3f3f7;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+    .card {
+      background: #1b1b26;
+      border: 1px solid rgba(255,158,203,0.25);
+      border-radius: 28px;
+      padding: 32px 28px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(255,158,203,0.2), 0 0 80px rgba(201,166,255,0.1);
+    }
+    img {
+      width: 100%;
+      border-radius: 18px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 15px;
+      color: #ffd6ec;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      font-weight: normal;
+    }
+    .price {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+      padding: 8px 24px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 14px rgba(255,158,203,0.5);
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #7df9ff, #c9a6ff);
+      color: #121218;
+      font-weight: bold;
+      font-size: 15px;
+      padding: 12px 28px;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(125,249,255,0.4);
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 22px rgba(125,249,255,0.6);
+    }
+    .error {
+      color: #ff9ecb;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img id="p-image" src="" alt="">
+    <h1 id="p-title"></h1>
+    <div class="price" id="p-price"></div>
+    <br><br>
+    <a class="btn" id="p-link" href="#" target="_blank">🛒 View on Temu</a>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get("title") || "Product";
+    const price = params.get("price") || "?";
+    const image = params.get("image") || "";
+    const link  = params.get("link")  || "#";
+
+    // Fill visible content
+    document.title = title;
+    document.getElementById("p-title").textContent = title;
+    document.getElementById("p-price").textContent = "💰 " + price + " €";
+    document.getElementById("p-image").src = image;
+    document.getElementById("p-image").alt = title;
+    document.getElementById("p-link").href = link;
+
+    // Fill Open Graph meta tags dynamically
+    const setMeta = (sel, val) => {
+      const el = document.querySelector(sel);
+      if (el) el.setAttribute("content", val);
+    };
+    setMeta('meta[property="og:title"]',         title);
+    setMeta('meta[property="og:image"]',         image);
+    setMeta('meta[property="og:url"]',           window.location.href);
+    setMeta('meta[property="og:price:amount"]',  price.replace(",", "."));
+
+    // Schema.org JSON-LD
+    const ld = {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": title,
+      "image": image,
+      "url": window.location.href,
+      "offers": {
+        "@type": "Offer",
+        "price": price.replace(",", "."),
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock",
+        "url": link
+      }
+    };
+    document.getElementById("ld-json").textContent = JSON.stringify(ld, null, 2);
+  </script>
+</body>
+</html>
