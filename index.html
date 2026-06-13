@@ -855,67 +855,13 @@
             document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
             document.getElementById("modal-link").href = product.link;
             document.getElementById("modal-newwindow").onclick = () => {
-              const safeTitle = (product.title || "Product").replace(/</g,"&lt;").replace(/"/g,"&quot;");
-              const safePrice = (product.price || "0").replace(",",".");
-              const safeImage = product.image || "";
-              const safeLink  = product.link  || "";
-              const html = [
-                '<!DOCTYPE html>',
-                '<html>',
-                '<head>',
-                '<meta charset="UTF-8">',
-                '<title>' + safeTitle + '</title>',
-                '<!-- Open Graph tags (read by Throne + wishlist extensions) -->',
-                '<meta property="og:type" content="product">',
-                '<meta property="og:title" content="' + safeTitle + '">',
-                '<meta property="og:image" content="' + safeImage + '">',
-                '<meta property="og:url" content="' + safeLink + '">',
-                '<meta property="og:price:amount" content="' + safePrice + '">',
-                '<meta property="og:price:currency" content="EUR">',
-                '<meta name="twitter:card" content="summary_large_image">',
-                '<meta name="twitter:title" content="' + safeTitle + '">',
-                '<meta name="twitter:image" content="' + safeImage + '">',
-                '<!-- Schema.org structured data -->',
-                '<script type="application/ld+json">',
-                JSON.stringify({
-                  "@context": "https://schema.org/",
-                  "@type": "Product",
-                  "name": product.title || "",
-                  "image": safeImage,
-                  "url": safeLink,
-                  "offers": {
-                    "@type": "Offer",
-                    "price": safePrice,
-                    "priceCurrency": "EUR",
-                    "availability": "https://schema.org/InStock",
-                    "url": safeLink
-                  }
-                }, null, 2),
-                '<\/script>',
-                '<style>',
-                '* { box-sizing: border-box; margin: 0; padding: 0; }',
-                'body { font-family: "Segoe UI", Arial, sans-serif; background: #121218; color: #f3f3f7; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 30px; }',
-                '.card { background: #1b1b26; border: 1px solid rgba(255,158,203,0.25); border-radius: 28px; padding: 32px 28px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 0 40px rgba(255,158,203,0.2), 0 0 80px rgba(201,166,255,0.1); }',
-                'img { width: 100%; border-radius: 18px; margin-bottom: 20px; }',
-                'h1 { font-size: 16px; color: #ffd6ec; line-height: 1.5; margin-bottom: 16px; font-weight: normal; }',
-                '.price { display: inline-block; background: linear-gradient(135deg, #ff9ecb, #c9a6ff); color: white; font-weight: bold; font-size: 18px; padding: 8px 22px; border-radius: 999px; margin-bottom: 24px; box-shadow: 0 0 14px rgba(255,158,203,0.5); }',
-                'a.btn { display: inline-block; background: linear-gradient(135deg, #7df9ff, #c9a6ff); color: #121218; font-weight: bold; font-size: 15px; padding: 12px 28px; border-radius: 999px; text-decoration: none; box-shadow: 0 4px 16px rgba(125,249,255,0.4); }',
-                '</style>',
-                '</head>',
-                '<body>',
-                '<div class="card">',
-                '<img src="' + safeImage + '" alt="' + safeTitle + '">',
-                '<h1>' + safeTitle + '</h1>',
-                '<div class="price">&#128176; ' + safePrice + ' &euro;</div>',
-                '<br><br>',
-                '<a class="btn" href="' + safeLink + '" target="_blank">&#128722; View on Temu</a>',
-                '</div>',
-                '</body>',
-                '</html>'
-              ].join('\n');
-              const blob = new Blob([html], { type: "text/html" });
-              const url = URL.createObjectURL(blob);
-              window.open(url, "_blank");
+              const params = new URLSearchParams({
+                title: product.title || "",
+                price: product.price || "",
+                image: product.image || "",
+                link:  product.link  || ""
+              });
+              window.open("product.html?" + params.toString(), "_blank");
             };
             document.getElementById("product-modal").classList.add("open");
           });
