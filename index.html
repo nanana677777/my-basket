@@ -1,0 +1,1048 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Temu Basket</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
+
+    <style>
+      /* container for wishlist + reset */
+      .action-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin: 15px 0 10px 0;
+        flex-wrap: wrap;
+      }
+      /* 🧹 cute reset basket button */
+      #clear-basket {
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: none;
+
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        box-shadow:
+          0 4px 12px rgba(255, 158, 203, 0.5),
+          0 0 10px rgba(201, 166, 255, 0.3);
+
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* hover glow */
+      #clear-basket:hover {
+        transform: translateY(-2px) scale(1.05);
+
+        box-shadow:
+          0 6px 18px rgba(255, 158, 203, 0.7),
+          0 0 18px rgba(201, 166, 255, 0.6);
+      }
+
+      /* click press */
+      #clear-basket:active {
+        transform: scale(0.95);
+      }
+
+      /* sparkle */
+      #clear-basket::after {
+        content: "✨";
+        position: absolute;
+        top: -4px;
+        right: -6px;
+        font-size: 12px;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      #clear-basket:hover::after {
+        opacity: 1;
+        transform: translate(3px, -3px) rotate(10deg) scale(1.2);
+      }
+      #jsonLoader {
+        display: block;
+        margin: 15px auto;
+        padding: 8px;
+        border-radius: 20px;
+        background: #1b1b26;
+        color: white;
+        border: 1px solid #ff9ecb;
+        transition: opacity 0.4s ease;
+      }
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #121218;
+        color: #f3f3f7;
+        padding: 20px;
+        overflow-x: hidden;
+      }
+
+      h1 {
+        text-align: center;
+        color: #ff9ecb;
+        text-shadow: 0 0 12px rgba(255, 158, 203, 0.5);
+      }
+
+      .gallery {
+        width: 100%;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+      }
+
+      .card {
+        width: 220px;
+      }
+
+      .card {
+        background: #1b1b26;
+        border-radius: 20px;
+        padding: 15px;
+        margin-bottom: 6px;
+
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 158, 203, 0.15);
+        animation: fadeIn 0.4s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* 🌈 rainbow hover glow */
+      .card:hover {
+        transform: translateY(-2px) scale(1.04);
+        box-shadow:
+          0 0 12px #ff9ecb,
+          0 0 18px #c9a6ff,
+          0 0 24px #7df9ff;
+      }
+
+      .card img {
+        width: 100%;
+        border-radius: 14px;
+        margin-bottom: 8px;
+      }
+
+      .card a {
+        display: block;
+        margin-top: 6px;
+        text-decoration: none;
+        color: #ffd6ec;
+        font-weight: bold;
+        line-height: 1.3;
+      }
+
+      .card a:hover {
+        color: #ff9ecb;
+      }
+
+      /* 🧸 cute total bubble */
+      .counter {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .total-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        padding: 10px 18px;
+        border-radius: 999px;
+        color: white;
+        box-shadow: 0 0 15px rgba(255, 158, 203, 0.6);
+        font-size: 15px;
+      }
+
+      /* 🩷 floating hearts */
+      .heart {
+        position: fixed;
+        bottom: -20px;
+        font-size: 18px;
+        animation: floatUp linear forwards;
+        opacity: 0.7;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      @keyframes floatUp {
+        to {
+          transform: translateY(-110vh) scale(1.4);
+          opacity: 0;
+        }
+      }
+      /* Heart icon on product card ======================*/
+      .heartFav {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 50px; /* bigger! */
+        color: #fae3e7; /* soft pink */
+        text-shadow:
+          0 0 2px #ff9ecb,
+          0 0 4px #ffb3d1;
+        transition:
+          transform 0.2s,
+          color 0.3s,
+          text-shadow 0.3s;
+        user-select: none;
+        z-index: 10;
+      }
+
+      .heartFav.favorited {
+        color: #ff69b4; /* hot pink when favorited */
+        transform: scale(1.4);
+        animation: heartBounce 0.5s;
+        text-shadow:
+          0 0 8px #ff69b4,
+          0 0 18px #ff85c1;
+      }
+      /* cute bounce animation */
+      @keyframes heartBounce {
+        0% {
+          transform: scale(1);
+        }
+        30% {
+          transform: scale(1.6);
+        }
+        50% {
+          transform: scale(1.4);
+        }
+        70% {
+          transform: scale(1.5);
+        }
+        100% {
+          transform: scale(1.4);
+        }
+      }
+      /*=============================================*/
+      .card-wrapper {
+        position: relative; /* for heart positioning */
+      }
+      /* 🩷 cute search bar */
+      #search {
+        display: block;
+        margin: 15px auto;
+        padding: 10px 18px;
+        width: 260px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 158, 203, 0.4);
+        background: #1b1b26;
+        color: #fff;
+        outline: none;
+        font-size: 14px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      #search:focus {
+        border-color: #ff9ecb;
+        box-shadow: 0 0 10px rgba(255, 158, 203, 0.5);
+      }
+      /* Wishlist filter button */
+      #wishlist-toggle {
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #ff69b4, #ff9ecb);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        box-shadow:
+          0 4px 12px rgba(255, 105, 180, 0.4),
+          0 0 10px rgba(255, 158, 203, 0.3);
+      }
+      #wishlist-toggle:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow:
+          0 6px 18px rgba(255, 105, 180, 0.6),
+          0 0 18px rgba(255, 158, 203, 0.5);
+      }
+
+      /* Sorting buttons */
+      .price-badge {
+        display: flex;
+        /*put botom*/
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        color: white;
+        font-weight: bold;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 14px;
+        box-shadow: 0 0 8px rgba(255, 158, 203, 0.6);
+        transition:
+          transform 0.2s,
+          box-shadow 0.3s;
+        cursor: default;
+        user-select: none;
+      }
+      /* 🥧 Price range pie chart */
+      #pie-chart-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin: 14px auto 4px;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      #pie-chart-wrapper.visible {
+        opacity: 1;
+      }
+      #pie-svg {
+        filter: drop-shadow(0 0 10px rgba(255, 158, 203, 0.35));
+      }
+      .pie-legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .pie-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .pie-legend-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      /* 🩷 Cute glowy price filter buttons */
+      #sort-low,
+      #sort-high {
+        margin: 0 5px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+        color: #121218;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow:
+          0 4px 12px rgba(125, 249, 255, 0.4),
+          0 0 8px rgba(255, 158, 203, 0.3);
+      }
+
+      /* Gradient backgrounds */
+      #sort-low {
+        background: linear-gradient(135deg, #7df9ff, #85f9ff);
+      }
+      #sort-high {
+        background: linear-gradient(135deg, #ff9ecb, #d3a6ff);
+      }
+
+      /* Hover effect with glowy pop */
+      #sort-low:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow:
+          0 6px 18px rgba(125, 249, 255, 0.6),
+          0 0 15px rgba(201, 166, 255, 0.5);
+      }
+      #sort-high:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow:
+          0 6px 18px rgba(255, 158, 203, 0.6),
+          0 0 15px rgba(201, 166, 255, 0.5);
+      }
+
+      /* Tiny sparkles on hover */
+      #sort-low::after,
+      #sort-high::after {
+        content: "✨";
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        font-size: 12px;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+      #sort-low:hover::after,
+      #sort-high:hover::after {
+        opacity: 1;
+        transform: translate(3px, -3px) rotate(10deg) scale(1.2);
+      }
+
+      /* 🛍️ Product modal */
+      #product-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(10, 10, 18, 0.85);
+        backdrop-filter: blur(6px);
+        justify-content: center;
+        align-items: center;
+      }
+      #product-modal.open {
+        display: flex;
+      }
+      .modal-box {
+        background: #1b1b26;
+        border: 1px solid rgba(255, 158, 203, 0.3);
+        border-radius: 28px;
+        padding: 28px 24px 24px;
+        max-width: 340px;
+        width: 90%;
+        box-shadow:
+          0 0 30px rgba(255, 158, 203, 0.25),
+          0 0 60px rgba(201, 166, 255, 0.15);
+        animation: modalPop 0.25s ease;
+        position: relative;
+        text-align: center;
+      }
+      @keyframes modalPop {
+        from { opacity: 0; transform: scale(0.88) translateY(16px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .modal-box img {
+        width: 100%;
+        border-radius: 16px;
+        margin-bottom: 14px;
+      }
+      .modal-title {
+        font-size: 14px;
+        color: #ffd6ec;
+        line-height: 1.4;
+        margin-bottom: 10px;
+      }
+      .modal-price {
+        display: inline-block;
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        padding: 6px 18px;
+        border-radius: 999px;
+        margin-bottom: 18px;
+        box-shadow: 0 0 12px rgba(255, 158, 203, 0.5);
+      }
+      .modal-store-btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #7df9ff, #c9a6ff);
+        color: #121218;
+        font-weight: bold;
+        font-size: 14px;
+        padding: 10px 24px;
+        border-radius: 999px;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(125, 249, 255, 0.4);
+        transition: all 0.3s ease;
+      }
+      .modal-store-btn:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 20px rgba(125, 249, 255, 0.6);
+      }
+      .modal-close {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        font-size: 20px;
+        color: #c9a6ff;
+        cursor: pointer;
+        line-height: 1;
+        transition: transform 0.2s;
+      }
+      .modal-close:hover {
+        transform: scale(1.3) rotate(10deg);
+        color: #ff9ecb;
+      }
+    </style>
+  </head>
+  <!-- ✨ magical sparkles on mouse move -->
+  <script>
+    const sparkleColors = [
+      "#ff9ecb",
+      "#c9a6ff",
+      "#7df9ff",
+      "#fff9b0",
+      "#ffb3c6",
+    ];
+
+    document.addEventListener("mousemove", (e) => {
+      const sparkle = document.createElement("div");
+      sparkle.style.position = "fixed";
+      sparkle.style.left = e.clientX + "px";
+      sparkle.style.top = e.clientY + "px";
+      sparkle.style.width = "6px";
+      sparkle.style.height = "6px";
+      sparkle.style.background =
+        sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+      sparkle.style.borderRadius = "50%";
+      sparkle.style.pointerEvents = "none";
+      sparkle.style.opacity = 1;
+      sparkle.style.transform = `translate(-50%, -50%) scale(1)`;
+      sparkle.style.transition = "all 0.8s ease-out";
+
+      document.body.appendChild(sparkle);
+
+      requestAnimationFrame(() => {
+        sparkle.style.transform = `translate(-50%, -50%) scale(0.2)`;
+        sparkle.style.opacity = 0;
+      });
+
+      setTimeout(() => sparkle.remove(), 800);
+    });
+  </script>
+  <!-- 🩷 floating hearts -->
+  <script>
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.innerText = "🩷";
+
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.animationDuration = 4 + Math.random() * 4 + "s";
+
+      document.body.appendChild(heart);
+
+      setTimeout(() => heart.remove(), 8000);
+    }
+
+    setInterval(createHeart, 900);
+  </script>
+
+  <body>
+    <h1>My Temu Basket</h1>
+    <div class="counter" id="counter"></div>
+    <div id="pie-chart-wrapper">
+      <svg id="pie-svg" width="110" height="110" viewBox="0 0 110 110"></svg>
+      <div class="pie-legend" id="pie-legend"></div>
+    </div>
+    <input type="file" id="jsonLoader" accept=".json" />
+    <div class="action-bar">
+      <div id="wishlist-toggle">Show Wishlist ❤️</div>
+      <button id="clear-basket">Reset Basket</button>
+    </div>
+
+    <div
+      id="sort-buttons"
+      style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0;
+      "
+    >
+      <button
+        id="sort-low"
+        style="
+          margin: 0 5px;
+          padding: 6px 12px;
+          border-radius: 20px;
+          background: #7df9ff;
+          color: #ffffff;
+          font-weight: bold;
+          cursor: pointer;
+        "
+      >
+        Price ↑
+      </button>
+      <button
+        id="sort-high"
+        style="
+          margin: 0 5px;
+          padding: 6px 12px;
+          border-radius: 20px;
+          background: #ff9ecb;
+          color: #ffffff;
+          font-weight: bold;
+          cursor: pointer;
+        "
+      >
+        Price ↓
+      </button>
+    </div>
+    <input type="text" id="search" placeholder="🔎 Search products..." />
+    <!-- 🛍️ Product detail modal -->
+    <div id="product-modal">
+      <div class="modal-box">
+        <span class="modal-close" id="modal-close">✕</span>
+        <img id="modal-img" src="" alt="">
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-price" id="modal-price"></div>
+        <br>
+        <a id="modal-link" class="modal-store-btn" href="#" target="_blank">🛒 View on Temu</a>
+        <br><br>
+        <button id="modal-newwindow" class="modal-store-btn" style="border:none;cursor:pointer;background:linear-gradient(135deg,#ff9ecb,#c9a6ff);color:#121218;">↗ Open product page</button>
+      </div>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <script>
+      const gallery = document.getElementById("gallery");
+      const counter = document.getElementById("counter");
+
+      // Modal close logic
+      function closeModal() {
+        document.getElementById("product-modal").classList.remove("open");
+      }
+      document.getElementById("modal-close").addEventListener("click", closeModal);
+      document.getElementById("product-modal").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("product-modal")) closeModal();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      // Load saved favorites once
+      let rawProducts = []; // 🌟 make this global so sorting and wishlist can use it
+      let favorites = JSON.parse(localStorage.getItem("temuFavorites")) || [];
+      let showingWishlist = false;
+
+      // Fetch JSON
+      document
+        .getElementById("jsonLoader")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            try {
+              rawProducts = JSON.parse(e.target.result);
+
+              localStorage.setItem("temuBasketData", e.target.result);
+
+              displayProducts(rawProducts);
+
+              // 👻 hide after loading
+              jsonLoader.style.opacity = "0";
+              setTimeout(() => (jsonLoader.style.display = "none"), 400);
+            } catch (err) {
+              counter.innerText = "Invalid JSON file.";
+              console.error(err);
+            }
+          };
+
+          reader.readAsText(file);
+        });
+
+      // Toggle favorite helper with cute pop + float
+      function toggleFavorite(link, heartEl) {
+        if (favorites.includes(link)) {
+          favorites = favorites.filter((l) => l !== link);
+          heartEl.classList.remove("favorited");
+        } else {
+          favorites.push(link);
+          heartEl.classList.add("favorited");
+
+          // 💖 Floating mini heart animation
+          const miniHeart = document.createElement("div");
+          miniHeart.innerText = "🩷";
+          miniHeart.style.position = "absolute";
+          miniHeart.style.left = "100%";
+          miniHeart.style.top = "0%";
+          miniHeart.style.transform = "translate(-50%, -50%) scale(1.2)";
+          miniHeart.style.fontSize = "16px";
+          miniHeart.style.opacity = "1";
+          miniHeart.style.pointerEvents = "none";
+          miniHeart.style.transition = "all 1s ease-out";
+
+          heartEl.parentElement.appendChild(miniHeart);
+
+          requestAnimationFrame(() => {
+            miniHeart.style.transform = "translate(-50%, -150%) scale(0.5)";
+            miniHeart.style.opacity = "0";
+          });
+
+          setTimeout(() => miniHeart.remove(), 1000);
+        }
+
+        localStorage.setItem("temuFavorites", JSON.stringify(favorites));
+      }
+
+      // 🥧 Pie chart — price range breakdown
+      let activeRangeFilter = null; // null = show all, 0/1/2 = range index
+
+      const PIE_RANGES = [
+        { label: "< 5 €",  color: "#7df9ff", test: v => v < 5 },
+        { label: "5–20 €", color: "#c9a6ff", test: v => v >= 5 && v < 20 },
+        { label: "20 € +", color: "#ff9ecb", test: v => v >= 20 },
+      ];
+
+      function applyRangeFilter() {
+        const base = showingWishlist
+          ? rawProducts.filter(p => favorites.includes(p.link))
+          : rawProducts;
+        if (activeRangeFilter === null) {
+          displayProducts(base);
+        } else {
+          const { test } = PIE_RANGES[activeRangeFilter];
+          displayProducts(base.filter(p => test(priceNumber(p.price))));
+        }
+      }
+
+      function renderPieChart(products) {
+        const ranges = PIE_RANGES;
+        const counts = ranges.map(() => 0);
+        products.forEach(p => {
+          const v = priceNumber(p.price);
+          ranges.forEach((r, i) => { if (r.test(v)) counts[i]++; });
+        });
+
+        const total = counts.reduce((a, b) => a + b, 0);
+        const svg = document.getElementById("pie-svg");
+        const legend = document.getElementById("pie-legend");
+        svg.innerHTML = "";
+        legend.innerHTML = "";
+
+        if (total === 0) {
+          document.getElementById("pie-chart-wrapper").classList.remove("visible");
+          return;
+        }
+
+        const cx = 55, cy = 55, r = 48;
+        let startAngle = -Math.PI / 2;
+
+        counts.forEach((count, i) => {
+          if (count === 0) return;
+          const slice = (count / total) * 2 * Math.PI;
+          const endAngle = startAngle + slice;
+          const isActive = activeRangeFilter === i;
+          const isDimmed = activeRangeFilter !== null && !isActive;
+          const midAngle = startAngle + slice / 2;
+          const pop = isActive ? 6 : 0;
+          const ocx = cx + pop * Math.cos(midAngle);
+          const ocy = cy + pop * Math.sin(midAngle);
+
+          let el;
+          if (count === total) {
+            el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            el.setAttribute("cx", ocx); el.setAttribute("cy", ocy); el.setAttribute("r", r);
+            el.setAttribute("fill", ranges[i].color);
+          } else {
+            const x1 = ocx + r * Math.cos(startAngle);
+            const y1 = ocy + r * Math.sin(startAngle);
+            const x2 = ocx + r * Math.cos(endAngle);
+            const y2 = ocy + r * Math.sin(endAngle);
+            const large = slice > Math.PI ? 1 : 0;
+            el = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            el.setAttribute("d", `M${ocx},${ocy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`);
+            el.setAttribute("fill", ranges[i].color);
+            el.setAttribute("stroke", "#121218");
+            el.setAttribute("stroke-width", "1.5");
+          }
+          el.setAttribute("opacity", isDimmed ? "0.3" : "1");
+          el.style.cursor = "pointer";
+          el.style.transition = "opacity 0.25s, transform 0.25s";
+          el.addEventListener("click", () => {
+            activeRangeFilter = (activeRangeFilter === i) ? null : i;
+            applyRangeFilter();
+          });
+          svg.appendChild(el);
+
+          // Legend item
+          const pct = Math.round((count / total) * 100);
+          const item = document.createElement("div");
+          item.className = "pie-legend-item";
+          item.style.cursor = "pointer";
+          item.style.opacity = isDimmed ? "0.35" : "1";
+          item.style.transition = "opacity 0.25s";
+          if (isActive) item.style.textDecoration = "underline";
+          item.innerHTML = `
+            <div class="pie-legend-dot" style="background:${ranges[i].color}"></div>
+            <span style="color:${ranges[i].color}">${ranges[i].label}</span>
+            <span style="color:#aaa">${count} (${pct}%)</span>
+          `;
+          item.addEventListener("click", () => {
+            activeRangeFilter = (activeRangeFilter === i) ? null : i;
+            applyRangeFilter();
+          });
+          legend.appendChild(item);
+
+          startAngle = endAngle;
+        });
+
+        // Donut hole
+        const hole = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        hole.setAttribute("cx", cx); hole.setAttribute("cy", cy); hole.setAttribute("r", 22);
+        hole.setAttribute("fill", "#121218");
+        hole.style.pointerEvents = "none";
+        svg.appendChild(hole);
+
+        // "All" reset label in center when a filter is active
+        if (activeRangeFilter !== null) {
+          const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          txt.setAttribute("x", cx); txt.setAttribute("y", cy + 5);
+          txt.setAttribute("text-anchor", "middle");
+          txt.setAttribute("fill", "#fff");
+          txt.setAttribute("font-size", "15");
+          txt.setAttribute("font-weight", "bold");
+          txt.setAttribute("font-family", "Segoe UI, Arial, sans-serif");
+          txt.style.cursor = "pointer";
+          txt.style.pointerEvents = "all";
+          txt.textContent = "✕";
+          txt.addEventListener("click", () => { activeRangeFilter = null; applyRangeFilter(); });
+          svg.appendChild(txt);
+        }
+
+        document.getElementById("pie-chart-wrapper").classList.add("visible");
+      }
+
+      // Display products
+      function displayProducts(rawProducts) {
+        const gallery = document.getElementById("gallery");
+        gallery.innerHTML = "";
+
+        const seen = new Set();
+        const products = rawProducts.filter(
+          (p) =>
+            p.link.includes("goods.html") &&
+            !seen.has(p.link) &&
+            seen.add(p.link),
+        );
+
+        let total = 0;
+        products.forEach((p) => {
+          total += priceNumber(p.price) * (parseInt(p.quantity) || 1);
+        });
+
+        document.getElementById("counter").innerHTML =
+          `<span class="total-badge">
+          🧺 ${products.length} items • 💰 ${total.toFixed(2)} €
+        </span>`;
+
+        renderPieChart(products);
+
+        products.forEach((product) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "card card-wrapper";
+          wrapper.innerHTML = `
+            <img src="${product.image}" alt="${product.title}" style="width:100%;border-radius:14px;margin-bottom:8px;cursor:pointer;">
+            <div class="price-badge">💰 ${product.price || "?"} €</div>
+            <div class="heartFav ${favorites.includes(product.link) ? "favorited" : ""}">♥</div>
+          `;
+
+          // Open modal on image/card click (but not heart)
+          wrapper.addEventListener("click", (e) => {
+            if (e.target.classList.contains("heartFav")) return;
+            document.getElementById("modal-img").src = product.image;
+            document.getElementById("modal-img").alt = product.title;
+            document.getElementById("modal-title").textContent = product.title || "";
+            document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
+            document.getElementById("modal-link").href = product.link;
+            document.getElementById("modal-newwindow").onclick = () => {
+              const safeTitle = (product.title || "Product").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+              const safePrice = (product.price || "0").replace(",",".");
+              const safeImage = product.image || "";
+              const safeLink  = product.link  || "";
+              const html = [
+                '<!DOCTYPE html>',
+                '<html>',
+                '<head>',
+                '<meta charset="UTF-8">',
+                '<title>' + safeTitle + '</title>',
+                '<!-- Open Graph tags (read by Throne + wishlist extensions) -->',
+                '<meta property="og:type" content="product">',
+                '<meta property="og:title" content="' + safeTitle + '">',
+                '<meta property="og:image" content="' + safeImage + '">',
+                '<meta property="og:url" content="' + safeLink + '">',
+                '<meta property="og:price:amount" content="' + safePrice + '">',
+                '<meta property="og:price:currency" content="EUR">',
+                '<meta name="twitter:card" content="summary_large_image">',
+                '<meta name="twitter:title" content="' + safeTitle + '">',
+                '<meta name="twitter:image" content="' + safeImage + '">',
+                '<!-- Schema.org structured data -->',
+                '<script type="application/ld+json">',
+                JSON.stringify({
+                  "@context": "https://schema.org/",
+                  "@type": "Product",
+                  "name": product.title || "",
+                  "image": safeImage,
+                  "url": safeLink,
+                  "offers": {
+                    "@type": "Offer",
+                    "price": safePrice,
+                    "priceCurrency": "EUR",
+                    "availability": "https://schema.org/InStock",
+                    "url": safeLink
+                  }
+                }, null, 2),
+                '<\/script>',
+                '<style>',
+                '* { box-sizing: border-box; margin: 0; padding: 0; }',
+                'body { font-family: "Segoe UI", Arial, sans-serif; background: #121218; color: #f3f3f7; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 30px; }',
+                '.card { background: #1b1b26; border: 1px solid rgba(255,158,203,0.25); border-radius: 28px; padding: 32px 28px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 0 40px rgba(255,158,203,0.2), 0 0 80px rgba(201,166,255,0.1); }',
+                'img { width: 100%; border-radius: 18px; margin-bottom: 20px; }',
+                'h1 { font-size: 16px; color: #ffd6ec; line-height: 1.5; margin-bottom: 16px; font-weight: normal; }',
+                '.price { display: inline-block; background: linear-gradient(135deg, #ff9ecb, #c9a6ff); color: white; font-weight: bold; font-size: 18px; padding: 8px 22px; border-radius: 999px; margin-bottom: 24px; box-shadow: 0 0 14px rgba(255,158,203,0.5); }',
+                'a.btn { display: inline-block; background: linear-gradient(135deg, #7df9ff, #c9a6ff); color: #121218; font-weight: bold; font-size: 15px; padding: 12px 28px; border-radius: 999px; text-decoration: none; box-shadow: 0 4px 16px rgba(125,249,255,0.4); }',
+                '</style>',
+                '</head>',
+                '<body>',
+                '<div class="card">',
+                '<img src="' + safeImage + '" alt="' + safeTitle + '">',
+                '<h1>' + safeTitle + '</h1>',
+                '<div class="price">&#128176; ' + safePrice + ' &euro;</div>',
+                '<br><br>',
+                '<a class="btn" href="' + safeLink + '" target="_blank">&#128722; View on Temu</a>',
+                '</div>',
+                '</body>',
+                '</html>'
+              ].join('\n');
+              const blob = new Blob([html], { type: "text/html" });
+              const url = URL.createObjectURL(blob);
+              window.open(url, "_blank");
+            };
+            document.getElementById("product-modal").classList.add("open");
+          });
+
+          const heart = wrapper.querySelector(".heartFav");
+          heart.addEventListener("click", () =>
+            toggleFavorite(product.link, heart),
+          );
+
+          gallery.appendChild(wrapper);
+        });
+
+        // Init Masonry after all images have loaded so heights are correct
+        imagesLoaded(gallery, function () {
+          new Masonry(gallery, {
+            itemSelector: ".card",
+            columnWidth: ".card",
+            gutter: 6,
+            percentPosition: false,
+            fitWidth: true,
+          });
+          gallery.style.margin = "0 auto";
+        });
+      }
+      const jsonLoader = document.getElementById("jsonLoader");
+
+      // 🔁 auto load saved basket if it exists
+      const savedBasket = localStorage.getItem("temuBasketData");
+
+      if (savedBasket) {
+        try {
+          rawProducts = JSON.parse(savedBasket);
+          displayProducts(rawProducts);
+
+          // 👻 hide the file picker
+          jsonLoader.style.display = "none";
+        } catch (e) {
+          console.error("Saved basket corrupted");
+        }
+      }
+      // Reset basket button
+      document.getElementById("clear-basket").addEventListener("click", () => {
+        localStorage.removeItem("temuBasketData");
+        location.reload();
+      });
+      // Wishlist filter toggle
+      document
+        .getElementById("wishlist-toggle")
+        .addEventListener("click", () => {
+          showingWishlist = !showingWishlist;
+          activeRangeFilter = null;
+          document.getElementById("wishlist-toggle").innerText = showingWishlist
+            ? "Show All Products 🛒"
+            : "Show Wishlist ❤️";
+          const filtered = showingWishlist
+            ? rawProducts.filter((p) => favorites.includes(p.link))
+            : rawProducts;
+
+          displayProducts(filtered);
+        });
+
+      // Helper to convert price string to number
+      function priceNumber(p) {
+        return parseFloat((p || "0").replace(",", "."));
+      }
+
+      // Sorting buttons that respect wishlist filter
+      document.getElementById("sort-low").addEventListener("click", () => {
+        const base = showingWishlist
+          ? rawProducts.filter((p) => favorites.includes(p.link))
+          : rawProducts;
+
+        const sorted = [...base].sort(
+          (a, b) => priceNumber(b.price) - priceNumber(a.price),
+        );
+        displayProducts(sorted);
+      });
+
+      document.getElementById("sort-high").addEventListener("click", () => {
+        const base = showingWishlist
+          ? rawProducts.filter((p) => favorites.includes(p.link))
+          : rawProducts;
+
+        const sorted = [...base].sort(
+          (a, b) => priceNumber(a.price) - priceNumber(b.price),
+        );
+        displayProducts(sorted);
+      });
+
+      document.querySelectorAll("#sort-low, #sort-high").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const heart = document.createElement("div");
+          heart.innerText = "🩷";
+          heart.style.position = "fixed";
+          heart.style.left =
+            btn.getBoundingClientRect().left + btn.offsetWidth / 2 + "px";
+          heart.style.top = btn.getBoundingClientRect().top + "px";
+          heart.style.fontSize = "18px";
+          heart.style.opacity = "1";
+          heart.style.transform = "translate(-50%, 0) scale(1)";
+          heart.style.transition = "all 0.8s ease-out";
+          document.body.appendChild(heart);
+
+          requestAnimationFrame(() => {
+            heart.style.transform = "translate(-50%, -100px) scale(0.5)";
+            heart.style.opacity = "0";
+          });
+
+          setTimeout(() => heart.remove(), 800);
+        });
+      });
+      // Search filter that respects wishlist filter
+      const searchInput = document.getElementById("search");
+
+      searchInput.addEventListener("input", () => {
+        const term = searchInput.value.toLowerCase();
+
+        const base = showingWishlist
+          ? rawProducts.filter((p) => favorites.includes(p.link))
+          : rawProducts;
+
+        const filtered = base.filter((p) =>
+          (p.title || "").toLowerCase().includes(term),
+        );
+
+        displayProducts(filtered);
+      });
+    </script>
+  </body>
+</html>
