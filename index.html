@@ -973,8 +973,8 @@
               // Pass a flag so the iframe page auto-triggers Throne on load
               const throneURL = currentURL + (currentURL.includes("?") ? "&" : "?") + "_throne=1";
 
-              // Save scroll position before Throne opens
-              const savedScroll = window.scrollY;
+              // Save scroll position to sessionStorage before Throne opens
+              sessionStorage.setItem("throneScroll", String(window.scrollY));
 
               // Listen for Throne's close message from the iframe
               const onMsg = (t) => {
@@ -984,18 +984,9 @@
                   // Mark as added to Throne
                   throneAdded.add(product.link);
                   localStorage.setItem("temuThroneAdded", JSON.stringify([...throneAdded]));
-                  // Add crown pin to the card if not already there
-                  if (wrapper && !wrapper.querySelector(".throne-pin")) {
-                    const pin = document.createElement("div");
-                    pin.className = "throne-pin";
-                    pin.textContent = "👑";
-                    wrapper.appendChild(pin);
-                  }
-                  status.textContent = "✅ Added to wishlist!";
-                  setTimeout(() => { status.textContent = ""; }, 3000);
+                  // Reload to restore layout cleanly, scroll will be restored on load
+                  window.location.replace(location.pathname);
                   window.removeEventListener("message", onMsg);
-                  // Restore scroll position
-                  window.scrollTo({ top: savedScroll, behavior: "instant" });
                 }
               };
               window.addEventListener("message", onMsg);
@@ -1051,6 +1042,14 @@
       // Restore wishlist toggle button label
       if (showingWishlist) {
         document.getElementById("wishlist-toggle").innerText = "Show All Products 🛒";
+      }
+
+      // Restore scroll position after Throne reload
+      const _throneScroll = sessionStorage.getItem("throneScroll");
+      if (_throneScroll) {
+        sessionStorage.removeItem("throneScroll");
+        // Wait for Masonry to finish laying out, then scroll
+        setTimeout(() => window.scrollTo({ top: parseInt(_throneScroll), behavior: "instant" }), 300);
       }
 
       // Reset basket button
