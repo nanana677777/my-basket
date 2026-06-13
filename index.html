@@ -932,14 +932,16 @@
               script.onerror = () => { status.textContent = "❌ Could not load Throne. Are you logged in?"; };
               document.body.appendChild(script);
 
-              window.addEventListener("message", (t) => {
+              const onMsg = (t) => {
                 const key = t.message ? "message" : "data";
-                if (key === "data" && t[key] === "closeBookmarklet") {
+                if (t[key] === "closeBookmarklet") {
                   script.parentNode && script.parentNode.removeChild(script);
                   status.textContent = "✅ Added to wishlist!";
                   setTimeout(() => { status.textContent = ""; }, 3000);
+                  window.removeEventListener("message", onMsg);
                 }
-              }, { once: true });
+              };
+              window.addEventListener("message", onMsg);
             };
             document.getElementById("product-modal").classList.add("open");
           });
