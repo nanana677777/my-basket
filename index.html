@@ -973,20 +973,25 @@
               // Pass a flag so the iframe page auto-triggers Throne on load
               const throneURL = currentURL + (currentURL.includes("?") ? "&" : "?") + "_throne=1";
 
-              // Save scroll position to sessionStorage before Throne opens
+              // Save scroll position and current product link to sessionStorage
               sessionStorage.setItem("throneScroll", String(window.scrollY));
+              sessionStorage.setItem("throneLastLink", product.link);
 
               // Listen for Throne's close message from the iframe
               const onMsg = (t) => {
                 const val = t.data || t.message;
                 if (val === "closeBookmarklet") {
                   iframe.remove();
-                  // Mark as added to Throne
-                  throneAdded.add(product.link);
-                  localStorage.setItem("temuThroneAdded", JSON.stringify([...throneAdded]));
+                  window.removeEventListener("message", onMsg);
+                  // Mark as added to Throne using sessionStorage link (closure may be stale)
+                  const addedLink = sessionStorage.getItem("throneLastLink");
+                  if (addedLink) {
+                    throneAdded.add(addedLink);
+                    localStorage.setItem("temuThroneAdded", JSON.stringify([...throneAdded]));
+                    sessionStorage.removeItem("throneLastLink");
+                  }
                   // Reload to restore layout cleanly, scroll will be restored on load
                   window.location.replace(location.pathname);
-                  window.removeEventListener("message", onMsg);
                 }
               };
               window.addEventListener("message", onMsg);
