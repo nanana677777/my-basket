@@ -56,7 +56,6 @@
       })();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 
     <style>
@@ -903,6 +902,14 @@
           return;
         }
 
+        // Add glow filter for active slice
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        defs.innerHTML = `<filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>`;
+        svg.appendChild(defs);
+
         const cx = 55, cy = 55, r = 48;
         let startAngle = -Math.PI / 2;
 
@@ -912,29 +919,26 @@
           const endAngle = startAngle + slice;
           const isActive = activeRangeFilter === i;
           const isDimmed = activeRangeFilter !== null && !isActive;
-          const midAngle = startAngle + slice / 2;
-          const pop = isActive ? 6 : 0;
-          const ocx = cx + pop * Math.cos(midAngle);
-          const ocy = cy + pop * Math.sin(midAngle);
 
           let el;
           if (count === total) {
             el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            el.setAttribute("cx", ocx); el.setAttribute("cy", ocy); el.setAttribute("r", r);
+            el.setAttribute("cx", cx); el.setAttribute("cy", cy); el.setAttribute("r", r);
             el.setAttribute("fill", ranges[i].color);
           } else {
-            const x1 = ocx + r * Math.cos(startAngle);
-            const y1 = ocy + r * Math.sin(startAngle);
-            const x2 = ocx + r * Math.cos(endAngle);
-            const y2 = ocy + r * Math.sin(endAngle);
+            const x1 = cx + r * Math.cos(startAngle);
+            const y1 = cy + r * Math.sin(startAngle);
+            const x2 = cx + r * Math.cos(endAngle);
+            const y2 = cy + r * Math.sin(endAngle);
             const large = slice > Math.PI ? 1 : 0;
             el = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            el.setAttribute("d", `M${ocx},${ocy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`);
+            el.setAttribute("d", `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`);
             el.setAttribute("fill", ranges[i].color);
             el.setAttribute("stroke", "#121218");
-            el.setAttribute("stroke-width", "1.5");
+            el.setAttribute("stroke-width", isActive ? "3" : "1.5");
           }
-          el.setAttribute("opacity", isDimmed ? "0.3" : "1");
+          el.setAttribute("opacity", isDimmed ? "0.25" : "1");
+          if (isActive) el.setAttribute("filter", "url(#glow)");
           el.style.cursor = "pointer";
           el.style.transition = "opacity 0.25s, transform 0.25s";
           el.addEventListener("click", () => {
@@ -1260,46 +1264,43 @@
         displayProducts(filtered);
       });
 
-      // 📸 Screenshot — capture the live gallery as-is (images already rendered, no CORS issue)
+      // 📸 Screenshot — use native screen capture API
       document.getElementById("screenshot-btn").addEventListener("click", async () => {
         const btn = document.getElementById("screenshot-btn");
         btn.disabled = true;
         btn.textContent = "⏳ Capturing...";
 
-        // Temporarily hide UI chrome we don't want in the screenshot
-        const toHide = ["#pie-chart-wrapper", ".action-bar", "#search", "#jsonLoader",
-                        "h1", ".counter", "#product-modal", "#screenshot-overlay"];
-        const hidden = toHide.map(sel => {
-          const el = document.querySelector(sel);
-          if (el) { const prev = el.style.visibility; el.style.visibility = "hidden"; return [el, prev]; }
-          return null;
-        }).filter(Boolean);
-
-        await new Promise(r => setTimeout(r, 50));
-
         try {
-          const gallery = document.getElementById("gallery");
-          const canvas = await html2canvas(gallery, {
-            backgroundColor: "#121218",
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            windowWidth: document.documentElement.scrollWidth,
-            windowHeight: document.documentElement.scrollHeight,
+          // Ask browser to capture the current tab
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: "browser" },
+            preferCurrentTab: true,
           });
 
-          // Restore hidden elements
-          hidden.forEach(([el, prev]) => el.style.visibility = prev);
+          // Give browser a moment to actually capture
+          await new Promise(r => setTimeout(r, 300));
+
+          const track = stream.getVideoTracks()[0];
+          const imageCapture = new ImageCapture(track);
+          const bitmap = await imageCapture.grabFrame();
+          stream.getTracks().forEach(t => t.stop());
+
+          // Draw to canvas and export
+          const canvas = document.createElement("canvas");
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          canvas.getContext("2d").drawImage(bitmap, 0, 0);
 
           const dataURL = canvas.toDataURL("image/png");
           document.getElementById("screenshot-preview").src = dataURL;
           document.getElementById("screenshot-download").href = dataURL;
           document.getElementById("screenshot-overlay").classList.add("open");
+
         } catch (err) {
-          hidden.forEach(([el, prev]) => el.style.visibility = prev);
-          console.error("Screenshot failed:", err);
-          alert("Screenshot failed — try again!");
+          if (err.name !== "NotAllowedError") {
+            console.error("Screenshot failed:", err);
+            alert("Screenshot failed — try again!");
+          }
         } finally {
           btn.disabled = false;
           btn.textContent = "📸 Screenshot";
