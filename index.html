@@ -918,37 +918,40 @@
 
             document.getElementById("modal-throne").onclick = () => {
               const status = document.getElementById("throne-status");
+              const INJECT_URL = "https://throne.com/bookmarklet/inject.js";
+
+              // If Throne script already exists, just re-trigger its init (avoids re-declaration)
+              const existing = document.querySelector(`script[src="${INJECT_URL}"]`);
+              if (existing) {
+                // Throne adds a div/iframe to the DOM — remove it so it re-opens fresh
+                document.querySelectorAll('iframe[src*="throne.com"], div[id*="throne"], div[class*="throne"]').forEach(el => el.remove());
+                // Re-run the bookmarklet logic directly
+                const scriptElem = document.createElement("script");
+                scriptElem.setAttribute("charset", "UTF-8");
+                scriptElem.setAttribute("src", INJECT_URL);
+                scriptElem.setAttribute("data-add-to", "wishlist");
+                document.body.appendChild(scriptElem);
+                return;
+              }
+
+              // First time: inject fresh
               status.textContent = "⏳ Loading Throne...";
+              const scriptElem = document.createElement("script");
+              scriptElem.setAttribute("charset", "UTF-8");
+              scriptElem.setAttribute("src", INJECT_URL);
+              scriptElem.setAttribute("data-add-to", "wishlist");
+              scriptElem.onload = () => { status.textContent = ""; };
+              scriptElem.onerror = () => { status.textContent = "❌ Could not load Throne. Are you logged in?"; };
+              document.body.appendChild(scriptElem);
 
-              // Remove any previous Throne script tags
-              document.querySelectorAll('script[src*="throne.com"], script[data-throne]').forEach(s => s.remove());
-
-              // Fetch Throne's script and re-execute via blob URL each time
-              // This gives it a fresh JS module scope, avoiding "already declared" errors
-              fetch("https://throne.com/bookmarklet/inject.js?_=" + Date.now())
-                .then(r => r.text())
-                .then(code => {
-                  const blob = new Blob([code], { type: "application/javascript" });
-                  const blobUrl = URL.createObjectURL(blob);
-                  const script = document.createElement("script");
-                  script.setAttribute("data-throne", "1");
-                  script.setAttribute("data-add-to", "wishlist");
-                  script.src = blobUrl;
-                  script.onload = () => { URL.revokeObjectURL(blobUrl); status.textContent = ""; };
-                  script.onerror = () => { status.textContent = "❌ Could not load Throne."; };
-                  document.body.appendChild(script);
-
-                  const onMsg = (t) => {
-                    if ((t.data || t.message) === "closeBookmarklet") {
-                      script.parentNode && script.parentNode.removeChild(script);
-                      status.textContent = "✅ Added to wishlist!";
-                      setTimeout(() => { status.textContent = ""; }, 3000);
-                      window.removeEventListener("message", onMsg);
-                    }
-                  };
-                  window.addEventListener("message", onMsg);
-                })
-                .catch(() => { status.textContent = "❌ Could not load Throne. Are you logged in?"; });
+              const onMsg = (t) => {
+                if ((t.data || t.message) === "closeBookmarklet") {
+                  status.textContent = "✅ Added to wishlist!";
+                  setTimeout(() => { status.textContent = ""; }, 3000);
+                  window.removeEventListener("message", onMsg);
+                }
+              };
+              window.addEventListener("message", onMsg);
             };
             document.getElementById("product-modal").classList.add("open");
           });
