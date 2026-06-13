@@ -1260,77 +1260,47 @@
         displayProducts(filtered);
       });
 
-      // 📸 Screenshot logic
-
-      // Fetch an image URL and convert to base64 data URL
-      async function toDataURL(url) {
-        try {
-          const res = await fetch(url);
-          const blob = await res.blob();
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(blob);
-          });
-        } catch { return null; }
-      }
-
+      // 📸 Screenshot — capture the live gallery as-is (images already rendered, no CORS issue)
       document.getElementById("screenshot-btn").addEventListener("click", async () => {
         const btn = document.getElementById("screenshot-btn");
         btn.disabled = true;
-        btn.textContent = "⏳ Loading images...";
-
-        // Build a clean capture area
-        const captureArea = document.createElement("div");
-        captureArea.id = "capture-area";
-
-        const heading = document.createElement("h2");
-        heading.textContent = "🧺 My Temu Basket";
-        captureArea.appendChild(heading);
-
-        const counter = document.getElementById("counter").cloneNode(true);
-        captureArea.appendChild(counter);
-
-        const galleryClone = document.getElementById("gallery").cloneNode(true);
-        galleryClone.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;justify-content:center;";
-        captureArea.appendChild(galleryClone);
-
-        // Append off-screen so images load
-        captureArea.style.cssText = "position:fixed;left:-9999px;top:0;width:900px;";
-        document.body.appendChild(captureArea);
-
         btn.textContent = "⏳ Capturing...";
 
-        // Convert all product images to base64 to bypass CORS
-        const imgs = captureArea.querySelectorAll("img");
-        await Promise.all(Array.from(imgs).map(async (img) => {
-          if (!img.src || img.src.startsWith("data:")) return;
-          const dataURL = await toDataURL(img.src);
-          if (dataURL) img.src = dataURL;
-        }));
+        // Temporarily hide UI chrome we don't want in the screenshot
+        const toHide = ["#pie-chart-wrapper", ".action-bar", "#search", "#jsonLoader",
+                        "h1", ".counter", "#product-modal", "#screenshot-overlay"];
+        const hidden = toHide.map(sel => {
+          const el = document.querySelector(sel);
+          if (el) { const prev = el.style.visibility; el.style.visibility = "hidden"; return [el, prev]; }
+          return null;
+        }).filter(Boolean);
 
-        // Wait for layout to settle
-        await new Promise(r => setTimeout(r, 150));
+        await new Promise(r => setTimeout(r, 50));
 
         try {
-          const canvas = await html2canvas(captureArea, {
+          const gallery = document.getElementById("gallery");
+          const canvas = await html2canvas(gallery, {
             backgroundColor: "#121218",
             scale: 2,
-            useCORS: false,
-            allowTaint: false,
+            useCORS: true,
+            allowTaint: true,
             logging: false,
+            windowWidth: document.documentElement.scrollWidth,
+            windowHeight: document.documentElement.scrollHeight,
           });
+
+          // Restore hidden elements
+          hidden.forEach(([el, prev]) => el.style.visibility = prev);
 
           const dataURL = canvas.toDataURL("image/png");
           document.getElementById("screenshot-preview").src = dataURL;
           document.getElementById("screenshot-download").href = dataURL;
           document.getElementById("screenshot-overlay").classList.add("open");
         } catch (err) {
+          hidden.forEach(([el, prev]) => el.style.visibility = prev);
           console.error("Screenshot failed:", err);
           alert("Screenshot failed — try again!");
         } finally {
-          captureArea.remove();
           btn.disabled = false;
           btn.textContent = "📸 Screenshot";
         }
