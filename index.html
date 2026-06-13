@@ -34,6 +34,18 @@
           "offers": { "@type": "Offer", "price": p.get("price") || "0", "priceCurrency": "EUR",
                       "availability": "https://schema.org/InStock", "url": p.get("link") || "" }
         });
+
+        // Auto-trigger Throne when loaded in iframe mode (_throne=1)
+        if (p.get("_throne") === "1") {
+          window.addEventListener("load", function() {
+            const INJECT_URL = "https://throne.com/bookmarklet/inject.js";
+            const s = document.createElement("script");
+            s.setAttribute("charset", "UTF-8");
+            s.setAttribute("src", INJECT_URL);
+            s.setAttribute("data-add-to", "wishlist");
+            document.body.appendChild(s);
+          });
+        }
       })();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
@@ -916,71 +928,44 @@
                           "availability": "https://schema.org/InStock", "url": product.link || "" }
             });
 
-            document.getElementById("modal-throne").onclick = async () => {
+            document.getElementById("modal-throne").onclick = () => {
               const status = document.getElementById("throne-status");
               const INJECT_URL = "https://throne.com/bookmarklet/inject.js";
 
-              // Clean up any leftover Throne UI from previous uses
-              document.querySelectorAll(
-                'iframe[src*="throne"], div[id*="throne"], div[class*="throne"], script[src*="throne"]'
-              ).forEach(el => el.remove());
+              // Remove any previous Throne iframe
+              document.querySelectorAll('iframe[data-throne]').forEach(el => el.remove());
 
-              status.textContent = "⏳ Loading Throne...";
+              status.textContent = "⏳ Opening Throne...";
 
-              try {
-                // Fetch the script text fresh each time — avoids const re-declaration in page scope
-                const res = await fetch(INJECT_URL + "?_=" + Date.now());
-                const code = await res.text();
+              // Build the product URL — this page already handles ?title=...&price=... params
+              // and injects the right OG/schema meta tags on load, which is what Throne needs
+              const currentURL = window.location.href; // already has ?title=...&price=... pushed
 
-                // Inject a real <script> tag with src so Throne's self-selector works,
-                // but stamp data-add-to before appending so it's readable on DOMContentLoaded
-                const scriptElem = document.createElement("script");
-                scriptElem.setAttribute("charset", "UTF-8");
-                scriptElem.setAttribute("data-add-to", "wishlist");
+              // Create a hidden iframe pointing to the real GitHub Pages URL with product params
+              // Throne will run inside it and see the correct window.location + meta tags
+              const iframe = document.createElement("iframe");
+              iframe.setAttribute("data-throne", "1");
+              iframe.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;background:transparent;";
+              iframe.allow = "clipboard-write";
 
-                // Run code via blob URL — fresh scope every time, no const clash
-                const blob = new Blob([code], { type: "application/javascript" });
-                const blobURL = URL.createObjectURL(blob);
+              // Pass a flag so the iframe page auto-triggers Throne on load
+              const throneURL = currentURL + (currentURL.includes("?") ? "&" : "?") + "_throne=1";
 
-                // Throne looks for script[src="https://throne.com/bookmarklet/inject.js"]
-                // Patch the code so it finds itself via data-add-to instead
-                const patched = code.replace(
-                  /document\.querySelector\([^)]*inject\.js[^)]*\)/g,
-                  'document.querySelector("script[data-add-to]")'
-                );
-                const patchedBlob = new Blob([patched], { type: "application/javascript" });
-                const patchedURL = URL.createObjectURL(patchedBlob);
-
-                scriptElem.src = patchedURL;
-                scriptElem.onload = () => {
-                  status.textContent = "";
-                  URL.revokeObjectURL(patchedURL);
-                };
-                scriptElem.onerror = () => {
-                  status.textContent = "❌ Could not load Throne. Are you logged in?";
-                };
-                document.body.appendChild(scriptElem);
-
-              } catch (err) {
-                // Fallback: direct script injection (works on first use)
-                status.textContent = "⏳ Opening Throne...";
-                const scriptElem = document.createElement("script");
-                scriptElem.setAttribute("charset", "UTF-8");
-                scriptElem.setAttribute("src", INJECT_URL);
-                scriptElem.setAttribute("data-add-to", "wishlist");
-                scriptElem.onload = () => { status.textContent = ""; };
-                scriptElem.onerror = () => { status.textContent = "❌ Could not load Throne."; };
-                document.body.appendChild(scriptElem);
-              }
-
+              // Listen for Throne's close message from the iframe
               const onMsg = (t) => {
-                if ((t.data || t.message) === "closeBookmarklet") {
+                const val = t.data || t.message;
+                if (val === "closeBookmarklet") {
+                  iframe.remove();
                   status.textContent = "✅ Added to wishlist!";
                   setTimeout(() => { status.textContent = ""; }, 3000);
                   window.removeEventListener("message", onMsg);
                 }
               };
               window.addEventListener("message", onMsg);
+
+              iframe.src = throneURL;
+              document.body.appendChild(iframe);
+              status.textContent = "";
             };
             document.getElementById("product-modal").classList.add("open");
           });
