@@ -437,6 +437,23 @@
         transform: translate(3px, -3px) rotate(10deg) scale(1.2);
       }
 
+      /* 👑 Throne crown badge */
+      .throne-pin {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        font-size: 18px;
+        filter: drop-shadow(0 0 4px rgba(255, 210, 80, 0.9));
+        animation: crownPop 0.4s ease;
+        pointer-events: none;
+        z-index: 10;
+      }
+      @keyframes crownPop {
+        0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+        60%  { transform: scale(1.3) rotate(5deg);  opacity: 1; }
+        100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+      }
+
       /* 🛍️ Product modal */
       #product-modal {
         display: none;
@@ -667,6 +684,7 @@
       // Load saved favorites once
       let rawProducts = []; // 🌟 make this global so sorting and wishlist can use it
       let favorites = JSON.parse(localStorage.getItem("temuFavorites")) || [];
+      let throneAdded = new Set(JSON.parse(localStorage.getItem("temuThroneAdded")) || []);
       let showingWishlist = sessionStorage.getItem("showingWishlist") === "1";
 
       // Fetch JSON
@@ -895,6 +913,7 @@
             <img src="${product.image}" alt="${product.title}" style="width:100%;border-radius:14px;margin-bottom:8px;cursor:pointer;">
             <div class="price-badge">💰 ${product.price || "?"} €</div>
             <div class="heartFav ${favorites.includes(product.link) ? "favorited" : ""}">♥</div>
+            ${throneAdded.has(product.link) ? '<div class="throne-pin">👑</div>' : ''}
           `;
 
           // Open modal on image/card click (but not heart)
@@ -962,6 +981,16 @@
                 const val = t.data || t.message;
                 if (val === "closeBookmarklet") {
                   iframe.remove();
+                  // Mark as added to Throne
+                  throneAdded.add(product.link);
+                  localStorage.setItem("temuThroneAdded", JSON.stringify([...throneAdded]));
+                  // Add crown pin to the card if not already there
+                  if (wrapper && !wrapper.querySelector(".throne-pin")) {
+                    const pin = document.createElement("div");
+                    pin.className = "throne-pin";
+                    pin.textContent = "👑";
+                    wrapper.appendChild(pin);
+                  }
                   status.textContent = "✅ Added to wishlist!";
                   setTimeout(() => { status.textContent = ""; }, 3000);
                   window.removeEventListener("message", onMsg);
