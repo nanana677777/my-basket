@@ -3,6 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <title>My Temu Basket</title>
+
+    <!-- OG / Schema tags — filled dynamically from URL params so Throne can scrape them -->
+    <meta property="og:type"           content="product" id="og-type">
+    <meta property="og:title"          content=""        id="og-title">
+    <meta property="og:image"          content=""        id="og-image">
+    <meta property="og:url"            content=""        id="og-url">
+    <meta property="og:price:amount"   content=""        id="og-price">
+    <meta property="og:price:currency" content="EUR"     id="og-currency">
+    <script id="throne-ld" type="application/ld+json">{}</script>
+    <script>
+      // On page load: if URL has product params, inject them into meta tags
+      // (This is what Throne's server sees when it fetches the URL)
+      (function() {
+        const p = new URLSearchParams(location.search);
+        if (!p.get("title")) return;
+        document.title = p.get("title");
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.setAttribute("content", val); };
+        set("og-title",    p.get("title") || "");
+        set("og-image",    p.get("image") || "");
+        set("og-url",      p.get("link")  || "");
+        set("og-price",    p.get("price") || "");
+        const ld = document.getElementById("throne-ld");
+        if (ld) ld.textContent = JSON.stringify({
+          "@context": "https://schema.org/",
+          "@type": "Product",
+          "name":  p.get("title") || "",
+          "image": p.get("image") || "",
+          "url":   p.get("link")  || "",
+          "offers": { "@type": "Offer", "price": p.get("price") || "0", "priceCurrency": "EUR",
+                      "availability": "https://schema.org/InStock", "url": p.get("link") || "" }
+        });
+      })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 
@@ -605,9 +638,11 @@
       const gallery = document.getElementById("gallery");
       const counter = document.getElementById("counter");
 
-      // Modal close logic
+      // Modal close logic — restore original URL
       function closeModal() {
         document.getElementById("product-modal").classList.remove("open");
+        history.replaceState(null, "", location.pathname);
+        document.title = "My Temu Basket";
       }
       document.getElementById("modal-close").addEventListener("click", closeModal);
       document.getElementById("product-modal").addEventListener("click", (e) => {
@@ -855,35 +890,36 @@
             document.getElementById("modal-title").textContent = product.title || "";
             document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
             document.getElementById("modal-link").href = product.link;
+
+            // 🔑 Push URL with product data so Throne can fetch it server-side
+            const priceClean = (product.price || "0").replace(",", ".");
+            const params = new URLSearchParams({
+              title: product.title || "",
+              price: priceClean,
+              image: product.image || "",
+              link:  product.link  || ""
+            });
+            history.pushState(null, product.title || "", "?" + params.toString());
+            document.title = product.title || "My Temu Basket";
+
+            // Update live meta tags too (for local bookmarklet fallback)
+            const setMeta = (id, val) => { const el = document.getElementById(id); if (el) el.setAttribute("content", val); };
+            setMeta("og-title",  product.title || "");
+            setMeta("og-image",  product.image || "");
+            setMeta("og-url",    product.link  || "");
+            setMeta("og-price",  priceClean);
+            const ld = document.getElementById("throne-ld");
+            if (ld) ld.textContent = JSON.stringify({
+              "@context": "https://schema.org/", "@type": "Product",
+              "name": product.title || "", "image": product.image || "", "url": product.link || "",
+              "offers": { "@type": "Offer", "price": priceClean, "priceCurrency": "EUR",
+                          "availability": "https://schema.org/InStock", "url": product.link || "" }
+            });
+
             document.getElementById("modal-throne").onclick = () => {
               const status = document.getElementById("throne-status");
 
-              // Temporarily set meta tags on the main page so Throne can read them
-              const setMeta = (prop, val) => {
-                let el = document.querySelector('meta[property="' + prop + '"]');
-                if (!el) { el = document.createElement("meta"); el.setAttribute("property", prop); document.head.appendChild(el); }
-                el.setAttribute("content", val);
-              };
-              setMeta("og:type",           "product");
-              setMeta("og:title",          product.title || "");
-              setMeta("og:image",          product.image || "");
-              setMeta("og:url",            product.link  || "");
-              setMeta("og:price:amount",   (product.price || "0").replace(",", "."));
-              setMeta("og:price:currency", "EUR");
-
-              // Inject Schema.org JSON-LD
-              let ldEl = document.getElementById("throne-ld");
-              if (!ldEl) { ldEl = document.createElement("script"); ldEl.id = "throne-ld"; ldEl.type = "application/ld+json"; document.head.appendChild(ldEl); }
-              ldEl.textContent = JSON.stringify({
-                "@context": "https://schema.org/",
-                "@type": "Product",
-                "name": product.title || "",
-                "image": product.image || "",
-                "url": product.link || "",
-                "offers": { "@type": "Offer", "price": (product.price || "0").replace(",", "."), "priceCurrency": "EUR", "availability": "https://schema.org/InStock", "url": product.link || "" }
-              });
-
-              // Inject and run the Throne bookmarklet script
+              // Remove any previous Throne script
               const existing = document.querySelector('script[src="https://throne.com/bookmarklet/inject.js"]');
               if (existing) existing.remove();
 
