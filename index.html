@@ -1261,12 +1261,27 @@
       });
 
       // 📸 Screenshot logic
+
+      // Fetch an image URL and convert to base64 data URL
+      async function toDataURL(url) {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        } catch { return null; }
+      }
+
       document.getElementById("screenshot-btn").addEventListener("click", async () => {
         const btn = document.getElementById("screenshot-btn");
         btn.disabled = true;
-        btn.textContent = "⏳ Capturing...";
+        btn.textContent = "⏳ Loading images...";
 
-        // Build a clean capture area with just the gallery
+        // Build a clean capture area
         const captureArea = document.createElement("div");
         captureArea.id = "capture-area";
 
@@ -1278,23 +1293,32 @@
         captureArea.appendChild(counter);
 
         const galleryClone = document.getElementById("gallery").cloneNode(true);
-        // Remove Masonry inline styles so the clone lays out naturally in a grid
         galleryClone.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;justify-content:center;";
         captureArea.appendChild(galleryClone);
 
-        // Append off-screen
+        // Append off-screen so images load
         captureArea.style.cssText = "position:fixed;left:-9999px;top:0;width:900px;";
         document.body.appendChild(captureArea);
 
-        // Wait a tick for layout
-        await new Promise(r => setTimeout(r, 100));
+        btn.textContent = "⏳ Capturing...";
+
+        // Convert all product images to base64 to bypass CORS
+        const imgs = captureArea.querySelectorAll("img");
+        await Promise.all(Array.from(imgs).map(async (img) => {
+          if (!img.src || img.src.startsWith("data:")) return;
+          const dataURL = await toDataURL(img.src);
+          if (dataURL) img.src = dataURL;
+        }));
+
+        // Wait for layout to settle
+        await new Promise(r => setTimeout(r, 150));
 
         try {
           const canvas = await html2canvas(captureArea, {
             backgroundColor: "#121218",
             scale: 2,
-            useCORS: true,
-            allowTaint: true,
+            useCORS: false,
+            allowTaint: false,
             logging: false,
           });
 
