@@ -45,6 +45,13 @@
             s.setAttribute("data-add-to", "wishlist");
             document.body.appendChild(s);
           });
+          // Relay Throne's closeBookmarklet message up to the parent window
+          window.addEventListener("message", function(t) {
+            const val = t.data || t.message;
+            if (val === "closeBookmarklet") {
+              window.parent.postMessage("closeBookmarklet", "*");
+            }
+          });
         }
       })();
     </script>
