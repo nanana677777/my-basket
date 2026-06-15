@@ -1494,21 +1494,15 @@
       })();
     </script>
   <script>
-    // 👁️ Fetch unique visitor count from GoatCounter API
-    (async function() {
-      try {
-        const res = await fetch("https://nana677.goatcounter.com/api/v0/stats/total", {
-          headers: { "Content-Type": "application/json" }
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const count = data?.total_unique ?? data?.total ?? null;
-        if (count === null) return;
-        document.getElementById("visitor-count").textContent = count.toLocaleString();
-        document.getElementById("visitor-badge").style.opacity = "1";
-      } catch(e) { /* silently skip if API unavailable */ }
-    })();
+    // 👁️ GoatCounter official visitor count
+    window.goatcounter_visitor_count = function(data) {
+      const el = document.getElementById("visitor-count");
+      if (!el) return;
+      el.textContent = data.count_unique.toLocaleString();
+      document.getElementById("visitor-badge").style.opacity = "1";
+    };
   </script>
+  <script async src="https://nana677.goatcounter.com/count?no_onload=t&callback=goatcounter_visitor_count&p=/"></script>
   <script data-goatcounter="https://nana677.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   </body>
 </html>
