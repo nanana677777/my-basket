@@ -1493,16 +1493,22 @@
         }
       })();
     </script>
-  <script>
-    // 👁️ GoatCounter official visitor count
-    window.goatcounter_visitor_count = function(data) {
-      const el = document.getElementById("visitor-count");
-      if (!el) return;
-      el.textContent = data.count_unique.toLocaleString();
-      document.getElementById("visitor-badge").style.opacity = "1";
-    };
-  </script>
-  <script async src="https://nana677.goatcounter.com/count?no_onload=t&callback=goatcounter_visitor_count&p=/"></script>
   <script data-goatcounter="https://nana677.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  <script>
+    // 👁️ GoatCounter visitor count via JSON API — runs after count.js loads
+    window.addEventListener("load", function() {
+      var r = new XMLHttpRequest();
+      r.addEventListener("load", function() {
+        try {
+          var data = JSON.parse(this.responseText);
+          var count = data.count || "0";
+          document.getElementById("visitor-count").textContent = count;
+          document.getElementById("visitor-badge").style.opacity = "1";
+        } catch(e) {}
+      });
+      r.open("GET", "https://nana677.goatcounter.com/counter/" + encodeURIComponent("/") + ".json");
+      r.send();
+    });
+  </script>
   </body>
 </html>
