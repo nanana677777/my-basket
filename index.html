@@ -1525,13 +1525,16 @@
           console.error("Failed to load gist:", err);
         }
       })();
+
       // 🔝 Back to top button
-      const backToTop = document.getElementById("back-to-top");
       window.addEventListener("scroll", () => {
-        backToTop.classList.toggle("visible", window.scrollY > 300);
+        const btn = document.getElementById("back-to-top");
+        if (btn) btn.classList.toggle("visible", window.scrollY > 300);
       });
-      backToTop.addEventListener("click", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+      document.addEventListener("click", (e) => {
+        if (e.target && e.target.id === "back-to-top") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
       });
     </script>
   <script data-goatcounter="https://nana677.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
