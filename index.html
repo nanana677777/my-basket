@@ -1212,37 +1212,37 @@
             ${throneAdded.has(product.link) ? '<div class="throne-pin">👑 <span>Wishlisted</span></div>' : ''}
           `;
 
-          // 🎨 Extract dominant color and tint the card
-          const img = wrapper.querySelector("img");
-          img.addEventListener("load", function() {
-            try {
-              const canvas = document.createElement("canvas");
-              canvas.width = 16; canvas.height = 16;
-              const ctx = canvas.getContext("2d");
-              ctx.drawImage(img, 0, 0, 16, 16);
-              const d = ctx.getImageData(0, 0, 16, 16).data;
-              let r = 0, g = 0, b = 0, count = 0;
-              for (let i = 0; i < d.length; i += 4) {
-                // Skip near-white and near-black pixels
-                const brightness = (d[i] + d[i+1] + d[i+2]) / 3;
-                if (brightness > 240 || brightness < 20) continue;
-                r += d[i]; g += d[i+1]; b += d[i+2]; count++;
-              }
-              if (count === 0) return;
-              r = Math.round(r / count);
-              g = Math.round(g / count);
-              b = Math.round(b / count);
-              // Apply as subtle tinted border + glow
-              wrapper.style.borderColor = `rgba(${r},${g},${b},0.5)`;
-              wrapper.style.boxShadow = `0 10px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(${r},${g},${b},0.3)`;
-              // Subtle tinted background gradient
-              wrapper.style.background = `linear-gradient(160deg, rgba(${r},${g},${b},0.12) 0%, #1b1b26 60%)`;
-              // Store for hover
-              wrapper.dataset.cr = r; wrapper.dataset.cg = g; wrapper.dataset.cb = b;
-            } catch(e) { /* CORS blocked, skip */ }
-          });
-          img.crossOrigin = "anonymous";
-          img.src = img.src; // Re-trigger load with crossOrigin set
+          // 🎨 Extract dominant color via CORS proxy and tint the card
+          (function(card, imageUrl) {
+            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(imageUrl);
+            const tempImg = new Image();
+            tempImg.crossOrigin = "anonymous";
+            tempImg.onload = function() {
+              try {
+                const canvas = document.createElement("canvas");
+                canvas.width = 16; canvas.height = 16;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(tempImg, 0, 0, 16, 16);
+                const d = ctx.getImageData(0, 0, 16, 16).data;
+                let r = 0, g = 0, b = 0, count = 0;
+                for (let i = 0; i < d.length; i += 4) {
+                  const brightness = (d[i] + d[i+1] + d[i+2]) / 3;
+                  const saturation = Math.max(d[i], d[i+1], d[i+2]) - Math.min(d[i], d[i+1], d[i+2]);
+                  if (brightness > 235 || brightness < 15 || saturation < 20) continue;
+                  r += d[i]; g += d[i+1]; b += d[i+2]; count++;
+                }
+                if (count < 5) return;
+                r = Math.round(r / count);
+                g = Math.round(g / count);
+                b = Math.round(b / count);
+                card.style.borderColor = `rgba(${r},${g},${b},0.6)`;
+                card.style.boxShadow = `0 10px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(${r},${g},${b},0.4)`;
+                card.style.background = `linear-gradient(160deg, rgba(${r},${g},${b},0.15) 0%, #1b1b26 55%)`;
+                card.dataset.cr = r; card.dataset.cg = g; card.dataset.cb = b;
+              } catch(e) {}
+            };
+            tempImg.src = proxyUrl;
+          })(wrapper, product.image);
 
           // Open modal on image/card click (but not heart)
           wrapper.addEventListener("click", (e) => {
