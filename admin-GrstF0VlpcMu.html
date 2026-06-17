@@ -181,6 +181,17 @@
     <p class="sub">This page isn't listed anywhere — protected by the secret URL. Add, edit, or delete items; every action pushes straight to GitHub.</p>
 
     <div class="card">
+      <h2>👁️ Site Stats</h2>
+      <div id="visitor-badge" style="
+        display:inline-flex;align-items:center;gap:6px;
+        background:rgba(125,249,255,0.08);border:1px solid rgba(125,249,255,0.25);
+        padding:7px 16px;border-radius:999px;font-size:14px;font-weight:bold;
+        color:#7df9ff;
+        opacity:0;transition:opacity 0.6s ease;
+      ">👁️ <span id="visitor-count">…</span> unique visitors</div>
+    </div>
+
+    <div class="card">
       <h2>🔑 GitHub Connection</h2>
       <label for="gh-token">Personal access token (never saved, kept in memory for this session only)</label>
       <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off" />
@@ -575,6 +586,18 @@
       btn.textContent = "✅ Copied!";
       setTimeout(() => btn.textContent = "📋 Copy", 2000);
     });
+
+    // 👁️ GoatCounter visitor count (read-only API call, no tracking script loaded here)
+    fetch("https://nana677.goatcounter.com/counter/" + encodeURIComponent("/") + ".json")
+      .then(res => res.json())
+      .then(data => {
+        $("visitor-count").textContent = data.count || "0";
+        $("visitor-badge").style.opacity = "1";
+      })
+      .catch(() => {
+        $("visitor-count").textContent = "?";
+        $("visitor-badge").style.opacity = "1";
+      });
   </script>
 </body>
 </html>
