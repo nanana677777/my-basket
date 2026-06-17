@@ -1625,6 +1625,8 @@
         <a id="modal-link" class="modal-store-btn" href="#" target="_blank">🛒 View on Temu</a>
         <br><br>
         <button id="modal-throne" class="modal-store-btn" style="border:none;cursor:pointer;background:linear-gradient(135deg,#ff9ecb,#c9a6ff);color:#121218;">👑 Add to Throne wishlist</button>
+        <br><br>
+        <a id="modal-share-x" class="modal-store-btn" href="#" target="_blank" style="background:#000;color:#fff;display:inline-flex;align-items:center;gap:6px;">𝕏 Share this item</a>
         <div id="throne-status" style="margin-top:12px;font-size:12px;color:#c9a6ff;min-height:18px;"></div>
       </div>
     </div>
@@ -2018,6 +2020,15 @@
               "offers": { "@type": "Offer", "price": priceClean, "priceCurrency": "EUR",
                           "availability": "https://schema.org/InStock", "url": product.link || "" }
             });
+
+            // 𝕏 Share this item — text + price, link to this page (its og: tags now show this product as the preview)
+            const shareText = `${product.title || "Check this out"} — 💰 ${priceClean} €`;
+            const shareUrl = location.origin + location.pathname + "?" + params.toString();
+            const xIntent = "https://twitter.com/intent/tweet?" + new URLSearchParams({
+              text: shareText,
+              url: shareUrl
+            }).toString();
+            document.getElementById("modal-share-x").href = xIntent;
 
             document.getElementById("modal-throne").onclick = () => {
               const status = document.getElementById("throne-status");
