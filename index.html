@@ -1741,38 +1741,35 @@
       }
       const jsonLoader = document.getElementById("jsonLoader");
 
-      // 🔁 auto load saved basket if it exists, else fetch products.json from the site
+      // 🌐 products.json (hosted on the site) is the source of truth.
+      // localStorage is only a fallback for offline/fetch-failure cases.
       const savedBasket = localStorage.getItem("temuBasketData");
 
-      if (savedBasket) {
-        try {
-          rawProducts = JSON.parse(savedBasket);
+      fetch("./products.json", { cache: "no-store" })
+        .then(function (res) {
+          if (!res.ok) throw new Error("products.json fetch failed: " + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          rawProducts = data;
           renderCategoryFilters();
           applyAllFilters();
-
-          // 👻 hide the file picker
           jsonLoader.style.display = "none";
-        } catch (e) {
-          console.error("Saved basket corrupted");
-        }
-      } else {
-        // 🌐 No local data (new visitor) — pull the live list hosted on the site
-        fetch("./products.json", { cache: "no-store" })
-          .then(function (res) {
-            if (!res.ok) throw new Error("products.json fetch failed: " + res.status);
-            return res.json();
-          })
-          .then(function (data) {
-            rawProducts = data;
-            renderCategoryFilters();
-            applyAllFilters();
-            jsonLoader.style.display = "none";
-          })
-          .catch(function (err) {
-            console.error("Could not load products.json:", err);
-            // Leave the file picker visible as a fallback
-          });
-      }
+        })
+        .catch(function (err) {
+          console.error("Could not load products.json, falling back to local data:", err);
+          if (savedBasket) {
+            try {
+              rawProducts = JSON.parse(savedBasket);
+              renderCategoryFilters();
+              applyAllFilters();
+              jsonLoader.style.display = "none";
+            } catch (e) {
+              console.error("Saved basket corrupted");
+            }
+          }
+          // Otherwise leave the file picker visible as a last-resort fallback
+        });
       // Restore wishlist toggle button label
       if (showingWishlist) {
         document.getElementById("wishlist-toggle").innerText = "Show All Products 🛒";
