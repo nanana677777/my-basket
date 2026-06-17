@@ -588,7 +588,8 @@
     });
 
     // 👁️ GoatCounter visitor count (read-only API call, no tracking script loaded here)
-    fetch("https://nana677.goatcounter.com/counter/" + encodeURIComponent("/") + ".json")
+    // "TOTAL" is a special path in GoatCounter that returns site-wide totals across all pages.
+    fetch("https://nana677.goatcounter.com/counter/TOTAL.json")
       .then(res => res.json())
       .then(data => {
         $("visitor-count").textContent = data.count || "0";
