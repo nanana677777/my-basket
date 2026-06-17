@@ -1601,13 +1601,21 @@
         border-radius: 999px;
       }
       .swipe-side-actions {
-        position: absolute;
+        position: fixed;
         right: 16px;
         bottom: 22vh;
+        z-index: 4001;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 18px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+      }
+      .swipe-slide.active .swipe-side-actions {
+        opacity: 1;
+        pointer-events: auto;
       }
       .swipe-action-btn {
         width: 50px;
@@ -3008,6 +3016,11 @@
         return slide;
       }
 
+      function setActiveSlide(idx) {
+        const slides = swipeTrack.querySelectorAll(".swipe-slide");
+        slides.forEach((s, i) => s.classList.toggle("active", i === idx));
+      }
+
       function openSwipe() {
         currentList = (typeof getFilteredProducts === "function") ? getFilteredProducts() : [];
 
@@ -3022,6 +3035,7 @@
         } else {
           currentList.forEach((p, i) => swipeTrack.appendChild(buildSlide(p, i)));
           swipeCounter.textContent = `1 / ${currentList.length}`;
+          setActiveSlide(0);
         }
 
         swipeOverlay.classList.add("open");
@@ -3038,7 +3052,9 @@
         if (!currentList.length) return;
         const slideHeight = swipeTrack.clientHeight;
         const idx = Math.round(swipeTrack.scrollTop / slideHeight);
-        swipeCounter.textContent = `${Math.min(idx + 1, currentList.length)} / ${currentList.length}`;
+        const clamped = Math.min(Math.max(idx, 0), currentList.length - 1);
+        swipeCounter.textContent = `${clamped + 1} / ${currentList.length}`;
+        setActiveSlide(clamped);
       }
 
       swipeTab.addEventListener("click", openSwipe);
