@@ -786,6 +786,20 @@
         color: #1b1b26;
         box-shadow: 0 0 14px rgba(255,158,203,0.4);
       }
+      .chip-count {
+        display: inline-block;
+        margin-left: 5px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        font-size: 10px;
+        font-weight: 800;
+        vertical-align: 1px;
+      }
+      .category-chip.active .chip-count {
+        background: rgba(27,27,38,0.18);
+        color: #1b1b26;
+      }
 
       /* 📋 List view styles */
       .gallery.list-view {
@@ -1398,8 +1412,15 @@
           sessionStorage.removeItem("activeCategory");
         }
 
-        container.innerHTML = `<div class="category-chip${activeCategory === null ? " active" : ""}" data-cat="">All</div>`
-          + cats.map(c => `<div class="category-chip${activeCategory === c ? " active" : ""}" data-cat="${c.replace(/"/g, "&quot;")}">${c}</div>`).join("");
+        const counts = {};
+        cats.forEach(c => { counts[c] = 0; });
+        rawProducts.forEach(p => {
+          const c = (p.category || "").trim();
+          if (c) counts[c] = (counts[c] || 0) + 1;
+        });
+
+        container.innerHTML = `<div class="category-chip${activeCategory === null ? " active" : ""}" data-cat="">All <span class="chip-count">${rawProducts.length}</span></div>`
+          + cats.map(c => `<div class="category-chip${activeCategory === c ? " active" : ""}" data-cat="${c.replace(/"/g, "&quot;")}">${c} <span class="chip-count">${counts[c]}</span></div>`).join("");
 
         container.querySelectorAll(".category-chip").forEach(chip => {
           chip.addEventListener("click", () => {
