@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -178,19 +178,19 @@
 <body>
   <div class="wrap">
     <h1>🛠️ Admin · My Basket</h1>
-    <p class="sub">Cette page n'est pas listée nulle part — gardée par l'URL secrète. Ajoute, modifie ou supprime des articles ; chaque action pousse direct sur GitHub.</p>
+    <p class="sub">This page isn't listed anywhere — protected by the secret URL. Add, edit, or delete items; every action pushes straight to GitHub.</p>
 
     <div class="card">
-      <h2>🔑 Connexion GitHub</h2>
-      <label for="gh-token">Personal access token (jamais sauvegardé, juste en mémoire pour cette session)</label>
+      <h2>🔑 GitHub Connection</h2>
+      <label for="gh-token">Personal access token (never saved, kept in memory for this session only)</label>
       <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off" />
-      <div id="token-status"><span class="dot" id="token-dot"></span><span id="token-text">Non connecté</span></div>
+      <div id="token-status"><span class="dot" id="token-dot"></span><span id="token-text">Not connected</span></div>
     </div>
 
     <div class="card">
-      <h2>🔖 Bookmarklet Temu</h2>
-      <p class="sub" style="margin:0 0 14px;">Glisse ce bouton dans ta barre de favoris. Sur Temu, clique-le pour exporter ton panier en .json — à réimporter ensuite ci-dessous.</p>
-      <button class="btn-primary" id="open-bookmarklet-btn">Afficher le bookmarklet</button>
+      <h2>🔖 Temu Bookmarklet</h2>
+      <p class="sub" style="margin:0 0 14px;">Drag this button into your bookmarks bar. On Temu, click it to export your basket as .json — then import it below.</p>
+      <button class="btn-primary" id="open-bookmarklet-btn">Show bookmarklet</button>
     </div>
 
     <div id="bookmarklet-modal" style="
@@ -241,47 +241,47 @@
     </div>
 
     <div class="card">
-      <h2>📂 Importer un fichier</h2>
-      <p class="sub" style="margin:0 0 14px;">Choisis un fichier .json exporté (Temu, Throne...) pour remplir ta liste d'un coup.</p>
+      <h2>📂 Import a file</h2>
+      <p class="sub" style="margin:0 0 14px;">Pick an exported .json file (Temu, Throne...) to fill your list in one go.</p>
       <input id="import-file" type="file" accept=".json" />
       <div class="row-actions-top" id="import-actions" style="display:none;">
-        <button class="btn-primary" id="import-replace-btn">Remplacer la liste</button>
-        <button class="btn-ghost" id="import-merge-btn">Ajouter à la liste existante</button>
-        <button class="btn-ghost" id="import-cancel-btn">Annuler</button>
+        <button class="btn-primary" id="import-replace-btn">Replace list</button>
+        <button class="btn-ghost" id="import-merge-btn">Add to existing list</button>
+        <button class="btn-ghost" id="import-cancel-btn">Cancel</button>
       </div>
       <div id="import-preview" style="font-size:12px;color:var(--muted);margin-top:8px;"></div>
     </div>
 
     <div class="card">
-      <h2 id="form-title">➕ Ajouter un article manuellement</h2>
-      <label for="f-title">Titre</label>
+      <h2 id="form-title">➕ Add an item manually</h2>
+      <label for="f-title">Title</label>
       <input id="f-title" type="text" placeholder="Waisted A-Line Mini Skirt..." />
       <div class="grid2">
         <div>
-          <label for="f-price">Prix (€)</label>
+          <label for="f-price">Price (€)</label>
           <input id="f-price" type="text" placeholder="12.99" />
         </div>
         <div>
-          <label for="f-quantity">Quantité</label>
+          <label for="f-quantity">Quantity</label>
           <input id="f-quantity" type="text" placeholder="1" />
         </div>
       </div>
-      <label for="f-image">URL de l'image</label>
+      <label for="f-image">Image URL</label>
       <input id="f-image" type="text" placeholder="https://..." />
-      <label for="f-link">Lien produit (Temu)</label>
+      <label for="f-link">Product link (Temu)</label>
       <input id="f-link" type="text" placeholder="https://www.temu.com/.../goods.html?..." />
-      <label for="f-category">Catégorie (libre — tape un nom existant ou nouveau)</label>
-      <input id="f-category" type="text" list="category-suggestions" placeholder="Vêtements, Accessoires, Déco..." />
+      <label for="f-category">Category (free text — type an existing or new name)</label>
+      <input id="f-category" type="text" list="category-suggestions" placeholder="Clothing, Accessories, Decor..." />
       <datalist id="category-suggestions"></datalist>
       <div class="row-actions-top">
-        <button class="btn-primary" id="save-btn">Ajouter l'article</button>
-        <button class="btn-ghost" id="cancel-edit-btn" style="display:none;">Annuler</button>
+        <button class="btn-primary" id="save-btn">Add item</button>
+        <button class="btn-ghost" id="cancel-edit-btn" style="display:none;">Cancel</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>🧺 Articles actuels (<span id="count">0</span>)</h2>
-      <div id="product-list"><div class="empty-state">Connecte ton token pour charger la liste.</div></div>
+      <h2>🧺 Current items (<span id="count">0</span>)</h2>
+      <div id="product-list"><div class="empty-state">Connect your token to load the list.</div></div>
     </div>
   </div>
 
@@ -317,7 +317,7 @@
 
     function setConnected(ok) {
       tokenDot.classList.toggle("ok", ok);
-      tokenText.textContent = ok ? "Connecté à " + REPO : "Non connecté";
+      tokenText.textContent = ok ? "Connected to " + REPO : "Not connected";
     }
 
     async function ghFetch(opts) {
@@ -335,7 +335,7 @@
         const res = await ghFetch();
         if (res.status === 401) {
           setConnected(false);
-          showToast("Token invalide ou expiré.", true);
+          showToast("Invalid or expired token.", true);
           return;
         }
         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -350,11 +350,11 @@
         products = JSON.parse(decoded || "[]");
         setConnected(true);
         renderProducts();
-        showToast("Liste chargée (" + products.length + " articles)");
+        showToast("List loaded (" + products.length + " items)");
       } catch (err) {
         console.error(err);
         setConnected(false);
-        showToast("Impossible de charger products.json.", true);
+        showToast("Could not load products.json.", true);
       }
     }
 
@@ -362,7 +362,7 @@
       countEl.textContent = products.length;
       updateCategorySuggestions();
       if (!products.length) {
-        productList.innerHTML = '<div class="empty-state">Aucun article pour le moment. Ajoute le premier ci-dessus.</div>';
+        productList.innerHTML = '<div class="empty-state">No items yet. Add the first one above.</div>';
         return;
       }
       productList.innerHTML = "";
@@ -372,12 +372,12 @@
         row.innerHTML = `
           <img src="${p.image || ""}" alt="" onerror="this.style.opacity=0">
           <div class="info">
-            <div class="title">${(p.title || "Sans titre").replace(/</g, "&lt;")}</div>
+            <div class="title">${(p.title || "Untitled").replace(/</g, "&lt;")}</div>
             <div class="price">💰 ${p.price || "?"} €${p.quantity ? " · x" + p.quantity : ""}${p.category ? " · 🏷️ " + p.category.replace(/</g, "&lt;") : ""}</div>
           </div>
           <div class="actions">
-            <button class="btn-ghost" data-edit="${i}">Modifier</button>
-            <button class="btn-danger" data-delete="${i}">Suppr.</button>
+            <button class="btn-ghost" data-edit="${i}">Edit</button>
+            <button class="btn-danger" data-delete="${i}">Delete</button>
           </div>
         `;
         productList.appendChild(row);
@@ -405,8 +405,8 @@
       $("f-image").value = p.image || "";
       $("f-link").value = p.link || "";
       $("f-category").value = p.category || "";
-      formTitle.textContent = "✏️ Modifier l'article";
-      saveBtn.textContent = "Enregistrer les modifications";
+      formTitle.textContent = "✏️ Edit item";
+      saveBtn.textContent = "Save changes";
       cancelEditBtn.style.display = "inline-block";
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -414,26 +414,26 @@
     function resetForm() {
       editingIndex = null;
       ["f-title", "f-price", "f-quantity", "f-image", "f-link", "f-category"].forEach(id => $(id).value = "");
-      formTitle.textContent = "➕ Ajouter un article";
-      saveBtn.textContent = "Ajouter l'article";
+      formTitle.textContent = "➕ Add an item manually";
+      saveBtn.textContent = "Add item";
       cancelEditBtn.style.display = "none";
     }
 
     cancelEditBtn.addEventListener("click", resetForm);
 
     async function deleteProduct(i) {
-      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
-      if (!confirm("Supprimer cet article ?")) return;
+      if (!token) { showToast("Connect your token first.", true); return; }
+      if (!confirm("Delete this item?")) return;
       products.splice(i, 1);
       await pushProducts("Remove product via admin");
       if (editingIndex === i) resetForm();
     }
 
     saveBtn.addEventListener("click", async () => {
-      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
+      if (!token) { showToast("Connect your token first.", true); return; }
       const title = $("f-title").value.trim();
       const link = $("f-link").value.trim();
-      if (!title || !link) { showToast("Titre et lien sont obligatoires.", true); return; }
+      if (!title || !link) { showToast("Title and link are required.", true); return; }
 
       const entry = {
         title,
@@ -480,10 +480,10 @@
         const data = await res.json();
         currentSha = data.content.sha;
         renderProducts();
-        showToast("✅ Mis à jour sur GitHub");
+        showToast("✅ Updated on GitHub");
       } catch (err) {
         console.error(err);
-        showToast("Erreur: " + err.message, true);
+        showToast("Error: " + err.message, true);
         // reload to resync sha/state since push may have partially failed
         loadProducts();
       } finally {
@@ -512,15 +512,15 @@
       reader.onload = (ev) => {
         try {
           const parsed = JSON.parse(ev.target.result);
-          if (!Array.isArray(parsed)) throw new Error("Le fichier doit contenir une liste (array) d'articles.");
+          if (!Array.isArray(parsed)) throw new Error("The file must contain a list (array) of items.");
           importedProducts = parsed;
-          importPreview.textContent = parsed.length + " article(s) trouvé(s) dans le fichier.";
+          importPreview.textContent = parsed.length + " item(s) found in the file.";
           importActions.style.display = "flex";
         } catch (err) {
           importedProducts = null;
           importActions.style.display = "none";
           importPreview.textContent = "";
-          showToast("Fichier JSON invalide : " + err.message, true);
+          showToast("Invalid JSON file: " + err.message, true);
         }
       };
       reader.readAsText(file);
@@ -536,22 +536,22 @@
     $("import-cancel-btn").addEventListener("click", resetImport);
 
     $("import-replace-btn").addEventListener("click", async () => {
-      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
+      if (!token) { showToast("Connect your token first.", true); return; }
       if (!importedProducts) return;
-      if (!confirm("Remplacer toute la liste actuelle par les " + importedProducts.length + " articles importés ?")) return;
+      if (!confirm("Replace the entire current list with the " + importedProducts.length + " imported items?")) return;
       products = importedProducts;
       await pushProducts("Replace product list via admin import");
       resetImport();
     });
 
     $("import-merge-btn").addEventListener("click", async () => {
-      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
+      if (!token) { showToast("Connect your token first.", true); return; }
       if (!importedProducts) return;
       const existingLinks = new Set(products.map(p => p.link));
       const toAdd = importedProducts.filter(p => !existingLinks.has(p.link));
       products = products.concat(toAdd);
       await pushProducts("Merge imported products via admin");
-      showToast("✅ " + toAdd.length + " nouvel(le)s article(s) ajouté(s)");
+      showToast("✅ " + toAdd.length + " new item(s) added");
       resetImport();
     });
 
