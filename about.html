@@ -83,29 +83,6 @@
   .card p:last-child { margin-bottom: 0; }
   .card p.muted { color: var(--muted); font-size: 13.5px; }
 
-  .faq-item {
-    border-top: 1px solid rgba(255,255,255,0.07);
-    padding-top: 16px;
-    margin-top: 16px;
-  }
-  .faq-item:first-of-type {
-    border-top: none;
-    padding-top: 0;
-    margin-top: 0;
-  }
-  .faq-q {
-    font-weight: 700;
-    font-size: 14.5px;
-    color: var(--cyan);
-    margin: 0 0 8px;
-  }
-  .faq-a {
-    font-size: 14px;
-    line-height: 1.65;
-    color: var(--text);
-    margin: 0;
-  }
-
   .cta-row {
     display: flex;
     gap: 12px;
@@ -114,27 +91,39 @@
     flex-wrap: wrap;
   }
   .cta-btn {
-    padding: 11px 24px;
+    padding: 13px 28px;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 13.5px;
+    font-size: 14px;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
+    gap: 8px;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
   }
   .cta-throne {
-    background: rgba(255, 183, 0, 0.15);
+    background: rgba(255, 183, 0, 0.12);
     border: 1px solid rgba(255, 183, 0, 0.4);
     color: #ffb700;
+    box-shadow: 0 4px 14px rgba(255, 183, 0, 0.15);
   }
-  .cta-throne:hover { background: rgba(255, 183, 0, 0.25); transform: translateY(-1px); }
+  .cta-throne:hover {
+    background: rgba(255, 183, 0, 0.2);
+    border-color: rgba(255, 183, 0, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 183, 0, 0.3);
+  }
   .cta-basket {
     background: linear-gradient(135deg, var(--pink), var(--violet));
     color: #1b1b26;
+    box-shadow: 0 4px 16px rgba(255, 158, 203, 0.35);
   }
-  .cta-basket:hover { transform: translateY(-1px) scale(1.03); }
+  .cta-basket:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 22px rgba(255, 158, 203, 0.5);
+  }
+  .cta-basket:active, .cta-throne:active { transform: scale(0.97); }
 
   .foot-note {
     text-align: center;
@@ -161,23 +150,6 @@
       <span class="card-emoji">🧺</span>
       <h2>Why this list exists</h2>
       <p>Honestly, a bit of both: it's mostly here to keep my own wishes in one tidy place instead of scattered across apps. But if something on here catches someone's eye and they'd like to gift it through Throne, that's genuinely sweet too — no pressure either way, the list works just fine as a personal mood board.</p>
-    </div>
-
-    <div class="card">
-      <span class="card-emoji">👑</span>
-      <h2>How Throne gifting works</h2>
-      <div class="faq-item">
-        <p class="faq-q">What is Throne?</p>
-        <p class="faq-a">Throne is a wishlist and creator-gifting platform. It lets people add items from a wishlist (like this one) and send them as gifts, without needing to share personal shipping details directly.</p>
-      </div>
-      <div class="faq-item">
-        <p class="faq-q">How do I gift something from here?</p>
-        <p class="faq-a">Click on any item to open it, then hit "Add to Throne wishlist." That opens Throne's own gifting flow where you can complete the gift — I never see your payment or personal info, Throne handles all of that.</p>
-      </div>
-      <div class="faq-item">
-        <p class="faq-q">Is this list updated?</p>
-        <p class="faq-a">Yes — items get added, removed, or recategorized regularly as my own wishes change. There's no obligation tied to anything on it; it's just an evolving snapshot of what I currently love.</p>
-      </div>
     </div>
 
     <div class="cta-row">
