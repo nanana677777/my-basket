@@ -188,7 +188,19 @@
     </div>
 
     <div class="card">
-      <h2 id="form-title">➕ Ajouter un article</h2>
+      <h2>📂 Importer un fichier</h2>
+      <p class="sub" style="margin:0 0 14px;">Choisis un fichier .json exporté (Temu, Throne...) pour remplir ta liste d'un coup.</p>
+      <input id="import-file" type="file" accept=".json" />
+      <div class="row-actions-top" id="import-actions" style="display:none;">
+        <button class="btn-primary" id="import-replace-btn">Remplacer la liste</button>
+        <button class="btn-ghost" id="import-merge-btn">Ajouter à la liste existante</button>
+        <button class="btn-ghost" id="import-cancel-btn">Annuler</button>
+      </div>
+      <div id="import-preview" style="font-size:12px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <div class="card">
+      <h2 id="form-title">➕ Ajouter un article manuellement</h2>
       <label for="f-title">Titre</label>
       <input id="f-title" type="text" placeholder="Waisted A-Line Mini Skirt..." />
       <div class="grid2">
@@ -421,6 +433,62 @@
       token = tokenInput.value.trim();
       if (!token) { setConnected(false); return; }
       tokenDebounce = setTimeout(loadProducts, 500);
+    });
+
+    // 📂 File import
+    const importFileInput = $("import-file");
+    const importActions = $("import-actions");
+    const importPreview = $("import-preview");
+    let importedProducts = null;
+
+    importFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result);
+          if (!Array.isArray(parsed)) throw new Error("Le fichier doit contenir une liste (array) d'articles.");
+          importedProducts = parsed;
+          importPreview.textContent = parsed.length + " article(s) trouvé(s) dans le fichier.";
+          importActions.style.display = "flex";
+        } catch (err) {
+          importedProducts = null;
+          importActions.style.display = "none";
+          importPreview.textContent = "";
+          showToast("Fichier JSON invalide : " + err.message, true);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    function resetImport() {
+      importedProducts = null;
+      importFileInput.value = "";
+      importActions.style.display = "none";
+      importPreview.textContent = "";
+    }
+
+    $("import-cancel-btn").addEventListener("click", resetImport);
+
+    $("import-replace-btn").addEventListener("click", async () => {
+      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
+      if (!importedProducts) return;
+      if (!confirm("Remplacer toute la liste actuelle par les " + importedProducts.length + " articles importés ?")) return;
+      products = importedProducts;
+      await pushProducts("Replace product list via admin import");
+      resetImport();
+    });
+
+    $("import-merge-btn").addEventListener("click", async () => {
+      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
+      if (!importedProducts) return;
+      const existingLinks = new Set(products.map(p => p.link));
+      const toAdd = importedProducts.filter(p => !existingLinks.has(p.link));
+      products = products.concat(toAdd);
+      await pushProducts("Merge imported products via admin");
+      showToast("✅ " + toAdd.length + " nouvel(le)s article(s) ajouté(s)");
+      resetImport();
     });
   </script>
 </body>
