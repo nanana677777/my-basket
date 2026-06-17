@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Admin · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+    --danger: #ff6b81;
+    --ok: #7dffa0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 28px 18px 80px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid rgba(255,158,203,0.18);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 14px;
+    color: var(--pink);
+    letter-spacing: 0.3px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+  input, textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 14px;
+    font-family: inherit;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--pink);
+    background: rgba(255,158,203,0.06);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    color: #1b1b26;
+  }
+  .btn-primary:hover { transform: translateY(-1px) scale(1.02); }
+  .btn-primary:disabled { opacity: 0.5; cursor: wait; transform: none; }
+  .btn-ghost {
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-danger {
+    background: rgba(255,107,129,0.12);
+    color: var(--danger);
+    border: 1px solid rgba(255,107,129,0.3);
+  }
+  .btn-danger:hover { background: rgba(255,107,129,0.22); }
+
+  #token-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex-shrink: 0; }
+  .dot.ok { background: var(--ok); }
+
+  .product-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 10px;
+  }
+  .product-row img {
+    width: 48px; height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+  }
+  .product-row .info { flex: 1; min-width: 0; }
+  .product-row .title {
+    font-size: 13px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .product-row .price { font-size: 12px; color: var(--cyan); }
+  .product-row .actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .product-row .actions button { padding: 6px 12px; font-size: 12px; }
+
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--panel);
+    border: 1px solid rgba(255,158,203,0.3);
+    color: var(--text);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error { border-color: rgba(255,107,129,0.4); color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 24px 0;
+  }
+  .row-actions-top {
+    display: flex; gap: 10px; margin-bottom: 14px;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🛠️ Admin · My Basket</h1>
+    <p class="sub">Cette page n'est pas listée nulle part — gardée par l'URL secrète. Ajoute, modifie ou supprime des articles ; chaque action pousse direct sur GitHub.</p>
+
+    <div class="card">
+      <h2>🔑 Connexion GitHub</h2>
+      <label for="gh-token">Personal access token (jamais sauvegardé, juste en mémoire pour cette session)</label>
+      <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off" />
+      <div id="token-status"><span class="dot" id="token-dot"></span><span id="token-text">Non connecté</span></div>
+    </div>
+
+    <div class="card">
+      <h2 id="form-title">➕ Ajouter un article</h2>
+      <label for="f-title">Titre</label>
+      <input id="f-title" type="text" placeholder="Waisted A-Line Mini Skirt..." />
+      <div class="grid2">
+        <div>
+          <label for="f-price">Prix (€)</label>
+          <input id="f-price" type="text" placeholder="12.99" />
+        </div>
+        <div>
+          <label for="f-quantity">Quantité</label>
+          <input id="f-quantity" type="text" placeholder="1" />
+        </div>
+      </div>
+      <label for="f-image">URL de l'image</label>
+      <input id="f-image" type="text" placeholder="https://..." />
+      <label for="f-link">Lien produit (Temu)</label>
+      <input id="f-link" type="text" placeholder="https://www.temu.com/.../goods.html?..." />
+      <div class="row-actions-top">
+        <button class="btn-primary" id="save-btn">Ajouter l'article</button>
+        <button class="btn-ghost" id="cancel-edit-btn" style="display:none;">Annuler</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🧺 Articles actuels (<span id="count">0</span>)</h2>
+      <div id="product-list"><div class="empty-state">Connecte ton token pour charger la liste.</div></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const REPO = "nanana677777/my-basket";
+    const FILE_PATH = "products.json";
+    const API_BASE = "https://api.github.com/repos/" + REPO + "/contents/" + FILE_PATH;
+
+    let token = "";
+    let products = [];
+    let currentSha = null;
+    let editingIndex = null;
+
+    const $ = (id) => document.getElementById(id);
+    const tokenInput = $("gh-token");
+    const tokenDot = $("token-dot");
+    const tokenText = $("token-text");
+    const productList = $("product-list");
+    const countEl = $("count");
+    const saveBtn = $("save-btn");
+    const cancelEditBtn = $("cancel-edit-btn");
+    const formTitle = $("form-title");
+
+    function showToast(msg, isError) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.toggle("error", !!isError);
+      t.classList.add("visible");
+      setTimeout(() => t.classList.remove("visible"), 2600);
+    }
+
+    function setConnected(ok) {
+      tokenDot.classList.toggle("ok", ok);
+      tokenText.textContent = ok ? "Connecté à " + REPO : "Non connecté";
+    }
+
+    async function ghFetch(opts) {
+      const res = await fetch(API_BASE, Object.assign({
+        headers: {
+          "Authorization": "token " + token,
+          "Accept": "application/vnd.github+json"
+        }
+      }, opts || {}));
+      return res;
+    }
+
+    async function loadProducts() {
+      try {
+        const res = await ghFetch();
+        if (res.status === 401) {
+          setConnected(false);
+          showToast("Token invalide ou expiré.", true);
+          return;
+        }
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        currentSha = data.sha;
+        const decoded = decodeURIComponent(
+          atob(data.content.replace(/\n/g, ""))
+            .split("")
+            .map(c => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+            .join("")
+        );
+        products = JSON.parse(decoded || "[]");
+        setConnected(true);
+        renderProducts();
+        showToast("Liste chargée (" + products.length + " articles)");
+      } catch (err) {
+        console.error(err);
+        setConnected(false);
+        showToast("Impossible de charger products.json.", true);
+      }
+    }
+
+    function renderProducts() {
+      countEl.textContent = products.length;
+      if (!products.length) {
+        productList.innerHTML = '<div class="empty-state">Aucun article pour le moment. Ajoute le premier ci-dessus.</div>';
+        return;
+      }
+      productList.innerHTML = "";
+      products.forEach((p, i) => {
+        const row = document.createElement("div");
+        row.className = "product-row";
+        row.innerHTML = `
+          <img src="${p.image || ""}" alt="" onerror="this.style.opacity=0">
+          <div class="info">
+            <div class="title">${(p.title || "Sans titre").replace(/</g, "&lt;")}</div>
+            <div class="price">💰 ${p.price || "?"} €${p.quantity ? " · x" + p.quantity : ""}</div>
+          </div>
+          <div class="actions">
+            <button class="btn-ghost" data-edit="${i}">Modifier</button>
+            <button class="btn-danger" data-delete="${i}">Suppr.</button>
+          </div>
+        `;
+        productList.appendChild(row);
+      });
+    }
+
+    productList.addEventListener("click", (e) => {
+      const editIdx = e.target.getAttribute("data-edit");
+      const delIdx = e.target.getAttribute("data-delete");
+      if (editIdx !== null) startEdit(parseInt(editIdx));
+      if (delIdx !== null) deleteProduct(parseInt(delIdx));
+    });
+
+    function startEdit(i) {
+      editingIndex = i;
+      const p = products[i];
+      $("f-title").value = p.title || "";
+      $("f-price").value = p.price || "";
+      $("f-quantity").value = p.quantity || "";
+      $("f-image").value = p.image || "";
+      $("f-link").value = p.link || "";
+      formTitle.textContent = "✏️ Modifier l'article";
+      saveBtn.textContent = "Enregistrer les modifications";
+      cancelEditBtn.style.display = "inline-block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function resetForm() {
+      editingIndex = null;
+      ["f-title", "f-price", "f-quantity", "f-image", "f-link"].forEach(id => $(id).value = "");
+      formTitle.textContent = "➕ Ajouter un article";
+      saveBtn.textContent = "Ajouter l'article";
+      cancelEditBtn.style.display = "none";
+    }
+
+    cancelEditBtn.addEventListener("click", resetForm);
+
+    async function deleteProduct(i) {
+      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
+      if (!confirm("Supprimer cet article ?")) return;
+      products.splice(i, 1);
+      await pushProducts("Remove product via admin");
+      if (editingIndex === i) resetForm();
+    }
+
+    saveBtn.addEventListener("click", async () => {
+      if (!token) { showToast("Connecte ton token d'abord.", true); return; }
+      const title = $("f-title").value.trim();
+      const link = $("f-link").value.trim();
+      if (!title || !link) { showToast("Titre et lien sont obligatoires.", true); return; }
+
+      const entry = {
+        title,
+        price: $("f-price").value.trim(),
+        quantity: $("f-quantity").value.trim() || "1",
+        image: $("f-image").value.trim(),
+        link
+      };
+
+      if (editingIndex !== null) {
+        products[editingIndex] = entry;
+        await pushProducts("Edit product via admin");
+      } else {
+        products.push(entry);
+        await pushProducts("Add product via admin");
+      }
+      resetForm();
+    });
+
+    async function pushProducts(message) {
+      saveBtn.disabled = true;
+      try {
+        const jsonStr = JSON.stringify(products, null, 2);
+        const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        const res = await ghFetch({
+          method: "PUT",
+          headers: {
+            "Authorization": "token " + token,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: message,
+            content: b64,
+            sha: currentSha,
+            branch: "main"
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || ("HTTP " + res.status));
+        }
+        const data = await res.json();
+        currentSha = data.content.sha;
+        renderProducts();
+        showToast("✅ Mis à jour sur GitHub");
+      } catch (err) {
+        console.error(err);
+        showToast("Erreur: " + err.message, true);
+        // reload to resync sha/state since push may have partially failed
+        loadProducts();
+      } finally {
+        saveBtn.disabled = false;
+      }
+    }
+
+    let tokenDebounce;
+    tokenInput.addEventListener("input", () => {
+      clearTimeout(tokenDebounce);
+      token = tokenInput.value.trim();
+      if (!token) { setConnected(false); return; }
+      tokenDebounce = setTimeout(loadProducts, 500);
+    });
+  </script>
+</body>
+</html>
