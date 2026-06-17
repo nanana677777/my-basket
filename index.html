@@ -1715,7 +1715,7 @@
       }
       const jsonLoader = document.getElementById("jsonLoader");
 
-      // 🔁 auto load saved basket if it exists
+      // 🔁 auto load saved basket if it exists, else fetch products.json from the site
       const savedBasket = localStorage.getItem("temuBasketData");
 
       if (savedBasket) {
@@ -1733,6 +1733,26 @@
         } catch (e) {
           console.error("Saved basket corrupted");
         }
+      } else {
+        // 🌐 No local data (new visitor) — pull the live list hosted on the site
+        fetch("./products.json", { cache: "no-store" })
+          .then(function (res) {
+            if (!res.ok) throw new Error("products.json fetch failed: " + res.status);
+            return res.json();
+          })
+          .then(function (data) {
+            rawProducts = data;
+            if (showingWishlist || activeRangeFilter !== null) {
+              applyRangeFilter();
+            } else {
+              displayProducts(rawProducts);
+            }
+            jsonLoader.style.display = "none";
+          })
+          .catch(function (err) {
+            console.error("Could not load products.json:", err);
+            // Leave the file picker visible as a fallback
+          });
       }
       // Restore wishlist toggle button label
       if (showingWishlist) {
