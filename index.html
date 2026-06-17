@@ -839,94 +839,209 @@
         align-self: flex-start;
       }
 
-      /* 🎀 Floating Linktree sidebar */
-      #linktree-sidebar {
+      /* 🎀 Linktree launcher tab */
+      #linktree-tab {
         position: fixed;
         left: 0;
         top: 50%;
         transform: translateY(-50%);
         z-index: 999;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-      }
-      #linktree-tab {
         background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
         color: #1b1b26;
         font-weight: 900;
-        font-size: 20px;
-        width: 44px;
-        height: 44px;
-        border-radius: 0 50% 50% 0;
+        font-size: 13px;
+        width: 40px;
+        height: 64px;
+        border-radius: 0 14px 14px 0;
         cursor: pointer;
         box-shadow: 4px 0 20px rgba(255, 158, 203, 0.5), 0 0 0 3px rgba(255,158,203,0.15);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: tabPulse 2.6s ease-in-out infinite;
         user-select: none;
         border: none;
         font-family: inherit;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        line-height: 1;
+        gap: 4px;
+        writing-mode: vertical-rl;
+        letter-spacing: 1px;
+        padding: 10px 0;
+      }
+      #linktree-tab .tab-icon {
+        writing-mode: horizontal-tb;
+        font-size: 17px;
       }
       #linktree-tab:hover {
-        width: 52px;
-        height: 52px;
+        width: 46px;
+        animation-play-state: paused;
         box-shadow: 6px 0 28px rgba(255, 158, 203, 0.7), 0 0 0 4px rgba(255,158,203,0.2);
       }
-      #linktree-panel {
+      @keyframes tabPulse {
+        0%, 100% { box-shadow: 4px 0 20px rgba(255, 158, 203, 0.5), 0 0 0 3px rgba(255,158,203,0.15); }
+        50% { box-shadow: 4px 0 28px rgba(255, 158, 203, 0.8), 0 0 0 6px rgba(255,158,203,0.05); }
+      }
+
+      /* 🎀 Linktree modal overlay */
+      #linktree-overlay {
+        display: none;
         position: fixed;
-        left: -260px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 230px;
+        inset: 0;
+        z-index: 2500;
+        background: rgba(8, 8, 14, 0.72);
+        backdrop-filter: blur(10px);
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      #linktree-overlay.open {
+        display: flex;
+        animation: overlayFade 0.25s ease;
+      }
+      @keyframes overlayFade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      #linktree-panel {
+        width: 100%;
+        max-width: 320px;
+        max-height: 82vh;
+        overflow-y: auto;
         background: #1b1b26;
-        border: 1px solid rgba(255, 158, 203, 0.25);
-        border-left: none;
-        border-radius: 0 20px 20px 0;
-        padding: 24px 20px;
-        box-shadow: 8px 0 40px rgba(0,0,0,0.5);
-        transition: left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-        z-index: 997;
+        border: 1px solid rgba(255, 158, 203, 0.3);
+        border-radius: 24px;
+        padding: 26px 22px;
+        box-shadow: 0 0 60px rgba(255, 158, 203, 0.15), 0 20px 50px rgba(0,0,0,0.6);
         display: flex;
         flex-direction: column;
         gap: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,158,203,0.4) transparent;
+        transform: scale(0.92) translateY(10px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
-      #linktree-panel.open {
-        left: 38px;
+      #linktree-overlay.open #linktree-panel {
+        transform: scale(1) translateY(0);
+        opacity: 1;
       }
-      #linktree-panel h3 {
-        margin: 0 0 8px;
-        font-size: 15px;
+      #linktree-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      #linktree-panel-head h3 {
+        margin: 0;
+        font-size: 16px;
         color: #ff9ecb;
-        text-align: center;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 12px rgba(255, 158, 203, 0.4);
+      }
+      #linktree-close {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #cfc9d8;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+      #linktree-close:hover {
+        background: rgba(255,158,203,0.2);
+        color: #fff;
+        transform: rotate(90deg);
       }
       #linktree-panel a.social-link {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-        border-radius: 12px;
-        background: rgba(255, 158, 203, 0.07);
-        border: 1px solid rgba(255, 158, 203, 0.15);
-        color: #f0c0de;
-        font-size: 13px;
-        font-weight: 500;
+        gap: 12px;
+        padding: 11px 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #e8e3ef;
+        font-size: 13.5px;
+        font-weight: 600;
         text-decoration: none;
         transition: all 0.2s ease;
       }
       #linktree-panel a.social-link:hover {
-        background: rgba(255, 158, 203, 0.18);
-        border-color: rgba(255, 158, 203, 0.4);
         transform: translateX(4px);
         color: #fff;
       }
       #linktree-panel a.social-link .social-icon {
-        font-size: 18px;
-        width: 24px;
-        text-align: center;
+        font-size: 17px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        transition: all 0.2s ease;
+      }
+      #linktree-panel a.social-link:hover .social-icon {
+        transform: scale(1.12);
+      }
+      /* Brand-colored hover states */
+      .social-link.sl-throne {
+        background: rgba(255, 183, 0, 0.08);
+        border: 1px solid rgba(255, 183, 0, 0.3);
+        position: relative;
+      }
+      .social-link.sl-throne .social-icon { background: rgba(255,183,0,0.2); }
+      .social-link.sl-throne:hover { background: rgba(255,183,0,0.2); border-color: rgba(255,183,0,0.6); }
+      .social-link.sl-throne:hover .social-icon { background: #ffb700; box-shadow: 0 0 16px rgba(255,183,0,0.7); }
+      .social-link.sl-throne .sl-badge {
+        margin-left: auto;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: #ffb700;
+        background: rgba(255,183,0,0.15);
+        padding: 3px 7px;
+        border-radius: 999px;
+      }
+      .social-link.sl-linktree:hover { background: rgba(124,222,142,0.14); border-color: rgba(124,222,142,0.5); }
+      .social-link.sl-linktree:hover .social-icon { background: rgba(124,222,142,0.25); box-shadow: 0 0 14px rgba(124,222,142,0.5); }
+      .social-link.sl-instagram:hover { background: rgba(225,48,108,0.14); border-color: rgba(225,48,108,0.5); }
+      .social-link.sl-instagram:hover .social-icon { background: linear-gradient(135deg,#f58529,#dd2a7b,#8134af); box-shadow: 0 0 14px rgba(221,42,123,0.6); }
+      .social-link.sl-tiktok:hover { background: rgba(37,244,238,0.12); border-color: rgba(254,44,85,0.5); }
+      .social-link.sl-tiktok:hover .social-icon { background: #111; box-shadow: 0 0 10px rgba(37,244,238,0.6), 0 0 10px rgba(254,44,85,0.4); }
+      .social-link.sl-x:hover { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.4); }
+      .social-link.sl-x:hover .social-icon { background: #000; box-shadow: 0 0 12px rgba(255,255,255,0.35); }
+      .social-link.sl-reddit:hover { background: rgba(255,69,0,0.14); border-color: rgba(255,69,0,0.5); }
+      .social-link.sl-reddit:hover .social-icon { background: #ff4500; box-shadow: 0 0 14px rgba(255,69,0,0.6); }
+      .social-link.sl-telegram:hover { background: rgba(42,170,226,0.14); border-color: rgba(42,170,226,0.5); }
+      .social-link.sl-telegram:hover .social-icon { background: #2aa4e6; box-shadow: 0 0 14px rgba(42,170,226,0.6); }
+      .social-link.sl-erome:hover { background: rgba(255,107,157,0.14); border-color: rgba(255,107,157,0.5); }
+      .social-link.sl-erome:hover .social-icon { background: #ff6b9d; box-shadow: 0 0 14px rgba(255,107,157,0.6); }
+      .social-link.sl-mym:hover { background: rgba(212,175,55,0.16); border-color: rgba(212,175,55,0.5); }
+      .social-link.sl-mym:hover .social-icon { background: #d4af37; box-shadow: 0 0 14px rgba(212,175,55,0.6); }
+      #linktree-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        margin: 6px 0;
+      }
+      @media (max-width: 640px) {
+        #linktree-tab {
+          width: 36px;
+          height: 56px;
+          font-size: 11px;
+        }
+        #linktree-panel {
+          max-width: 92vw;
+          padding: 22px 16px;
+        }
       }
       #back-to-top {
         position: fixed;
@@ -1938,49 +2053,60 @@
     <!-- 🔝 Back to top -->
     <button id="back-to-top" title="Retour en haut">↑</button>
 
-    <!-- 🎀 Floating Linktree Sidebar -->
-    <div id="linktree-sidebar">
+    <!-- 🎀 Linktree launcher + modal -->
+    <button id="linktree-tab"><span class="tab-icon">🎀</span>links</button>
+
+    <div id="linktree-overlay">
       <div id="linktree-panel">
-        <h3>🩷 Find me here</h3>
-        <a class="social-link" href="https://linktr.ee/Nana677_" target="_blank">
+        <div id="linktree-panel-head">
+          <h3>🩷 Find me here</h3>
+          <button id="linktree-close" title="Fermer">✕</button>
+        </div>
+        <a class="social-link sl-throne" href="https://throne.com/nana677" target="_blank">
+          <span class="social-icon">🎁</span> Throne
+          <span class="sl-badge">wishlist</span>
+        </a>
+        <a class="social-link sl-linktree" href="https://linktr.ee/Nana677_" target="_blank">
           <span class="social-icon">🌿</span> All my links
         </a>
-        <a class="social-link" href="https://www.instagram.com/nana.677777/" target="_blank">
+        <div id="linktree-divider"></div>
+        <a class="social-link sl-instagram" href="https://www.instagram.com/nana.677777/" target="_blank">
           <span class="social-icon">📸</span> Instagram
         </a>
-        <a class="social-link" href="https://www.tiktok.com/@_nana677_" target="_blank">
+        <a class="social-link sl-tiktok" href="https://www.tiktok.com/@_nana677_" target="_blank">
           <span class="social-icon">🎵</span> TikTok
         </a>
-        <a class="social-link" href="https://x.com/nana677777" target="_blank">
+        <a class="social-link sl-x" href="https://x.com/nana677777" target="_blank">
           <span class="social-icon">𝕏</span> X / Twitter
         </a>
-        <a class="social-link" href="https://www.reddit.com/user/nana677_" target="_blank">
+        <a class="social-link sl-reddit" href="https://www.reddit.com/user/nana677_" target="_blank">
           <span class="social-icon">🤖</span> Reddit
         </a>
-        <a class="social-link" href="https://www.erome.com/nana677" target="_blank">
-          <span class="social-icon">💗</span> EroMe
-        </a>
-        <a class="social-link" href="https://mym.fans/nana677" target="_blank">
-          <span class="social-icon">👑</span> MYM
-        </a>
-        <a class="social-link" href="https://t.me/nana677" target="_blank">
+        <a class="social-link sl-telegram" href="https://t.me/nana677" target="_blank">
           <span class="social-icon">✈️</span> Telegram
         </a>
-        <a class="social-link" href="https://throne.com/nana677" target="_blank">
-          <span class="social-icon">🎁</span> Throne
+        <div id="linktree-divider"></div>
+        <a class="social-link sl-erome" href="https://www.erome.com/nana677" target="_blank">
+          <span class="social-icon">💗</span> EroMe
+        </a>
+        <a class="social-link sl-mym" href="https://mym.fans/nana677" target="_blank">
+          <span class="social-icon">👑</span> MYM
         </a>
       </div>
-      <button id="linktree-tab">🎀 my links</button>
     </div>
   <script>
-    // 🎀 Linktree sidebar toggle
-    document.getElementById("linktree-tab").addEventListener("click", function() {
-      document.getElementById("linktree-panel").classList.toggle("open");
+    // 🎀 Linktree modal toggle
+    const linktreeOverlay = document.getElementById("linktree-overlay");
+    function openLinktree() { linktreeOverlay.classList.add("open"); }
+    function closeLinktree() { linktreeOverlay.classList.remove("open"); }
+
+    document.getElementById("linktree-tab").addEventListener("click", openLinktree);
+    document.getElementById("linktree-close").addEventListener("click", closeLinktree);
+    linktreeOverlay.addEventListener("click", function(e) {
+      if (e.target === linktreeOverlay) closeLinktree();
     });
-    document.addEventListener("click", function(e) {
-      if (!document.getElementById("linktree-sidebar").contains(e.target)) {
-        document.getElementById("linktree-panel").classList.remove("open");
-      }
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") closeLinktree();
     });
   </script>
   </body>
