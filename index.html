@@ -1495,6 +1495,191 @@
         color: #1b1b26;
       }
       .tour-final-socials:hover { transform: translateY(-1px) scale(1.03); }
+
+      /* 📱 Fullscreen swipe ("TikTok mode") launcher tab */
+      #swipe-tab {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) translateY(-164px);
+        z-index: 999;
+        background: linear-gradient(135deg, #ffb3c6, #7df9ff);
+        color: #1b1b26;
+        font-weight: 900;
+        font-size: 13px;
+        width: 40px;
+        height: 64px;
+        border-radius: 0 14px 14px 0;
+        cursor: pointer;
+        box-shadow: 4px 0 20px rgba(125, 249, 255, 0.35), 0 0 0 3px rgba(125,249,255,0.1);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        user-select: none;
+        border: none;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        writing-mode: vertical-rl;
+        letter-spacing: 1px;
+        padding: 10px 0;
+      }
+      #swipe-tab .tab-icon {
+        writing-mode: horizontal-tb;
+        font-size: 17px;
+      }
+      #swipe-tab:hover {
+        width: 46px;
+        box-shadow: 6px 0 28px rgba(125, 249, 255, 0.55), 0 0 0 4px rgba(125,249,255,0.16);
+      }
+
+      /* 📱 Fullscreen swipe overlay */
+      #swipe-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 4000;
+        background: #0a0a0e;
+      }
+      #swipe-overlay.open { display: block; }
+      #swipe-track {
+        height: 100%;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      #swipe-track::-webkit-scrollbar { display: none; }
+      .swipe-slide {
+        height: 100%;
+        width: 100%;
+        scroll-snap-align: start;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 20px;
+      }
+      .swipe-slide img {
+        max-width: 100%;
+        max-height: 62vh;
+        object-fit: contain;
+        border-radius: 18px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      }
+      .swipe-info {
+        margin-top: 18px;
+        text-align: center;
+        max-width: 420px;
+      }
+      .swipe-info .swipe-title {
+        color: #f3f3f7;
+        font-size: 14.5px;
+        font-weight: 600;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 8px;
+      }
+      .swipe-info .swipe-price {
+        color: #7df9ff;
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .swipe-info .swipe-category {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #cfc9d8;
+        background: rgba(255,255,255,0.08);
+        padding: 3px 10px;
+        border-radius: 999px;
+      }
+      .swipe-side-actions {
+        position: absolute;
+        right: 16px;
+        bottom: 22vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+      .swipe-action-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(6px);
+      }
+      .swipe-action-btn:hover { transform: scale(1.08); }
+      .swipe-action-btn.favorited {
+        background: rgba(255,107,157,0.25);
+        border-color: rgba(255,107,157,0.5);
+        color: #ff6b9d;
+      }
+      .swipe-action-btn.swipe-link {
+        color: #1b1b26;
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        border: none;
+        text-decoration: none;
+      }
+      #swipe-close {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 4001;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(6px);
+      }
+      #swipe-counter {
+        position: fixed;
+        top: 22px;
+        left: 18px;
+        z-index: 4001;
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.6);
+        background: rgba(255,255,255,0.06);
+        padding: 5px 12px;
+        border-radius: 999px;
+      }
+      #swipe-empty {
+        color: #cfc9d8;
+        text-align: center;
+        font-size: 14px;
+        padding: 0 30px;
+      }
+      @media (max-width: 640px) {
+        #swipe-tab {
+          width: 36px;
+          height: 56px;
+          font-size: 11px;
+          transform: translateY(-50%) translateY(-140px);
+        }
+      }
     </style>
   </head>
   <!-- ✨ magical sparkles on mouse move -->
@@ -1790,7 +1975,7 @@
       }
 
       // 🔎 Single source of truth: combines wishlist + price range + category + search
-      function applyAllFilters() {
+      function getFilteredProducts() {
         let base = showingWishlist
           ? rawProducts.filter(p => favorites.includes(p.link))
           : rawProducts.slice();
@@ -1809,7 +1994,11 @@
           base = base.filter(p => (p.title || "").toLowerCase().includes(term));
         }
 
-        displayProducts(base);
+        return base;
+      }
+
+      function applyAllFilters() {
+        displayProducts(getFilteredProducts());
       }
 
       function renderPieChart(products) {
@@ -2512,6 +2701,9 @@
     <!-- 🎲 Pick-for-me launcher + modal -->
     <button id="pick-tab"><span class="tab-icon">🎲</span>pick</button>
 
+    <!-- 📱 Fullscreen swipe ("TikTok mode") launcher -->
+    <button id="swipe-tab"><span class="tab-icon">📱</span>swipe</button>
+
     <div id="pick-overlay">
       <div id="pick-panel">
         <button id="pick-close" title="Close">✕</button>
@@ -2526,6 +2718,13 @@
           <a id="pick-view-btn" class="hidden" href="#" target="_blank">🛒 View item</a>
         </div>
       </div>
+    </div>
+
+    <!-- 📱 Fullscreen swipe overlay -->
+    <div id="swipe-overlay">
+      <button id="swipe-close" title="Close">✕</button>
+      <div id="swipe-counter"></div>
+      <div id="swipe-track"></div>
     </div>
 
     <div id="linktree-overlay">
@@ -2766,6 +2965,88 @@
       if (!localStorage.getItem(TOUR_KEY)) {
         setTimeout(openTour, 600);
       }
+    })();
+  </script>
+
+  <script>
+    // 📱 Fullscreen swipe ("TikTok mode")
+    (function () {
+      const swipeTab = document.getElementById("swipe-tab");
+      const swipeOverlay = document.getElementById("swipe-overlay");
+      const swipeTrack = document.getElementById("swipe-track");
+      const swipeClose = document.getElementById("swipe-close");
+      const swipeCounter = document.getElementById("swipe-counter");
+
+      let currentList = [];
+
+      function buildSlide(product, idx) {
+        const slide = document.createElement("div");
+        slide.className = "swipe-slide";
+        slide.dataset.index = idx;
+
+        const isFav = favorites.includes(product.link);
+        const priceClean = (product.price || "").toString();
+
+        slide.innerHTML = `
+          <img src="${product.image || ""}" alt="" loading="lazy">
+          <div class="swipe-info">
+            <div class="swipe-title">${(product.title || "Untitled").replace(/</g, "&lt;")}</div>
+            ${priceClean ? `<div class="swipe-price">💰 ${priceClean} €</div>` : ""}
+            ${product.category ? `<div class="swipe-category">🏷️ ${product.category.replace(/</g, "&lt;")}</div>` : ""}
+          </div>
+          <div class="swipe-side-actions">
+            <button class="swipe-action-btn swipe-heart ${isFav ? "favorited" : ""}" title="Favorite">♥</button>
+            <a class="swipe-action-btn swipe-link" href="${product.link || "#"}" target="_blank" title="View item">🛒</a>
+          </div>
+        `;
+
+        const heartBtn = slide.querySelector(".swipe-heart");
+        heartBtn.addEventListener("click", () => {
+          toggleFavorite(product.link, heartBtn);
+        });
+
+        return slide;
+      }
+
+      function openSwipe() {
+        currentList = (typeof getFilteredProducts === "function") ? getFilteredProducts() : [];
+
+        swipeTrack.innerHTML = "";
+
+        if (!currentList.length) {
+          const empty = document.createElement("div");
+          empty.className = "swipe-slide";
+          empty.innerHTML = `<div id="swipe-empty">No items match your current filters.<br>Try clearing them and come back!</div>`;
+          swipeTrack.appendChild(empty);
+          swipeCounter.textContent = "";
+        } else {
+          currentList.forEach((p, i) => swipeTrack.appendChild(buildSlide(p, i)));
+          swipeCounter.textContent = `1 / ${currentList.length}`;
+        }
+
+        swipeOverlay.classList.add("open");
+        swipeTrack.scrollTop = 0;
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeSwipe() {
+        swipeOverlay.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+
+      function updateCounterFromScroll() {
+        if (!currentList.length) return;
+        const slideHeight = swipeTrack.clientHeight;
+        const idx = Math.round(swipeTrack.scrollTop / slideHeight);
+        swipeCounter.textContent = `${Math.min(idx + 1, currentList.length)} / ${currentList.length}`;
+      }
+
+      swipeTab.addEventListener("click", openSwipe);
+      swipeClose.addEventListener("click", closeSwipe);
+      swipeTrack.addEventListener("scroll", updateCounterFromScroll);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && swipeOverlay.classList.contains("open")) closeSwipe();
+      });
     })();
   </script>
   </body>
