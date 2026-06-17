@@ -1680,6 +1680,33 @@
         font-size: 14px;
         padding: 0 30px;
       }
+      #swipe-arrows {
+        position: fixed;
+        left: 16px;
+        bottom: 22vh;
+        z-index: 4001;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .swipe-arrow-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(6px);
+      }
+      .swipe-arrow-btn:hover { transform: scale(1.08); background: rgba(255,158,203,0.18); }
+      .swipe-arrow-btn:disabled { opacity: 0.3; cursor: default; }
+      .swipe-arrow-btn:disabled:hover { transform: none; background: rgba(255,255,255,0.08); }
       @media (max-width: 640px) {
         #swipe-tab {
           width: 36px;
@@ -1687,6 +1714,7 @@
           font-size: 11px;
           transform: translateY(-50%) translateY(-140px);
         }
+        #swipe-arrows { display: none; }
       }
     </style>
   </head>
@@ -2732,6 +2760,10 @@
     <div id="swipe-overlay">
       <button id="swipe-close" title="Close">✕</button>
       <div id="swipe-counter"></div>
+      <div id="swipe-arrows">
+        <button id="swipe-arrow-up" class="swipe-arrow-btn" title="Previous">↑</button>
+        <button id="swipe-arrow-down" class="swipe-arrow-btn" title="Next">↓</button>
+      </div>
       <div id="swipe-track"></div>
     </div>
 
@@ -2984,6 +3016,8 @@
       const swipeTrack = document.getElementById("swipe-track");
       const swipeClose = document.getElementById("swipe-close");
       const swipeCounter = document.getElementById("swipe-counter");
+      const swipeArrowUp = document.getElementById("swipe-arrow-up");
+      const swipeArrowDown = document.getElementById("swipe-arrow-down");
 
       let currentList = [];
 
@@ -3036,6 +3070,7 @@
           currentList.forEach((p, i) => swipeTrack.appendChild(buildSlide(p, i)));
           swipeCounter.textContent = `1 / ${currentList.length}`;
           setActiveSlide(0);
+          updateArrowState(0);
         }
 
         swipeOverlay.classList.add("open");
@@ -3048,6 +3083,12 @@
         document.body.style.overflow = "";
       }
 
+      function updateArrowState(idx) {
+        if (!swipeArrowUp || !swipeArrowDown) return;
+        swipeArrowUp.disabled = idx <= 0;
+        swipeArrowDown.disabled = idx >= currentList.length - 1;
+      }
+
       function updateCounterFromScroll() {
         if (!currentList.length) return;
         const slideHeight = swipeTrack.clientHeight;
@@ -3055,6 +3096,7 @@
         const clamped = Math.min(Math.max(idx, 0), currentList.length - 1);
         swipeCounter.textContent = `${clamped + 1} / ${currentList.length}`;
         setActiveSlide(clamped);
+        updateArrowState(clamped);
       }
 
       function goToSlide(idx) {
@@ -3066,6 +3108,14 @@
       swipeTab.addEventListener("click", openSwipe);
       swipeClose.addEventListener("click", closeSwipe);
       swipeTrack.addEventListener("scroll", updateCounterFromScroll);
+      swipeArrowUp.addEventListener("click", () => {
+        const idx = Math.round(swipeTrack.scrollTop / swipeTrack.clientHeight);
+        goToSlide(idx - 1);
+      });
+      swipeArrowDown.addEventListener("click", () => {
+        const idx = Math.round(swipeTrack.scrollTop / swipeTrack.clientHeight);
+        goToSlide(idx + 1);
+      });
       document.addEventListener("keydown", (e) => {
         if (!swipeOverlay.classList.contains("open")) return;
         if (e.key === "Escape") { closeSwipe(); return; }
