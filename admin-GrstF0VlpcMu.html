@@ -193,9 +193,16 @@
 
     <div class="card">
       <h2>🔑 GitHub Connection</h2>
-      <label for="gh-token">Personal access token (never saved, kept in memory for this session only)</label>
+      <label for="gh-token">Personal access token</label>
       <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off" />
-      <div id="token-status"><span class="dot" id="token-dot"></span><span id="token-text">Not connected</span></div>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;margin-top:-6px;margin-bottom:14px;">
+        <input type="checkbox" id="remember-token" style="width:auto;margin:0;" />
+        Remember for this browser session (cleared when you close the browser — anyone with access to this device while the tab stays open could use it)
+      </label>
+      <div id="token-status">
+        <span class="dot" id="token-dot"></span><span id="token-text">Not connected</span>
+        <button class="btn-ghost" id="disconnect-btn" style="display:none;margin-left:auto;padding:5px 14px;font-size:12px;">Disconnect</button>
+      </div>
     </div>
 
     <div class="card">
@@ -312,6 +319,8 @@
     const tokenInput = $("gh-token");
     const tokenDot = $("token-dot");
     const tokenText = $("token-text");
+    const rememberCheckbox = $("remember-token");
+    const disconnectBtn = $("disconnect-btn");
     const productList = $("product-list");
     const countEl = $("count");
     const saveBtn = $("save-btn");
@@ -329,7 +338,21 @@
     function setConnected(ok) {
       tokenDot.classList.toggle("ok", ok);
       tokenText.textContent = ok ? "Connected to " + REPO : "Not connected";
+      disconnectBtn.style.display = ok ? "inline-block" : "none";
     }
+
+    function disconnect() {
+      token = "";
+      tokenInput.value = "";
+      sessionStorage.removeItem("ghToken");
+      rememberCheckbox.checked = false;
+      products = [];
+      currentSha = null;
+      renderProducts();
+      setConnected(false);
+      showToast("Disconnected.");
+    }
+    disconnectBtn.addEventListener("click", disconnect);
 
     async function ghFetch(opts) {
       const res = await fetch(API_BASE, Object.assign({
@@ -346,6 +369,7 @@
         const res = await ghFetch();
         if (res.status === 401) {
           setConnected(false);
+          sessionStorage.removeItem("ghToken");
           showToast("Invalid or expired token.", true);
           return;
         }
@@ -507,8 +531,30 @@
       clearTimeout(tokenDebounce);
       token = tokenInput.value.trim();
       if (!token) { setConnected(false); return; }
+      if (rememberCheckbox.checked) {
+        sessionStorage.setItem("ghToken", token);
+      }
       tokenDebounce = setTimeout(loadProducts, 500);
     });
+
+    rememberCheckbox.addEventListener("change", () => {
+      if (rememberCheckbox.checked && token) {
+        sessionStorage.setItem("ghToken", token);
+      } else {
+        sessionStorage.removeItem("ghToken");
+      }
+    });
+
+    // 🔁 Restore token from sessionStorage if a previous tab in this session remembered it
+    (function restoreToken() {
+      const saved = sessionStorage.getItem("ghToken");
+      if (saved) {
+        token = saved;
+        tokenInput.value = saved;
+        rememberCheckbox.checked = true;
+        loadProducts();
+      }
+    })();
 
     // 📂 File import
     const importFileInput = $("import-file");
