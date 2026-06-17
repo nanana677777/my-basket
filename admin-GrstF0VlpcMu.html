@@ -270,6 +270,9 @@
       <input id="f-image" type="text" placeholder="https://..." />
       <label for="f-link">Lien produit (Temu)</label>
       <input id="f-link" type="text" placeholder="https://www.temu.com/.../goods.html?..." />
+      <label for="f-category">Catégorie (libre — tape un nom existant ou nouveau)</label>
+      <input id="f-category" type="text" list="category-suggestions" placeholder="Vêtements, Accessoires, Déco..." />
+      <datalist id="category-suggestions"></datalist>
       <div class="row-actions-top">
         <button class="btn-primary" id="save-btn">Ajouter l'article</button>
         <button class="btn-ghost" id="cancel-edit-btn" style="display:none;">Annuler</button>
@@ -357,6 +360,7 @@
 
     function renderProducts() {
       countEl.textContent = products.length;
+      updateCategorySuggestions();
       if (!products.length) {
         productList.innerHTML = '<div class="empty-state">Aucun article pour le moment. Ajoute le premier ci-dessus.</div>';
         return;
@@ -369,7 +373,7 @@
           <img src="${p.image || ""}" alt="" onerror="this.style.opacity=0">
           <div class="info">
             <div class="title">${(p.title || "Sans titre").replace(/</g, "&lt;")}</div>
-            <div class="price">💰 ${p.price || "?"} €${p.quantity ? " · x" + p.quantity : ""}</div>
+            <div class="price">💰 ${p.price || "?"} €${p.quantity ? " · x" + p.quantity : ""}${p.category ? " · 🏷️ " + p.category.replace(/</g, "&lt;") : ""}</div>
           </div>
           <div class="actions">
             <button class="btn-ghost" data-edit="${i}">Modifier</button>
@@ -378,6 +382,11 @@
         `;
         productList.appendChild(row);
       });
+    }
+
+    function updateCategorySuggestions() {
+      const cats = Array.from(new Set(products.map(p => (p.category || "").trim()).filter(Boolean))).sort();
+      $("category-suggestions").innerHTML = cats.map(c => `<option value="${c.replace(/"/g, "&quot;")}"></option>`).join("");
     }
 
     productList.addEventListener("click", (e) => {
@@ -395,6 +404,7 @@
       $("f-quantity").value = p.quantity || "";
       $("f-image").value = p.image || "";
       $("f-link").value = p.link || "";
+      $("f-category").value = p.category || "";
       formTitle.textContent = "✏️ Modifier l'article";
       saveBtn.textContent = "Enregistrer les modifications";
       cancelEditBtn.style.display = "inline-block";
@@ -403,7 +413,7 @@
 
     function resetForm() {
       editingIndex = null;
-      ["f-title", "f-price", "f-quantity", "f-image", "f-link"].forEach(id => $(id).value = "");
+      ["f-title", "f-price", "f-quantity", "f-image", "f-link", "f-category"].forEach(id => $(id).value = "");
       formTitle.textContent = "➕ Ajouter un article";
       saveBtn.textContent = "Ajouter l'article";
       cancelEditBtn.style.display = "none";
@@ -430,7 +440,8 @@
         price: $("f-price").value.trim(),
         quantity: $("f-quantity").value.trim() || "1",
         image: $("f-image").value.trim(),
-        link
+        link,
+        category: $("f-category").value.trim()
       };
 
       if (editingIndex !== null) {
