@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>About · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--pink); }
+
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 36px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid rgba(255,158,203,0.16);
+    border-radius: 20px;
+    padding: 26px 24px;
+    margin-bottom: 22px;
+  }
+  .card-emoji {
+    font-size: 26px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .card h2 {
+    font-size: 17px;
+    margin: 0 0 12px;
+    color: var(--pink);
+    letter-spacing: 0.2px;
+  }
+  .card p {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--text);
+    margin: 0 0 12px;
+  }
+  .card p:last-child { margin-bottom: 0; }
+  .card p.muted { color: var(--muted); font-size: 13.5px; }
+
+  .faq-item {
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding-top: 16px;
+    margin-top: 16px;
+  }
+  .faq-item:first-of-type {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+  .faq-q {
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--cyan);
+    margin: 0 0 8px;
+  }
+  .faq-a {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .cta-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+  .cta-btn {
+    padding: 11px 24px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13.5px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+  .cta-throne {
+    background: rgba(255, 183, 0, 0.15);
+    border: 1px solid rgba(255, 183, 0, 0.4);
+    color: #ffb700;
+  }
+  .cta-throne:hover { background: rgba(255, 183, 0, 0.25); transform: translateY(-1px); }
+  .cta-basket {
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    color: #1b1b26;
+  }
+  .cta-basket:hover { transform: translateY(-1px) scale(1.03); }
+
+  .foot-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 36px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="./index.html">← Back to the basket</a>
+
+    <h1>🩷 About this page</h1>
+    <p class="subtitle">A quick look behind My Temu Basket</p>
+
+    <div class="card">
+      <span class="card-emoji">✨</span>
+      <h2>Who's behind this</h2>
+      <p>Hey! I'm Nana677 — passionate about cosplay and fashion, always chasing the next outfit idea or prop that'll make a look come together. This site grew out of that: a running, organized list of things I've spotted and fallen for, instead of fifty open tabs and a messy memory.</p>
+    </div>
+
+    <div class="card">
+      <span class="card-emoji">🧺</span>
+      <h2>Why this list exists</h2>
+      <p>Honestly, a bit of both: it's mostly here to keep my own wishes in one tidy place instead of scattered across apps. But if something on here catches someone's eye and they'd like to gift it through Throne, that's genuinely sweet too — no pressure either way, the list works just fine as a personal mood board.</p>
+    </div>
+
+    <div class="card">
+      <span class="card-emoji">👑</span>
+      <h2>How Throne gifting works</h2>
+      <div class="faq-item">
+        <p class="faq-q">What is Throne?</p>
+        <p class="faq-a">Throne is a wishlist and creator-gifting platform. It lets people add items from a wishlist (like this one) and send them as gifts, without needing to share personal shipping details directly.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">How do I gift something from here?</p>
+        <p class="faq-a">Click on any item to open it, then hit "Add to Throne wishlist." That opens Throne's own gifting flow where you can complete the gift — I never see your payment or personal info, Throne handles all of that.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Is this list updated?</p>
+        <p class="faq-a">Yes — items get added, removed, or recategorized regularly as my own wishes change. There's no obligation tied to anything on it; it's just an evolving snapshot of what I currently love.</p>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <a class="cta-throne" href="https://throne.com/nana677" target="_blank">🎁 My Throne</a>
+      <a class="cta-basket" href="./index.html">🧺 Back to the basket</a>
+    </div>
+
+    <p class="foot-note">Made with 🩷 by Nana677</p>
+  </div>
+</body>
+</html>
