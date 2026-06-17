@@ -917,6 +917,189 @@
         50% { box-shadow: 4px 0 28px rgba(255, 158, 203, 0.8), 0 0 0 6px rgba(255,158,203,0.05); }
       }
 
+      /* 🎲 Pick-for-me launcher tab (sits just above the links tab) */
+      #pick-tab {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) translateY(-82px);
+        z-index: 999;
+        background: linear-gradient(135deg, #7df9ff, #c9a6ff);
+        color: #1b1b26;
+        font-weight: 900;
+        font-size: 13px;
+        width: 40px;
+        height: 64px;
+        border-radius: 0 14px 14px 0;
+        cursor: pointer;
+        box-shadow: 4px 0 20px rgba(125, 249, 255, 0.4), 0 0 0 3px rgba(125,249,255,0.12);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        user-select: none;
+        border: none;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        writing-mode: vertical-rl;
+        letter-spacing: 1px;
+        padding: 10px 0;
+      }
+      #pick-tab .tab-icon {
+        writing-mode: horizontal-tb;
+        font-size: 17px;
+      }
+      #pick-tab:hover {
+        width: 46px;
+        box-shadow: 6px 0 28px rgba(125, 249, 255, 0.6), 0 0 0 4px rgba(125,249,255,0.18);
+      }
+
+      /* 🎲 Pick-for-me modal */
+      #pick-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 2500;
+        background: rgba(8, 8, 14, 0.78);
+        backdrop-filter: blur(10px);
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      #pick-overlay.open {
+        display: flex;
+        animation: overlayFade 0.25s ease;
+      }
+      #pick-panel {
+        width: 100%;
+        max-width: 340px;
+        background: #1b1b26;
+        border: 1px solid rgba(125, 249, 255, 0.3);
+        border-radius: 24px;
+        padding: 26px 22px;
+        box-shadow: 0 0 60px rgba(125, 249, 255, 0.12), 0 20px 50px rgba(0,0,0,0.6);
+        text-align: center;
+        transform: scale(0.92) translateY(10px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #pick-overlay.open #pick-panel {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+      #pick-panel h3 {
+        margin: 0 0 16px;
+        font-size: 16px;
+        color: #7df9ff;
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 12px rgba(125, 249, 255, 0.4);
+      }
+      #pick-close {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #cfc9d8;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+      #pick-close:hover {
+        background: rgba(125,249,255,0.2);
+        color: #fff;
+        transform: rotate(90deg);
+      }
+      #pick-stage {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        overflow: hidden;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #pick-stage img {
+        max-width: 88%;
+        max-height: 88%;
+        object-fit: contain;
+        border-radius: 12px;
+      }
+      #pick-stage.spinning img {
+        filter: blur(1px);
+      }
+      #pick-result-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #f3f3f7;
+        margin: 0 0 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.35;
+      }
+      #pick-result-price {
+        font-size: 13px;
+        color: #7df9ff;
+        font-weight: 800;
+        margin: 0 0 18px;
+      }
+      #pick-stage-placeholder {
+        font-size: 40px;
+        opacity: 0.3;
+      }
+      .pick-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+      .pick-actions button, .pick-actions a {
+        padding: 10px 20px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
+      #pick-spin-btn {
+        background: linear-gradient(135deg, #7df9ff, #c9a6ff);
+        color: #1b1b26;
+      }
+      #pick-spin-btn:hover { transform: translateY(-1px) scale(1.03); }
+      #pick-spin-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+      #pick-view-btn {
+        background: rgba(255,255,255,0.08);
+        color: #f3f3f7;
+        border: 1px solid rgba(255,255,255,0.15);
+      }
+      #pick-view-btn:hover { background: rgba(255,255,255,0.14); }
+      #pick-view-btn.hidden { display: none; }
+
+      @media (max-width: 640px) {
+        #pick-tab {
+          width: 36px;
+          height: 56px;
+          font-size: 11px;
+          transform: translateY(-50%) translateY(-70px);
+        }
+      }
+
       /* 🎀 Linktree modal overlay */
       #linktree-overlay {
         display: none;
@@ -2084,6 +2267,25 @@
     <!-- 🎀 Linktree launcher + modal -->
     <button id="linktree-tab"><span class="tab-icon">🎀</span>links</button>
 
+    <!-- 🎲 Pick-for-me launcher + modal -->
+    <button id="pick-tab"><span class="tab-icon">🎲</span>pick</button>
+
+    <div id="pick-overlay">
+      <div id="pick-panel">
+        <button id="pick-close" title="Close">✕</button>
+        <h3>🎲 Pick something for me</h3>
+        <div id="pick-stage">
+          <span id="pick-stage-placeholder">🛍️</span>
+        </div>
+        <div id="pick-result-title"></div>
+        <div id="pick-result-price"></div>
+        <div class="pick-actions">
+          <button id="pick-spin-btn">🎲 Spin</button>
+          <a id="pick-view-btn" class="hidden" href="#" target="_blank">🛒 View item</a>
+        </div>
+      </div>
+    </div>
+
     <div id="linktree-overlay">
       <div id="linktree-panel">
         <!-- 🔢 Reddit affiche le karma en LIVE via l'API publique Reddit (about.json). -->
@@ -2168,6 +2370,99 @@
         var el = document.getElementById("reddit-follower-count");
         if (el) el.remove();
       });
+  </script>
+
+  <script>
+    // 🎲 Pick-for-me roulette
+    (function () {
+      const pickOverlay = document.getElementById("pick-overlay");
+      const pickStage = document.getElementById("pick-stage");
+      const pickStagePlaceholder = document.getElementById("pick-stage-placeholder");
+      const pickSpinBtn = document.getElementById("pick-spin-btn");
+      const pickViewBtn = document.getElementById("pick-view-btn");
+      const pickResultTitle = document.getElementById("pick-result-title");
+      const pickResultPrice = document.getElementById("pick-result-price");
+
+      let spinTimer = null;
+      let stageImg = null;
+
+      function openPick() {
+        pickOverlay.classList.add("open");
+      }
+      function closePick() {
+        pickOverlay.classList.remove("open");
+        if (spinTimer) { clearTimeout(spinTimer); spinTimer = null; }
+      }
+
+      document.getElementById("pick-tab").addEventListener("click", openPick);
+      document.getElementById("pick-close").addEventListener("click", closePick);
+      pickOverlay.addEventListener("click", (e) => {
+        if (e.target === pickOverlay) closePick();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && pickOverlay.classList.contains("open")) closePick();
+      });
+
+      function ensureStageImg() {
+        if (!stageImg) {
+          stageImg = document.createElement("img");
+          pickStage.innerHTML = "";
+          pickStage.appendChild(stageImg);
+        }
+        return stageImg;
+      }
+
+      function spin() {
+        const pool = (typeof rawProducts !== "undefined" ? rawProducts : []).filter(p => p && p.image);
+        if (!pool.length) {
+          pickResultTitle.textContent = "No items available to pick from yet.";
+          pickResultPrice.textContent = "";
+          return;
+        }
+
+        pickSpinBtn.disabled = true;
+        pickViewBtn.classList.add("hidden");
+        pickResultTitle.textContent = "";
+        pickResultPrice.textContent = "";
+        pickStage.classList.add("spinning");
+        const img = ensureStageImg();
+
+        const finalPick = pool[Math.floor(Math.random() * pool.length)];
+
+        // Cycle through random images, slowing down, like a slot machine
+        let delay = 60;
+        const maxDelay = 280;
+        const growth = 1.18;
+        let elapsedSteps = 0;
+        const minSteps = 14;
+
+        function step() {
+          const candidate = pool[Math.floor(Math.random() * pool.length)];
+          img.src = candidate.image;
+          elapsedSteps++;
+          delay = Math.min(delay * growth, maxDelay);
+
+          if (delay >= maxDelay && elapsedSteps >= minSteps) {
+            // Land on the real pick
+            img.src = finalPick.image;
+            pickStage.classList.remove("spinning");
+            pickResultTitle.textContent = finalPick.title || "Untitled";
+            pickResultPrice.textContent = finalPick.price ? `💰 ${finalPick.price} €` : "";
+            if (finalPick.link) {
+              pickViewBtn.href = finalPick.link;
+              pickViewBtn.classList.remove("hidden");
+            }
+            pickSpinBtn.disabled = false;
+            spinTimer = null;
+            return;
+          }
+          spinTimer = setTimeout(step, delay);
+        }
+        step();
+      }
+
+      pickSpinBtn.addEventListener("click", spin);
+    })();
   </script>
   </body>
 </html>
