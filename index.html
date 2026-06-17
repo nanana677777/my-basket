@@ -3057,11 +3057,27 @@
         setActiveSlide(clamped);
       }
 
+      function goToSlide(idx) {
+        if (!currentList.length) return;
+        const clamped = Math.min(Math.max(idx, 0), currentList.length - 1);
+        swipeTrack.scrollTo({ top: clamped * swipeTrack.clientHeight, behavior: "smooth" });
+      }
+
       swipeTab.addEventListener("click", openSwipe);
       swipeClose.addEventListener("click", closeSwipe);
       swipeTrack.addEventListener("scroll", updateCounterFromScroll);
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && swipeOverlay.classList.contains("open")) closeSwipe();
+        if (!swipeOverlay.classList.contains("open")) return;
+        if (e.key === "Escape") { closeSwipe(); return; }
+        if (!currentList.length) return;
+        const currentIdx = Math.round(swipeTrack.scrollTop / swipeTrack.clientHeight);
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+          e.preventDefault();
+          goToSlide(currentIdx + 1);
+        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+          e.preventDefault();
+          goToSlide(currentIdx - 1);
+        }
       });
     })();
   </script>
