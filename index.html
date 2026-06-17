@@ -750,6 +750,11 @@
       }
       #view-toggle:active { transform: scale(0.95); }
 
+      /* 🙈 Hide product title in grid view (keep it in list view) */
+      .gallery:not(.list-view) .card-info a {
+        display: none;
+      }
+
       /* 📋 List view styles */
       .gallery.list-view {
         display: flex !important;
