@@ -1922,6 +1922,104 @@
         color: #1b1b26;
       }
       #hl-restart-btn:hover { transform: translateY(-1px) scale(1.03); }
+
+      /* ☁️ Cloud view overlay */
+      #cloud-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1500;
+        background: #0a0a0e;
+        overflow: hidden;
+      }
+      #cloud-overlay.open { display: block; }
+      #cloud-close {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 1600;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(6px);
+      }
+      #cloud-hint {
+        position: fixed;
+        top: 22px;
+        left: 18px;
+        z-index: 1600;
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.55);
+        background: rgba(255,255,255,0.06);
+        padding: 6px 14px;
+        border-radius: 999px;
+      }
+      #cloud-field {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      .cloud-bubble {
+        position: absolute;
+        border-radius: 50%;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid rgba(255,255,255,0.12);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        animation: cloudFloat 7s ease-in-out infinite;
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      }
+      .cloud-bubble img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .cloud-bubble:hover {
+        transform: scale(1.08);
+        border-color: rgba(255,158,203,0.6);
+        box-shadow: 0 8px 30px rgba(255,158,203,0.35);
+        z-index: 5;
+        animation-play-state: paused;
+      }
+      .cloud-bubble .cloud-price-tag {
+        position: absolute;
+        bottom: 6%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(8,8,14,0.78);
+        color: #7df9ff;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 2px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      @keyframes cloudFloat {
+        0%, 100% { translate: 0 0; }
+        25% { translate: 6px -10px; }
+        50% { translate: -4px 6px; }
+        75% { translate: -8px -4px; }
+      }
+      #cloud-empty {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #cfc9d8;
+        text-align: center;
+        font-size: 14px;
+        padding: 0 30px;
+      }
     </style>
   </head>
   <!-- ✨ magical sparkles on mouse move -->
@@ -1992,6 +2090,7 @@
       <button id="share-btn">🔗 Share Basket</button>
       <button id="tint-toggle">🎨 Color Tint: ON</button>
       <button id="view-toggle">🎴 List View</button>
+      <button id="cloud-toggle">☁️ Cloud View</button>
     </div>
 
     <!-- 🔗 Share toast -->
@@ -3012,6 +3111,13 @@
       </div>
     </div>
 
+    <!-- ☁️ Cloud view overlay -->
+    <div id="cloud-overlay">
+      <button id="cloud-close" title="Close">✕</button>
+      <div id="cloud-hint">Bubble size = price. Click one to view it.</div>
+      <div id="cloud-field"></div>
+    </div>
+
     <div id="linktree-overlay">
       <div id="linktree-panel">
         <!-- 🔢 Reddit affiche le karma en LIVE via l'API publique Reddit (about.json). -->
@@ -3518,6 +3624,102 @@
         if (hlGameover.classList.contains("show")) return;
         if (e.key === "ArrowUp") guess("higher");
         if (e.key === "ArrowDown") guess("lower");
+      });
+    })();
+  </script>
+
+  <script>
+    // ☁️ Cloud view — bubbles sized by price, gently floating
+    (function () {
+      const cloudToggle = document.getElementById("cloud-toggle");
+      const cloudOverlay = document.getElementById("cloud-overlay");
+      const cloudClose = document.getElementById("cloud-close");
+      const cloudField = document.getElementById("cloud-field");
+
+      function buildCloud() {
+        const list = (typeof getFilteredProducts === "function") ? getFilteredProducts() : [];
+        cloudField.innerHTML = "";
+
+        const withPrice = list.filter(p => p && p.image && p.price && !isNaN(priceNumber(p.price)));
+        if (!withPrice.length) {
+          cloudField.innerHTML = `<div id="cloud-empty">No items match your current filters.<br>Try clearing them and come back!</div>`;
+          return;
+        }
+
+        const prices = withPrice.map(p => priceNumber(p.price));
+        const minP = Math.min(...prices);
+        const maxP = Math.max(...prices);
+        const MIN_SIZE = 64;
+        const MAX_SIZE = 168;
+
+        function sizeFor(price) {
+          if (maxP === minP) return (MIN_SIZE + MAX_SIZE) / 2;
+          const t = (price - minP) / (maxP - minP);
+          return MIN_SIZE + t * (MAX_SIZE - MIN_SIZE);
+        }
+
+        const fieldW = cloudField.clientWidth || window.innerWidth;
+        const fieldH = cloudField.clientHeight || window.innerHeight;
+        const placed = [];
+
+        // Cap how many bubbles we lay out at once for perf/readability on huge lists
+        const MAX_BUBBLES = 60;
+        const shuffled = withPrice.slice().sort(() => Math.random() - 0.5).slice(0, MAX_BUBBLES);
+
+        shuffled.forEach((product, i) => {
+          const size = sizeFor(priceNumber(product.price));
+          let x, y, tries = 0, ok = false;
+
+          while (tries < 40 && !ok) {
+            x = Math.random() * Math.max(fieldW - size, 10);
+            y = Math.random() * Math.max(fieldH - size - 60, 10) + 50;
+            ok = placed.every(b => {
+              const dx = (x + size / 2) - (b.x + b.size / 2);
+              const dy = (y + size / 2) - (b.y + b.size / 2);
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              return dist > (size + b.size) / 2 * 0.82;
+            });
+            tries++;
+          }
+          placed.push({ x, y, size });
+
+          const bubble = document.createElement("div");
+          bubble.className = "cloud-bubble";
+          bubble.style.width = size + "px";
+          bubble.style.height = size + "px";
+          bubble.style.left = x + "px";
+          bubble.style.top = y + "px";
+          bubble.style.animationDelay = (Math.random() * -7).toFixed(2) + "s";
+          bubble.style.animationDuration = (6 + Math.random() * 3).toFixed(2) + "s";
+          bubble.title = product.title || "";
+          bubble.innerHTML = `
+            <img src="${product.image}" alt="" loading="lazy">
+            <div class="cloud-price-tag">💰 ${product.price} €</div>
+          `;
+          bubble.addEventListener("click", () => {
+            if (product.link) window.open(product.link, "_blank");
+          });
+          cloudField.appendChild(bubble);
+        });
+      }
+
+      function openCloud() {
+        cloudOverlay.classList.add("open");
+        document.body.style.overflow = "hidden";
+        requestAnimationFrame(buildCloud);
+      }
+      function closeCloud() {
+        cloudOverlay.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+
+      cloudToggle.addEventListener("click", openCloud);
+      cloudClose.addEventListener("click", closeCloud);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && cloudOverlay.classList.contains("open")) closeCloud();
+      });
+      window.addEventListener("resize", () => {
+        if (cloudOverlay.classList.contains("open")) buildCloud();
       });
     })();
   </script>
