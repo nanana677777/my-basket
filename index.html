@@ -1462,6 +1462,39 @@
         color: #1b1b26;
       }
       #tour-next:hover { transform: translateY(-1px) scale(1.03); }
+
+      #tour-final-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 16px;
+      }
+      .tour-final-btn {
+        padding: 9px 18px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 700;
+        font-size: 12.5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s ease;
+      }
+      .tour-final-throne {
+        background: rgba(255, 183, 0, 0.15);
+        border: 1px solid rgba(255, 183, 0, 0.4);
+        color: #ffb700;
+      }
+      .tour-final-throne:hover {
+        background: rgba(255, 183, 0, 0.25);
+        transform: translateY(-1px);
+      }
+      .tour-final-socials {
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        color: #1b1b26;
+      }
+      .tour-final-socials:hover { transform: translateY(-1px) scale(1.03); }
     </style>
   </head>
   <!-- ✨ magical sparkles on mouse move -->
@@ -2437,11 +2470,22 @@
           <p>Hit the dice button on the left edge of the screen to randomly pick something from the whole list for you.</p>
         </div>
 
+        <div class="tour-step" data-step="4" style="display:none;">
+          <div class="tour-emoji">🩷</div>
+          <h4>Want to gift me something?</h4>
+          <p>Check out my Throne wishlist, or find me on Instagram, TikTok, and more via the 🎀 links button.</p>
+          <div id="tour-final-actions">
+            <a href="https://throne.com/nana677" target="_blank" class="tour-final-btn tour-final-throne">🎁 My Throne</a>
+            <button id="tour-open-links" class="tour-final-btn tour-final-socials">🎀 My socials</button>
+          </div>
+        </div>
+
         <div id="tour-dots">
           <div class="tour-dot active" data-dot="0"></div>
           <div class="tour-dot" data-dot="1"></div>
           <div class="tour-dot" data-dot="2"></div>
           <div class="tour-dot" data-dot="3"></div>
+          <div class="tour-dot" data-dot="4"></div>
         </div>
 
         <div id="tour-actions">
@@ -2698,6 +2742,14 @@
         if (e.key === "Escape" && overlay.classList.contains("open")) closeTour();
       });
       helpTab.addEventListener("click", openTour);
+
+      const openLinksBtn = document.getElementById("tour-open-links");
+      if (openLinksBtn) {
+        openLinksBtn.addEventListener("click", () => {
+          closeTour();
+          if (typeof openLinktree === "function") openLinktree();
+        });
+      }
 
       // Auto-show once for new visitors
       if (!localStorage.getItem(TOUR_KEY)) {
