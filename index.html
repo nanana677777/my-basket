@@ -1027,6 +1027,33 @@
       .social-link.sl-erome:hover .social-icon { background: #ff6b9d; box-shadow: 0 0 14px rgba(255,107,157,0.6); }
       .social-link.sl-mym:hover { background: rgba(212,175,55,0.16); border-color: rgba(212,175,55,0.5); }
       .social-link.sl-mym:hover .social-icon { background: #d4af37; box-shadow: 0 0 14px rgba(212,175,55,0.6); }
+      .sl-follower-count {
+        margin-left: auto;
+        font-size: 11px;
+        font-weight: 700;
+        color: #b8b2c4;
+        background: rgba(255,255,255,0.06);
+        padding: 3px 8px;
+        border-radius: 999px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+      }
+      .social-link:hover .sl-follower-count {
+        color: #fff;
+        background: rgba(255,255,255,0.12);
+      }
+      .sl-follower-count.live {
+        color: #7dffa0;
+        background: rgba(124,255,160,0.1);
+      }
+      .sl-follower-count.live::before {
+        content: "● ";
+        font-size: 8px;
+      }
+      .sl-follower-count.loading {
+        opacity: 0.4;
+      }
       #linktree-divider {
         height: 1px;
         background: rgba(255,255,255,0.08);
@@ -2058,6 +2085,7 @@
 
     <div id="linktree-overlay">
       <div id="linktree-panel">
+        <!-- 🔢 Reddit affiche le karma en LIVE via l'API publique Reddit (about.json). -->
         <div id="linktree-panel-head">
           <h3>🩷 Find me here</h3>
           <button id="linktree-close" title="Fermer">✕</button>
@@ -2081,6 +2109,7 @@
         </a>
         <a class="social-link sl-reddit" href="https://www.reddit.com/user/nana677_" target="_blank">
           <span class="social-icon">🤖</span> Reddit
+          <span class="sl-follower-count loading" id="reddit-follower-count">···</span>
         </a>
         <a class="social-link sl-telegram" href="https://t.me/nana677" target="_blank">
           <span class="social-icon">✈️</span> Telegram
@@ -2108,6 +2137,36 @@
     document.addEventListener("keydown", function(e) {
       if (e.key === "Escape") closeLinktree();
     });
+
+    // 🔢 Format large numbers (1234 -> 1.2K, 1200000 -> 1.2M)
+    function formatFollowerCount(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+      return String(n);
+    }
+
+    // 📡 Live Reddit follower count (public about.json, no auth needed)
+    fetch("https://www.reddit.com/user/nana677_/about.json")
+      .then(function(res) {
+        if (!res.ok) throw new Error("reddit fetch failed: " + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        var karma = data && data.data ? data.data.total_karma : null;
+        var el = document.getElementById("reddit-follower-count");
+        if (karma !== null && karma !== undefined) {
+          el.textContent = formatFollowerCount(karma) + " karma";
+          el.classList.remove("loading");
+          el.classList.add("live");
+        } else {
+          el.remove();
+        }
+      })
+      .catch(function() {
+        // Reddit blocks cross-origin sometimes — fail silently, just hide the badge
+        var el = document.getElementById("reddit-follower-count");
+        if (el) el.remove();
+      });
   </script>
   </body>
 </html>
