@@ -755,6 +755,38 @@
         display: none;
       }
 
+      /* 🏷️ Category filter chips */
+      #category-filters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin: 10px 0 4px;
+      }
+      .category-chip {
+        padding: 6px 16px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #cfc9d8;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+      .category-chip:hover {
+        background: rgba(255,158,203,0.12);
+        border-color: rgba(255,158,203,0.4);
+        color: #fff;
+      }
+      .category-chip.active {
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        border-color: transparent;
+        color: #1b1b26;
+        box-shadow: 0 0 14px rgba(255,158,203,0.4);
+      }
+
       /* 📋 List view styles */
       .gallery.list-view {
         display: flex !important;
@@ -1216,6 +1248,7 @@
         Price ↓
       </button>
     </div>
+    <div id="category-filters"></div>
     <input type="text" id="search" placeholder="🔎 Search products..." />
     <!-- 🛍️ Product detail modal -->
     <div id="product-modal">
@@ -1267,6 +1300,7 @@
       let throneAdded = new Set(JSON.parse(localStorage.getItem("temuThroneAdded")) || []);
       let showingWishlist = sessionStorage.getItem("showingWishlist") === "1";
       let tintEnabled = localStorage.getItem("temuTintEnabled") !== "0"; // default ON
+      let activeCategory = sessionStorage.getItem("activeCategory") || null; // null = all categories
 
       // Fetch JSON
       document
@@ -1283,6 +1317,7 @@
 
               localStorage.setItem("temuBasketData", e.target.result);
 
+              renderCategoryFilters();
               displayProducts(rawProducts);
 
               // 👻 hide after loading
@@ -1342,15 +1377,66 @@
       ];
 
       function applyRangeFilter() {
-        const base = showingWishlist
-          ? rawProducts.filter(p => favorites.includes(p.link))
-          : rawProducts;
-        if (activeRangeFilter === null) {
-          displayProducts(base);
-        } else {
-          const { test } = PIE_RANGES[activeRangeFilter];
-          displayProducts(base.filter(p => test(priceNumber(p.price))));
+        applyAllFilters();
+      }
+
+      // 🏷️ Build the category chip bar from whatever categories exist in the data
+      function renderCategoryFilters() {
+        const container = document.getElementById("category-filters");
+        const cats = Array.from(new Set(
+          rawProducts.map(p => (p.category || "").trim()).filter(Boolean)
+        )).sort((a, b) => a.localeCompare(b));
+
+        if (!cats.length) {
+          container.innerHTML = "";
+          return;
         }
+
+        // If the saved active category no longer exists in the data, reset it
+        if (activeCategory && !cats.includes(activeCategory)) {
+          activeCategory = null;
+          sessionStorage.removeItem("activeCategory");
+        }
+
+        container.innerHTML = `<div class="category-chip${activeCategory === null ? " active" : ""}" data-cat="">All</div>`
+          + cats.map(c => `<div class="category-chip${activeCategory === c ? " active" : ""}" data-cat="${c.replace(/"/g, "&quot;")}">${c}</div>`).join("");
+
+        container.querySelectorAll(".category-chip").forEach(chip => {
+          chip.addEventListener("click", () => {
+            const cat = chip.getAttribute("data-cat");
+            activeCategory = cat === "" ? null : cat;
+            if (activeCategory) {
+              sessionStorage.setItem("activeCategory", activeCategory);
+            } else {
+              sessionStorage.removeItem("activeCategory");
+            }
+            renderCategoryFilters();
+            applyAllFilters();
+          });
+        });
+      }
+
+      // 🔎 Single source of truth: combines wishlist + price range + category + search
+      function applyAllFilters() {
+        let base = showingWishlist
+          ? rawProducts.filter(p => favorites.includes(p.link))
+          : rawProducts.slice();
+
+        if (activeCategory) {
+          base = base.filter(p => (p.category || "").trim() === activeCategory);
+        }
+
+        if (activeRangeFilter !== null) {
+          const { test } = PIE_RANGES[activeRangeFilter];
+          base = base.filter(p => test(priceNumber(p.price)));
+        }
+
+        const term = (document.getElementById("search") ? document.getElementById("search").value : "").toLowerCase();
+        if (term) {
+          base = base.filter(p => (p.title || "").toLowerCase().includes(term));
+        }
+
+        displayProducts(base);
       }
 
       function renderPieChart(products) {
@@ -1661,12 +1747,8 @@
       if (savedBasket) {
         try {
           rawProducts = JSON.parse(savedBasket);
-          // Re-apply saved filters after load
-          if (showingWishlist || activeRangeFilter !== null) {
-            applyRangeFilter();
-          } else {
-            displayProducts(rawProducts);
-          }
+          renderCategoryFilters();
+          applyAllFilters();
 
           // 👻 hide the file picker
           jsonLoader.style.display = "none";
@@ -1682,11 +1764,8 @@
           })
           .then(function (data) {
             rawProducts = data;
-            if (showingWishlist || activeRangeFilter !== null) {
-              applyRangeFilter();
-            } else {
-              displayProducts(rawProducts);
-            }
+            renderCategoryFilters();
+            applyAllFilters();
             jsonLoader.style.display = "none";
           })
           .catch(function (err) {
@@ -1823,21 +1902,11 @@
           setTimeout(() => heart.remove(), 800);
         });
       });
-      // Search filter that respects wishlist filter
+      // Search filter — now goes through the centralized filter pipeline
       const searchInput = document.getElementById("search");
 
       searchInput.addEventListener("input", () => {
-        const term = searchInput.value.toLowerCase();
-
-        const base = showingWishlist
-          ? rawProducts.filter((p) => favorites.includes(p.link))
-          : rawProducts;
-
-        const filtered = base.filter((p) =>
-          (p.title || "").toLowerCase().includes(term),
-        );
-
-        displayProducts(filtered);
+        applyAllFilters();
       });
 
       // 📸 Screenshot — use native screen capture API
@@ -1974,6 +2043,7 @@
           rawProducts = await raw.json();
 
           localStorage.setItem("temuBasketData", JSON.stringify(rawProducts));
+          renderCategoryFilters();
           displayProducts(rawProducts);
 
           // Hide file picker
