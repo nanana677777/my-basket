@@ -1534,6 +1534,52 @@
         box-shadow: 6px 0 28px rgba(125, 249, 255, 0.55), 0 0 0 4px rgba(125,249,255,0.16);
       }
 
+      /* 🎮 Higher/Lower game launcher tab */
+      #hl-tab {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) translateY(-246px);
+        z-index: 999;
+        background: linear-gradient(135deg, #c9a6ff, #ff9ecb);
+        color: #1b1b26;
+        font-weight: 900;
+        font-size: 13px;
+        width: 40px;
+        height: 64px;
+        border-radius: 0 14px 14px 0;
+        cursor: pointer;
+        box-shadow: 4px 0 20px rgba(201, 166, 255, 0.35), 0 0 0 3px rgba(201,166,255,0.1);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        user-select: none;
+        border: none;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        writing-mode: vertical-rl;
+        letter-spacing: 1px;
+        padding: 10px 0;
+      }
+      #hl-tab .tab-icon {
+        writing-mode: horizontal-tb;
+        font-size: 17px;
+      }
+      #hl-tab:hover {
+        width: 46px;
+        box-shadow: 6px 0 28px rgba(201, 166, 255, 0.55), 0 0 0 4px rgba(201,166,255,0.16);
+      }
+      @media (max-width: 640px) {
+        #hl-tab {
+          width: 36px;
+          height: 56px;
+          font-size: 11px;
+          transform: translateY(-50%) translateY(-210px);
+        }
+      }
+
       /* 📱 Fullscreen swipe overlay */
       #swipe-overlay {
         display: none;
@@ -1716,6 +1762,166 @@
         }
         #swipe-arrows { display: none; }
       }
+
+      /* 🎮 Higher/Lower game overlay */
+      #hl-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 4500;
+        background: #0a0a0e;
+        flex-direction: column;
+        align-items: center;
+      }
+      #hl-overlay.open { display: flex; }
+      #hl-header {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 18px;
+        flex-shrink: 0;
+      }
+      #hl-score-wrap {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .hl-score-pill {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #cfc9d8;
+      }
+      .hl-score-pill span {
+        color: #ff9ecb;
+        font-size: 14px;
+      }
+      .hl-score-pill.hl-best span { color: #7df9ff; }
+      #hl-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #hl-stage {
+        flex: 1;
+        width: 100%;
+        max-width: 720px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 14px;
+        padding: 10px 20px 30px;
+      }
+      @media (min-width: 720px) {
+        #hl-stage { flex-direction: row; align-items: center; }
+      }
+      .hl-card {
+        flex: 1;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        transition: border-color 0.3s ease, background 0.3s ease;
+      }
+      .hl-card img {
+        max-width: 100%;
+        max-height: 32vh;
+        object-fit: contain;
+        border-radius: 12px;
+        margin-bottom: 12px;
+      }
+      .hl-card .hl-title {
+        color: #f3f3f7;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+      .hl-card .hl-price {
+        font-size: 20px;
+        font-weight: 800;
+        color: #7df9ff;
+      }
+      .hl-card .hl-price.hl-hidden { filter: blur(7px); user-select: none; }
+      .hl-card.hl-correct { border-color: rgba(125,255,160,0.6); background: rgba(125,255,160,0.06); }
+      .hl-card.hl-wrong { border-color: rgba(255,107,129,0.6); background: rgba(255,107,129,0.06); }
+      .hl-vs {
+        font-size: 13px;
+        font-weight: 900;
+        color: #cfc9d8;
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .hl-guess-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+        width: 100%;
+      }
+      .hl-guess-btn {
+        flex: 1;
+        padding: 10px 0;
+        border-radius: 999px;
+        border: none;
+        font-weight: 800;
+        font-size: 13px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #c9a6ff, #ff9ecb);
+        color: #1b1b26;
+        transition: transform 0.15s ease;
+      }
+      .hl-guess-btn:hover { transform: scale(1.04); }
+      .hl-guess-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+      #hl-gameover {
+        display: none;
+        flex: 1;
+        width: 100%;
+        max-width: 420px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 14px;
+        padding: 20px;
+      }
+      #hl-gameover.show { display: flex; }
+      #hl-gameover .hl-go-emoji { font-size: 48px; }
+      #hl-gameover h3 { margin: 0; font-size: 19px; color: #ff9ecb; }
+      #hl-gameover p { margin: 0; color: #cfc9d8; font-size: 13.5px; }
+      #hl-restart-btn {
+        margin-top: 6px;
+        padding: 11px 26px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 800;
+        font-size: 13.5px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #c9a6ff, #ff9ecb);
+        color: #1b1b26;
+      }
+      #hl-restart-btn:hover { transform: translateY(-1px) scale(1.03); }
     </style>
   </head>
   <!-- ✨ magical sparkles on mouse move -->
@@ -2740,6 +2946,9 @@
     <!-- 📱 Fullscreen swipe ("TikTok mode") launcher -->
     <button id="swipe-tab"><span class="tab-icon">📱</span>swipe</button>
 
+    <!-- 🎮 Higher/Lower game launcher -->
+    <button id="hl-tab"><span class="tab-icon">🎮</span>game</button>
+
     <div id="pick-overlay">
       <div id="pick-panel">
         <button id="pick-close" title="Close">✕</button>
@@ -2765,6 +2974,42 @@
         <button id="swipe-arrow-down" class="swipe-arrow-btn" title="Next">↓</button>
       </div>
       <div id="swipe-track"></div>
+    </div>
+
+    <!-- 🎮 Higher/Lower game overlay -->
+    <div id="hl-overlay">
+      <div id="hl-header">
+        <div id="hl-score-wrap">
+          <div class="hl-score-pill">Score <span id="hl-score">0</span></div>
+          <div class="hl-score-pill hl-best">Best <span id="hl-best">0</span></div>
+        </div>
+        <button id="hl-close" title="Close">✕</button>
+      </div>
+
+      <div id="hl-stage">
+        <div class="hl-card" id="hl-card-left">
+          <img id="hl-img-left" src="" alt="">
+          <div class="hl-title" id="hl-title-left"></div>
+          <div class="hl-price" id="hl-price-left"></div>
+        </div>
+        <div class="hl-vs">VS<br>higher<br>or<br>lower?</div>
+        <div class="hl-card" id="hl-card-right">
+          <img id="hl-img-right" src="" alt="">
+          <div class="hl-title" id="hl-title-right"></div>
+          <div class="hl-price hl-hidden" id="hl-price-right"></div>
+          <div class="hl-guess-row">
+            <button class="hl-guess-btn" id="hl-guess-higher">⬆️ Higher</button>
+            <button class="hl-guess-btn" id="hl-guess-lower">⬇️ Lower</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="hl-gameover">
+        <div class="hl-go-emoji">💔</div>
+        <h3>Game over!</h3>
+        <p id="hl-go-text"></p>
+        <button id="hl-restart-btn">🔁 Play again</button>
+      </div>
     </div>
 
     <div id="linktree-overlay">
@@ -3128,6 +3373,151 @@
           e.preventDefault();
           goToSlide(currentIdx - 1);
         }
+      });
+    })();
+  </script>
+
+  <script>
+    // 🎮 Higher/Lower game
+    (function () {
+      const HL_BEST_KEY = "temuBasketHLBest";
+
+      const hlTab = document.getElementById("hl-tab");
+      const hlOverlay = document.getElementById("hl-overlay");
+      const hlClose = document.getElementById("hl-close");
+      const hlScoreEl = document.getElementById("hl-score");
+      const hlBestEl = document.getElementById("hl-best");
+      const hlStage = document.getElementById("hl-stage");
+      const hlGameover = document.getElementById("hl-gameover");
+      const hlGoText = document.getElementById("hl-go-text");
+      const hlRestartBtn = document.getElementById("hl-restart-btn");
+
+      const cardLeft = document.getElementById("hl-card-left");
+      const cardRight = document.getElementById("hl-card-right");
+      const imgLeft = document.getElementById("hl-img-left");
+      const imgRight = document.getElementById("hl-img-right");
+      const titleLeft = document.getElementById("hl-title-left");
+      const titleRight = document.getElementById("hl-title-right");
+      const priceLeft = document.getElementById("hl-price-left");
+      const priceRight = document.getElementById("hl-price-right");
+      const guessHigherBtn = document.getElementById("hl-guess-higher");
+      const guessLowerBtn = document.getElementById("hl-guess-lower");
+
+      let pool = [];
+      let leftItem = null;
+      let rightItem = null;
+      let score = 0;
+      let best = parseInt(localStorage.getItem(HL_BEST_KEY) || "0", 10);
+      let locked = false;
+
+      function getPool() {
+        return rawProducts.filter(p => p && p.image && p.price && !isNaN(priceNumber(p.price)));
+      }
+
+      function randomItem(exclude) {
+        let candidate;
+        do {
+          candidate = pool[Math.floor(Math.random() * pool.length)];
+        } while (pool.length > 1 && exclude && candidate.link === exclude.link);
+        return candidate;
+      }
+
+      function renderCard(item, imgEl, titleEl, priceEl, hidePrice) {
+        imgEl.src = item.image || "";
+        titleEl.textContent = item.title || "Untitled";
+        priceEl.textContent = `💰 ${item.price} €`;
+        priceEl.classList.toggle("hl-hidden", !!hidePrice);
+      }
+
+      function newRound(keepLeft) {
+        cardLeft.classList.remove("hl-correct", "hl-wrong");
+        cardRight.classList.remove("hl-correct", "hl-wrong");
+        locked = false;
+        guessHigherBtn.disabled = false;
+        guessLowerBtn.disabled = false;
+
+        if (keepLeft) {
+          leftItem = rightItem;
+        } else {
+          leftItem = randomItem(null);
+        }
+        rightItem = randomItem(leftItem);
+
+        renderCard(leftItem, imgLeft, titleLeft, priceLeft, false);
+        renderCard(rightItem, imgRight, titleRight, priceRight, true);
+      }
+
+      function startGame() {
+        pool = getPool();
+        score = 0;
+        hlScoreEl.textContent = "0";
+        hlBestEl.textContent = String(best);
+        hlGameover.classList.remove("show");
+        hlStage.style.display = "flex";
+
+        if (pool.length < 2) {
+          hlGoText.textContent = "Not enough items with prices to play right now.";
+          hlGameover.classList.add("show");
+          hlStage.style.display = "none";
+          return;
+        }
+        newRound(false);
+      }
+
+      function openGame() {
+        hlOverlay.classList.add("open");
+        startGame();
+      }
+      function closeGame() {
+        hlOverlay.classList.remove("open");
+      }
+
+      function guess(direction) {
+        if (locked) return;
+        locked = true;
+        guessHigherBtn.disabled = true;
+        guessLowerBtn.disabled = true;
+
+        const leftPrice = priceNumber(leftItem.price);
+        const rightPrice = priceNumber(rightItem.price);
+        priceRight.classList.remove("hl-hidden");
+
+        const actuallyHigher = rightPrice >= leftPrice;
+        const guessedHigher = direction === "higher";
+        const correct = guessedHigher === actuallyHigher;
+
+        cardRight.classList.add(correct ? "hl-correct" : "hl-wrong");
+        cardLeft.classList.add(correct ? "hl-correct" : "hl-wrong");
+
+        if (correct) {
+          score++;
+          hlScoreEl.textContent = String(score);
+          if (score > best) {
+            best = score;
+            hlBestEl.textContent = String(best);
+            localStorage.setItem(HL_BEST_KEY, String(best));
+          }
+          setTimeout(() => newRound(true), 850);
+        } else {
+          setTimeout(() => {
+            hlGoText.textContent = `You scored ${score} in a row. ${score >= best && score > 0 ? "New best score! 🎉" : `Best: ${best}.`}`;
+            hlGameover.classList.add("show");
+            hlStage.style.display = "none";
+          }, 900);
+        }
+      }
+
+      hlTab.addEventListener("click", openGame);
+      hlClose.addEventListener("click", closeGame);
+      hlRestartBtn.addEventListener("click", startGame);
+      guessHigherBtn.addEventListener("click", () => guess("higher"));
+      guessLowerBtn.addEventListener("click", () => guess("lower"));
+      document.addEventListener("keydown", (e) => {
+        if (!hlOverlay.classList.contains("open")) return;
+        if (e.key === "Escape") { closeGame(); return; }
+        if (hlGameover.classList.contains("show")) return;
+        if (e.key === "ArrowUp") guess("higher");
+        if (e.key === "ArrowDown") guess("lower");
       });
     })();
   </script>
