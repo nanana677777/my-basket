@@ -130,5 +130,41 @@
         "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099656560085&sku_id=17592742354034&_oak_page_source=501"
       }
     }
+  },
+  {
+    "id": "outfit_1781818326678",
+    "name": "Pajamas",
+    "slots": {
+      "top": {
+        "title": "White/Label size: Asian One-size\nSanrio'S Japanese-Style Loungewear Features a Vibrant Pink And White Color Scheme, Playful Heart Cut-Out Designs, And Three-Dimensional Prints That Bring The Character to Life, Combining Comfort with a Sense of Fashion",
+        "image": "https://img.kwcdn.com/product/open/59256a7b20214525908b42c0421efaf8-goods.jpeg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "15,58",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=606327124371483&sku_id=94180177116835&_oak_page_source=501"
+      },
+      "bottom": {
+        "title": "Autumn/Winter Style European and American Warm Foot Covers, Long Socks, Solid Color Over-the-Knee Socks, Thick Women's Socks, Warm Leg Warmers, Cold-Proof Over-the-Knee Socks, Christmas Bright Red Thickened Warm Over-the-Knee Socks",
+        "image": "https://img.kwcdn.com/product/fancy/015fb87d-a713-484d-a8ef-f094ed40187f.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "9,29",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099655557077&sku_id=17592738739609&_oak_page_source=501"
+      },
+      "shoes": {
+        "title": "Women'S Autumn And Winter Warm Slippers with a Bow Design, Stylish Indoor Slippers for The Living Room.",
+        "image": "https://img.kwcdn.com/product/fancy/a60cc142-5502-40a9-81a7-2722de340421.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "3,86",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099602917102&sku_id=17595021435394&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "Cute Bowknot Big Ear Plush Animal Ear Decoration Photo Cute Hair Hoop for Women And Daily Wear",
+        "image": "https://img.kwcdn.com/product/fancy/b815d3f7-deea-4227-a6a6-ad7b39784466.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "2,05",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099549197904&sku_id=17592354744283&_oak_page_source=501"
+      },
+      "misc": {
+        "title": "30.48cm/Peacock Blue\nHarajuku Soft Lolita Roman Curls Daily Double Bun Gradient Color Neat Bangs Sweet Lolita Wig Suitable for Adult Women - Qingkonglou Lolita Style, Blue-Purple Gradient Pink, Short Curly Waves, High-Temperature Fiber, Rose Net Cap, Two Buns",
+        "image": "https://img.kwcdn.com/product/fancy/16b6ddd9-d3e4-415e-9f35-9e6bbea482ad.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "11,58",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100239701416&sku_id=17595312566697&_oak_page_source=501"
+      }
+    }
   }
 ]
