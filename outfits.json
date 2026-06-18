@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": "outfit_1781815897757",
+    "name": "Goth chill vibes~",
+    "slots": {
+      "bottom": {
+        "title": "Autumn And Winter Fashion Casual Women'S Fleece Trousers, Monochrome Tunic Trousers, Casual Loose Sweatpants, Women'S Fashion",
+        "image": "https://img.kwcdn.com/product/fancy/81f54b6d-1cad-46ad-9538-d3a3f4e13ffc.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "12,31",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601102747263662&sku_id=17606202230219&_oak_page_source=501"
+      },
+      "top": {
+        "title": "Edgy Ensemble, Men's Gothic Dark Totem Print Casual T-Shirt - Breathable Polyester, Crew Neck, Short Sleeve - Perfect for Summer",
+        "image": "https://img.kwcdn.com/product/fancy/c8102441-1239-44fe-abb3-44fb346e9439.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "6,28",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099717858866&sku_id=17592982681386&_oak_page_source=501"
+      },
+      "shoes": {
+        "title": "Chic Women&apos;s Platform Ankle Boots with Block Heel - Slip-On, Round Toe, Velvet Upper & Faux Cover Lining, Women Shoes",
+        "image": "https://img.kwcdn.com/product/fancy/6e0701f2-ca18-4fb0-a11b-6d2a50a80f12.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "25,18",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099611367424&sku_id=17592572339437&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "1pc of 304 Stainless Steel Hip-Hop Style Personalized Fashion Chain Pendant Design Earrings Ear Clips, No-Piercing Jewelry, Unisex",
+        "image": "https://img.kwcdn.com/product/fancy/c84f4613-6b3b-461f-8758-b8097e61aca8.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "1,99",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100430990443&sku_id=17596003369278&_oak_page_source=501"
+      },
+      "misc": {
+        "title": "25.4cm/Black\nA Role-playing Wig Suitable for All Adults, Simple Style, Black Universal Short Flipped-back Style Wig, Easy to Style, Adds Hair Volume, Suitable for Holiday Dressing, Role-playing, Daily Outings, Parties, and Gatherings.",
+        "image": "https://img.kwcdn.com/product/fancy/20859ee8-278c-4e45-833d-bdeccf57936e.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "8,24",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099683474935&sku_id=17592846088728&_oak_page_source=501"
+      }
+    }
+  }
+]
