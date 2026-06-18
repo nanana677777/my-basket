@@ -573,6 +573,8 @@
     let products = [];
     let currentSha = null;
     let editingIndex = null;
+    const PRODUCTS_PAGE_SIZE = 12;
+    let productsShown = PRODUCTS_PAGE_SIZE;
     let outfits = [];
     let outfitsSha = null;
     let editingOutfitId = null;
@@ -665,7 +667,8 @@
         return;
       }
       productList.innerHTML = "";
-      products.forEach((p, i) => {
+      const visible = products.slice(0, productsShown);
+      visible.forEach((p, i) => {
         const row = document.createElement("div");
         row.className = "product-row";
         row.innerHTML = `
@@ -681,6 +684,31 @@
         `;
         productList.appendChild(row);
       });
+
+      const remaining = products.length - visible.length;
+      if (remaining > 0) {
+        const moreWrap = document.createElement("div");
+        moreWrap.style.textAlign = "center";
+        moreWrap.style.marginTop = "10px";
+        moreWrap.innerHTML = `<button class="btn-ghost" id="show-more-btn">Voir la suite (${remaining})</button>`;
+        productList.appendChild(moreWrap);
+        moreWrap.querySelector("#show-more-btn").addEventListener("click", () => {
+          productsShown += PRODUCTS_PAGE_SIZE;
+          renderProducts();
+        });
+      } else if (products.length > PRODUCTS_PAGE_SIZE) {
+        const lessWrap = document.createElement("div");
+        lessWrap.style.textAlign = "center";
+        lessWrap.style.marginTop = "10px";
+        lessWrap.innerHTML = `<button class="btn-ghost" id="show-less-btn">Réduire la liste</button>`;
+        productList.appendChild(lessWrap);
+        lessWrap.querySelector("#show-less-btn").addEventListener("click", () => {
+          productsShown = PRODUCTS_PAGE_SIZE;
+          renderProducts();
+          productList.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+
       renderOutfitSlots();
       if (outfitsSha === null && token) loadOutfits();
     }
