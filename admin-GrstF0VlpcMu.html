@@ -392,6 +392,9 @@
     let products = [];
     let currentSha = null;
     let editingIndex = null;
+    let outfits = [];
+    let outfitsSha = null;
+    let editingOutfitId = null;
 
     const $ = (id) => document.getElementById(id);
     const tokenInput = $("gh-token");
@@ -495,6 +498,8 @@
         `;
         productList.appendChild(row);
       });
+      populateSlotSelects();
+      if (outfitsSha === null && token) loadOutfits();
     }
 
     function updateCategorySuggestions() {
@@ -787,9 +792,6 @@
     const OUTFIT_API = "https://api.github.com/repos/" + REPO + "/contents/outfits.json";
     const SLOT_KEYS = ["top", "bottom", "shoes", "accessory", "misc"];
     const SLOT_LABELS = { top: "Top", bottom: "Bottom", shoes: "Shoes", accessory: "Accessory", misc: "Extra" };
-    let outfits = [];
-    let outfitsSha = null;
-    let editingOutfitId = null;
 
     async function loadOutfits() {
       try {
@@ -920,15 +922,6 @@
       await pushOutfits(editingOutfitId ? "Update outfit via admin" : "Add outfit via admin");
       resetOutfitForm();
     });
-
-    // Load outfits once products are loaded (products are the source for slot selects)
-    const _origSetConnected = setConnected;
-    const _origRenderProducts = renderProducts;
-    function renderProducts() {
-      _origRenderProducts();
-      populateSlotSelects();
-      if (outfitsSha === null && token) loadOutfits();
-    }
   </script>
 </body>
 </html>
