@@ -231,16 +231,20 @@
 
           const card = document.createElement("div");
           card.className = "outfit-card";
-          card.innerHTML = `
-            <div class="outfit-header">
-              <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
-              ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
-            </div>
-            <div class="flat-lay" id="flat-${outfit.id}"></div>
+
+          const header = document.createElement("div");
+          header.className = "outfit-header";
+          header.innerHTML = `
+            <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
+            ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
           `;
+          card.appendChild(header);
+
+          const flatLay = document.createElement("div");
+          flatLay.className = "flat-lay";
+          card.appendChild(flatLay);
           container.appendChild(card);
 
-          const flatLay = card.querySelector(`#flat-${outfit.id}`);
           SLOT_ORDER.forEach(key => {
             const item = slots[key];
             if (!item || !item.image) return;
@@ -259,6 +263,7 @@
           });
         });
       } catch (err) {
+        console.error("Outfits load error:", err);
         container.innerHTML = `
           <div class="empty-state">
             <div class="big">😢</div>
