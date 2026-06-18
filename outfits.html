@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Outfits · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+    --border: rgba(255,158,203,0.15);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--pink); }
+
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 40px;
+  }
+
+  /* ─── Outfit card ─── */
+  .outfit-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px 26px;
+    margin-bottom: 32px;
+  }
+  .outfit-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .outfit-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--pink);
+    letter-spacing: 0.3px;
+  }
+  .outfit-total {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cyan);
+    background: rgba(125,249,255,0.08);
+    border: 1px solid rgba(125,249,255,0.2);
+    padding: 5px 14px;
+    border-radius: 999px;
+  }
+
+  /* ─── Flat lay grid ─── */
+  .flat-lay {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+  }
+  .slot-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+    text-decoration: none;
+  }
+  .slot-item:hover {
+    border-color: rgba(255,158,203,0.4);
+    transform: translateY(-3px);
+  }
+  .slot-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    position: relative;
+    background: #14141e;
+  }
+  .slot-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+  }
+  .slot-item:hover .slot-img-wrap img { transform: scale(1.06); }
+  .slot-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    padding: 7px 10px 2px;
+  }
+  .slot-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text);
+    padding: 0 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  .slot-price {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--cyan);
+    padding: 0 10px 10px;
+  }
+
+  /* ─── Empty state ─── */
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+
+  /* ─── Footer ─── */
+  footer {
+    text-align: center;
+    padding: 36px 0 10px;
+    color: #7a7588;
+    font-size: 12.5px;
+  }
+  footer a {
+    color: #7a7588;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,158,203,0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="./index.html">← Back to the basket</a>
+    <h1>👗 Complete Looks</h1>
+    <p class="subtitle">Full outfits assembled from my wishlist — click any piece to see it on Temu.</p>
+
+    <div id="outfits-container">
+      <div class="empty-state">
+        <div class="big">✨</div>
+        Loading outfits…
+      </div>
+    </div>
+
+    <footer>
+      <a href="./index.html">← Full wishlist</a> &nbsp;·&nbsp;
+      <a href="./about.html">About this page</a>
+    </footer>
+  </div>
+
+  <script>
+    const SLOT_LABELS = {
+      top: "Top",
+      bottom: "Bottom",
+      shoes: "Shoes",
+      accessory: "Accessory",
+      misc: "Extra"
+    };
+    const SLOT_ORDER = ["top", "bottom", "shoes", "accessory", "misc"];
+
+    async function loadOutfits() {
+      const container = document.getElementById("outfits-container");
+      try {
+        const res = await fetch("./outfits.json?t=" + Date.now());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const outfits = await res.json();
+
+        if (!outfits.length) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="big">🧵</div>
+              No outfits yet — check back soon!
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = "";
+        outfits.forEach(outfit => {
+          const slots = outfit.slots || {};
+          let totalPrice = 0;
+          SLOT_ORDER.forEach(key => {
+            const item = slots[key];
+            if (item && item.price) {
+              const p = parseFloat((item.price || "0").toString().replace(",", "."));
+              if (!isNaN(p)) totalPrice += p;
+            }
+          });
+
+          const card = document.createElement("div");
+          card.className = "outfit-card";
+          card.innerHTML = `
+            <div class="outfit-header">
+              <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
+              ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
+            </div>
+            <div class="flat-lay" id="flat-${outfit.id}"></div>
+          `;
+          container.appendChild(card);
+
+          const flatLay = card.querySelector(`#flat-${outfit.id}`);
+          SLOT_ORDER.forEach(key => {
+            const item = slots[key];
+            if (!item || !item.image) return;
+            const a = document.createElement("a");
+            a.className = "slot-item";
+            a.href = item.link || "#";
+            a.target = "_blank";
+            a.rel = "noopener";
+            a.innerHTML = `
+              <div class="slot-img-wrap"><img src="${item.image}" alt="" loading="lazy"></div>
+              <div class="slot-label">${SLOT_LABELS[key] || key}</div>
+              <div class="slot-title">${(item.title || "").replace(/</g,"&lt;")}</div>
+              ${item.price ? `<div class="slot-price">💰 ${item.price} €</div>` : ""}
+            `;
+            flatLay.appendChild(a);
+          });
+        });
+      } catch (err) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="big">😢</div>
+            Couldn't load outfits right now. Try again later!
+          </div>`;
+      }
+    }
+
+    loadOutfits();
+  </script>
+</body>
+</html>
