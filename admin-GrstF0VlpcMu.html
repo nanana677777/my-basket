@@ -341,6 +341,44 @@
       <h2>🧺 Current items (<span id="count">0</span>)</h2>
       <div id="product-list"><div class="empty-state">Connect your token to load the list.</div></div>
     </div>
+
+    <div class="card">
+      <h2>👗 Outfits</h2>
+      <p class="sub" style="margin:0 0 14px;">Assemble complete looks from your wishlist. Each outfit appears on <a href="./outfits.html" target="_blank" style="color:var(--accent);">the outfits page</a> as a flat lay.</p>
+
+      <div id="outfit-list-admin" style="margin-bottom:18px;"></div>
+
+      <div id="outfit-form">
+        <label for="outfit-name">Outfit name</label>
+        <input id="outfit-name" type="text" placeholder="Summer look, Cosplay drop..." />
+
+        <div class="grid2" style="margin-top:4px;">
+          <div>
+            <label>Top</label>
+            <select id="slot-top"><option value="">— none —</option></select>
+          </div>
+          <div>
+            <label>Bottom</label>
+            <select id="slot-bottom"><option value="">— none —</option></select>
+          </div>
+          <div>
+            <label>Shoes</label>
+            <select id="slot-shoes"><option value="">— none —</option></select>
+          </div>
+          <div>
+            <label>Accessory</label>
+            <select id="slot-accessory"><option value="">— none —</option></select>
+          </div>
+        </div>
+        <label>Extra / Misc</label>
+        <select id="slot-misc"><option value="">— none —</option></select>
+
+        <div class="row-actions-top" style="margin-top:14px;">
+          <button class="btn-primary" id="outfit-save-btn">Save outfit</button>
+          <button class="btn-ghost" id="outfit-cancel-btn" style="display:none;">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="toast"></div>
@@ -744,6 +782,153 @@
           </div>
         `).join("");
     });
+
+    // ─── 👗 Outfit management ───
+    const OUTFIT_API = "https://api.github.com/repos/" + REPO + "/contents/outfits.json";
+    const SLOT_KEYS = ["top", "bottom", "shoes", "accessory", "misc"];
+    const SLOT_LABELS = { top: "Top", bottom: "Bottom", shoes: "Shoes", accessory: "Accessory", misc: "Extra" };
+    let outfits = [];
+    let outfitsSha = null;
+    let editingOutfitId = null;
+
+    async function loadOutfits() {
+      try {
+        const res = await fetch(OUTFIT_API, {
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json" }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        outfitsSha = data.sha;
+        outfits = JSON.parse(decodeURIComponent(
+          atob(data.content.replace(/\n/g, ""))
+            .split("").map(c => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")
+        ) || "[]");
+        renderOutfitList();
+        populateSlotSelects();
+      } catch (e) { console.error("Outfits load error", e); }
+    }
+
+    async function pushOutfits(msg) {
+      const body = JSON.stringify(outfits, null, 2);
+      const encoded = btoa(unescape(encodeURIComponent(body)));
+      const payload = { message: msg, content: encoded, sha: outfitsSha, branch: "main" };
+      const res = await fetch(OUTFIT_API, {
+        method: "PUT",
+        headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.content) outfitsSha = data.content.sha;
+      renderOutfitList();
+      showToast("✅ Outfit saved to GitHub");
+    }
+
+    function populateSlotSelects() {
+      SLOT_KEYS.forEach(key => {
+        const sel = document.getElementById("slot-" + key);
+        const current = sel.value;
+        sel.innerHTML = `<option value="">— none —</option>`;
+        products.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.link;
+          opt.textContent = `${p.title ? p.title.substring(0, 48) : "Untitled"} (${p.price || "?"}€)`;
+          sel.appendChild(opt);
+        });
+        sel.value = current;
+      });
+    }
+
+    function renderOutfitList() {
+      const el = document.getElementById("outfit-list-admin");
+      if (!outfits.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:14px 0;">No outfits yet — create one below.</div>`;
+        return;
+      }
+      el.innerHTML = outfits.map(o => `
+        <div class="product-row">
+          <div class="info">
+            <div class="title">${(o.name || "Untitled").replace(/</g,"&lt;")}</div>
+            <div class="price">${SLOT_KEYS.filter(k => o.slots && o.slots[k]).map(k => SLOT_LABELS[k]).join(" · ")}</div>
+          </div>
+          <div class="actions">
+            <button class="btn-ghost" data-edit-outfit="${o.id}">Edit</button>
+            <button class="btn-danger" data-delete-outfit="${o.id}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      el.querySelectorAll("[data-edit-outfit]").forEach(btn => {
+        btn.addEventListener("click", () => startEditOutfit(btn.dataset.editOutfit));
+      });
+      el.querySelectorAll("[data-delete-outfit]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Delete this outfit?")) return;
+          outfits = outfits.filter(o => o.id !== btn.dataset.deleteOutfit);
+          await pushOutfits("Delete outfit via admin");
+        });
+      });
+    }
+
+    function startEditOutfit(id) {
+      const o = outfits.find(o => o.id === id);
+      if (!o) return;
+      editingOutfitId = id;
+      document.getElementById("outfit-name").value = o.name || "";
+      SLOT_KEYS.forEach(key => {
+        document.getElementById("slot-" + key).value = (o.slots && o.slots[key]) ? o.slots[key].link || "" : "";
+      });
+      document.getElementById("outfit-save-btn").textContent = "Save changes";
+      document.getElementById("outfit-cancel-btn").style.display = "inline-block";
+    }
+
+    function resetOutfitForm() {
+      editingOutfitId = null;
+      document.getElementById("outfit-name").value = "";
+      SLOT_KEYS.forEach(key => { document.getElementById("slot-" + key).value = ""; });
+      document.getElementById("outfit-save-btn").textContent = "Save outfit";
+      document.getElementById("outfit-cancel-btn").style.display = "none";
+    }
+
+    document.getElementById("outfit-cancel-btn").addEventListener("click", resetOutfitForm);
+
+    document.getElementById("outfit-save-btn").addEventListener("click", async () => {
+      if (!token) { showToast("Connect your token first.", true); return; }
+      const name = document.getElementById("outfit-name").value.trim();
+      if (!name) { showToast("Please give the outfit a name.", true); return; }
+
+      const slots = {};
+      SLOT_KEYS.forEach(key => {
+        const link = document.getElementById("slot-" + key).value;
+        if (link) {
+          const p = products.find(p => p.link === link);
+          if (p) slots[key] = { title: p.title, image: p.image, price: p.price, link: p.link };
+        }
+      });
+
+      if (!Object.keys(slots).length) {
+        showToast("Add at least one item to the outfit.", true);
+        return;
+      }
+
+      if (editingOutfitId) {
+        const idx = outfits.findIndex(o => o.id === editingOutfitId);
+        if (idx !== -1) outfits[idx] = { ...outfits[idx], name, slots };
+      } else {
+        outfits.push({ id: "outfit_" + Date.now(), name, slots });
+      }
+
+      await pushOutfits(editingOutfitId ? "Update outfit via admin" : "Add outfit via admin");
+      resetOutfitForm();
+    });
+
+    // Load outfits once products are loaded (products are the source for slot selects)
+    const _origSetConnected = setConnected;
+    const _origRenderProducts = renderProducts;
+    function renderProducts() {
+      _origRenderProducts();
+      populateSlotSelects();
+      if (outfitsSha === null && token) loadOutfits();
+    }
   </script>
 </body>
 </html>
