@@ -70,5 +70,29 @@
         "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100861472082&sku_id=17597444914315&_oak_page_source=501"
       }
     }
+  },
+  {
+    "id": "outfit_1781816686992",
+    "name": "Cowgirl",
+    "slots": {
+      "top": {
+        "title": "Women's Sexy Cow Print Lace-Up Bra and Panty Set",
+        "image": "https://img.kwcdn.com/product/fancy/e238c7a7-4b82-45d5-a127-2fda5378d6d4.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "2,90",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=606111839156431&sku_id=97029485285048&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "2pcs\n2pcs Cow Clothing Additions, Ears And Horns with Tails, Used for Animal Role-Playing And Carnival Dressing Up Supplies",
+        "image": "https://img.kwcdn.com/product/open/cea8aa4c4a48498a8e2f3034af1e2c4e-goods.jpeg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "4,86",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=606468321453112&sku_id=94641483439997&_oak_page_source=501"
+      },
+      "misc": {
+        "title": "Costume Bob Wigs Short Straight Ombre Black Wig with Bangs High Density Highlight Silvery White Wigs for Women Daily Party Use Heat Resistant Synthetic Wigs Halloween Dress Up Wig 40.64 cm",
+        "image": "https://img.kwcdn.com/product/fancy/31e024d6-8979-440f-ac04-aecb22b2b7ba.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "13,09",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099720828523&sku_id=17592995788701&_oak_page_source=501"
+      }
+    }
   }
 ]
