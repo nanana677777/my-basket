@@ -34,5 +34,41 @@
         "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099683474935&sku_id=17592846088728&_oak_page_source=501"
       }
     }
+  },
+  {
+    "id": "outfit_1781816583417",
+    "name": "Pinky outfit",
+    "slots": {
+      "top": {
+        "title": "Women'S Autumn And Winter Casual Jacket, Long-Sleeve Color-Blocked Fleece Zip-Up Hoodie with Pockets, Featuring a Leopard Print Fleece Fabric That Is Soft And Comfortable, an Elegant Outerwear for Women",
+        "image": "https://img.kwcdn.com/product/fancy/2f6ae177-524c-4101-abb4-38579897d039.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "13,99",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601103919497782&sku_id=17612229542512&_oak_page_source=501"
+      },
+      "bottom": {
+        "title": "1 pair of pink and white striped/Asian one-size\n1 Pair Women's Thigh-High Over-the-Knee Socks - Wide Striped Thick Elastic Stockings Suitable for JK Lolita Style Cosplay, Gothic Outfits, Themed Parties, ACG Anime, Machine Washable Gift & Lolita Style Fashion Enthusiasts",
+        "image": "https://img.kwcdn.com/product/open/00cf5a0e528442e1a4c34b3767a22762-goods.jpeg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "1,51",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=605876421269543&sku_id=97917872389524&_oak_page_source=501"
+      },
+      "shoes": {
+        "title": "New Women's Boots Short Boots Ladies Fashion Shoes Boots High Heels Thick Sole Cute Lace Autumn and Winter Knight Boots British Style Boots, Women Shoes",
+        "image": "https://img.kwcdn.com/product/fancy/a9f79cf5-d4b9-49d9-a841-e319d2eccc2c.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "28,71",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601102514885596&sku_id=17605076324158&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "Pink Hello Kitty Hat\nHello Kitty Women'S Outdoor Hat, Cute Cartoon Hat, with Brim, Suitable for Outdoor Travel, Shopping, And Multi-Scenarios",
+        "image": "https://img.kwcdn.com/product/algo_check/auto/de5320c3313f1a157f9e4538d31d6eaa_1742576740835.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "7,23",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100378949775&sku_id=17595796469086&_oak_page_source=501"
+      },
+      "misc": {
+        "title": "55.88cm/Pink Gradient\nPink Gradient Synthetic Wig in a Long Straight Style, Perfect for Lolita Cosplay at Parties, Featuring Bangs And Made from Heat-Resistant Fibers",
+        "image": "https://img.kwcdn.com/product/fancy/a840bd8d-4fcf-4085-8a38-73a55ad78bda.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "15,00",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100861472082&sku_id=17597444914315&_oak_page_source=501"
+      }
+    }
   }
 ]
