@@ -1022,18 +1022,28 @@
     }
 
     async function pushOutfits(msg) {
-      const body = JSON.stringify(outfits, null, 2);
-      const encoded = btoa(unescape(encodeURIComponent(body)));
-      const payload = { message: msg, content: encoded, sha: outfitsSha, branch: "main" };
-      const res = await fetch(OUTFIT_API, {
-        method: "PUT",
-        headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data.content) outfitsSha = data.content.sha;
-      renderOutfitList();
-      showToast("✅ Outfit saved to GitHub");
+      try {
+        const body = JSON.stringify(outfits, null, 2);
+        const encoded = btoa(unescape(encodeURIComponent(body)));
+        const payload = { message: msg, content: encoded, sha: outfitsSha, branch: "main" };
+        const res = await fetch(OUTFIT_API, {
+          method: "PUT",
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.content) {
+          outfitsSha = data.content.sha;
+          renderOutfitList();
+          showToast("✅ Outfit saved to GitHub");
+        } else {
+          showToast("❌ Save failed: " + (data.message || "Unknown error — reload and retry"), true);
+          await loadOutfits();
+        }
+      } catch (e) {
+        showToast("❌ Network error — outfit not saved", true);
+        console.error("pushOutfits error:", e);
+      }
     }
 
     function renderOutfitSlots() {
