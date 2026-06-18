@@ -205,6 +205,170 @@
     padding: 10px 0;
     font-weight: 600;
   }
+
+  /* 👗 Visual outfit slots */
+  .outfit-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .outfit-slot {
+    cursor: pointer;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+    position: relative;
+  }
+  .outfit-slot:hover {
+    border-color: var(--pink);
+    transform: translateY(-2px);
+  }
+  .outfit-slot-thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #14141e;
+    overflow: hidden;
+  }
+  .outfit-slot-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .slot-placeholder { font-size: 30px; opacity: 0.4; }
+  .outfit-slot-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    text-align: center;
+    padding: 7px 4px;
+  }
+  .outfit-slot.filled .outfit-slot-label { color: var(--pink); }
+  .outfit-slot-clear {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(8,8,14,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .outfit-slot.filled .outfit-slot-clear { display: flex; }
+  .outfit-slot-clear:hover { background: var(--danger); }
+
+  /* 👗 Item picker modal */
+  #picker-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    background: rgba(8,8,14,0.82);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #picker-overlay.open { display: flex; }
+  #picker-panel {
+    width: 100%;
+    max-width: 680px;
+    max-height: 88vh;
+    background: var(--panel);
+    border: 1px solid rgba(255,158,203,0.25);
+    border-radius: 22px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  #picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  #picker-head h3 { margin: 0; font-size: 16px; color: var(--pink); }
+  #picker-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  #picker-search {
+    width: 100%;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  #picker-body {
+    overflow-y: auto;
+    flex: 1;
+  }
+  .picker-cat-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--cyan);
+    margin: 14px 0 8px;
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+    padding: 4px 0;
+  }
+  .picker-cat-title:first-child { margin-top: 0; }
+  .picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 10px;
+  }
+  .picker-item {
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .picker-item:hover { border-color: var(--pink); transform: scale(1.04); }
+  .picker-item .pi-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+    background: #14141e;
+  }
+  .picker-item .pi-price {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--cyan);
+    text-align: center;
+    padding: 5px 2px;
+  }
+  .picker-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px 0;
+  }
 </style>
 </head>
 <body>
@@ -352,32 +516,49 @@
         <label for="outfit-name">Outfit name</label>
         <input id="outfit-name" type="text" placeholder="Summer look, Cosplay drop..." />
 
-        <div class="grid2" style="margin-top:4px;">
-          <div>
-            <label>Top</label>
-            <select id="slot-top"><option value="">— none —</option></select>
+        <label style="margin-top:8px;">Pieces — click a slot to pick an item</label>
+        <div class="outfit-slots">
+          <div class="outfit-slot" data-slot="top">
+            <div class="outfit-slot-thumb"><span class="slot-placeholder">👕</span></div>
+            <div class="outfit-slot-label">Top</div>
           </div>
-          <div>
-            <label>Bottom</label>
-            <select id="slot-bottom"><option value="">— none —</option></select>
+          <div class="outfit-slot" data-slot="bottom">
+            <div class="outfit-slot-thumb"><span class="slot-placeholder">👖</span></div>
+            <div class="outfit-slot-label">Bottom</div>
           </div>
-          <div>
-            <label>Shoes</label>
-            <select id="slot-shoes"><option value="">— none —</option></select>
+          <div class="outfit-slot" data-slot="shoes">
+            <div class="outfit-slot-thumb"><span class="slot-placeholder">👟</span></div>
+            <div class="outfit-slot-label">Shoes</div>
           </div>
-          <div>
-            <label>Accessory</label>
-            <select id="slot-accessory"><option value="">— none —</option></select>
+          <div class="outfit-slot" data-slot="accessory">
+            <div class="outfit-slot-thumb"><span class="slot-placeholder">💍</span></div>
+            <div class="outfit-slot-label">Accessory</div>
+          </div>
+          <div class="outfit-slot" data-slot="misc">
+            <div class="outfit-slot-thumb"><span class="slot-placeholder">✨</span></div>
+            <div class="outfit-slot-label">Extra</div>
           </div>
         </div>
-        <label>Extra / Misc</label>
-        <select id="slot-misc"><option value="">— none —</option></select>
+
+        <div id="outfit-total-preview" style="margin-top:14px;font-size:13px;color:var(--cyan);font-weight:700;"></div>
 
         <div class="row-actions-top" style="margin-top:14px;">
           <button class="btn-primary" id="outfit-save-btn">Save outfit</button>
           <button class="btn-ghost" id="outfit-cancel-btn" style="display:none;">Cancel</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 👗 Item picker modal -->
+  <div id="picker-overlay">
+    <div id="picker-panel">
+      <div id="picker-head">
+        <h3 id="picker-title">Pick an item</h3>
+        <button id="picker-close" title="Close">✕</button>
+      </div>
+      <input id="picker-search" type="text" placeholder="🔎 Search items..." autocomplete="off" />
+      <div id="picker-body"></div>
     </div>
   </div>
 
@@ -395,6 +576,8 @@
     let outfits = [];
     let outfitsSha = null;
     let editingOutfitId = null;
+    let currentOutfitSlots = {};
+    let activePickerSlot = null;
 
     const $ = (id) => document.getElementById(id);
     const tokenInput = $("gh-token");
@@ -498,7 +681,7 @@
         `;
         productList.appendChild(row);
       });
-      populateSlotSelects();
+      renderOutfitSlots();
       if (outfitsSha === null && token) loadOutfits();
     }
 
@@ -806,7 +989,7 @@
             .split("").map(c => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")
         ) || "[]");
         renderOutfitList();
-        populateSlotSelects();
+        renderOutfitSlots();
       } catch (e) { console.error("Outfits load error", e); }
     }
 
@@ -825,20 +1008,122 @@
       showToast("✅ Outfit saved to GitHub");
     }
 
-    function populateSlotSelects() {
+    function renderOutfitSlots() {
+      document.querySelectorAll(".outfit-slot").forEach(slotEl => {
+        const key = slotEl.dataset.slot;
+        const item = currentOutfitSlots[key];
+        const thumb = slotEl.querySelector(".outfit-slot-thumb");
+        let clearBtn = slotEl.querySelector(".outfit-slot-clear");
+        if (item && item.image) {
+          slotEl.classList.add("filled");
+          thumb.innerHTML = `<img src="${item.image}" alt="">`;
+          if (!clearBtn) {
+            clearBtn = document.createElement("button");
+            clearBtn.className = "outfit-slot-clear";
+            clearBtn.textContent = "✕";
+            slotEl.appendChild(clearBtn);
+            clearBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              delete currentOutfitSlots[key];
+              renderOutfitSlots();
+            });
+          }
+        } else {
+          slotEl.classList.remove("filled");
+          const ph = { top: "👕", bottom: "👖", shoes: "👟", accessory: "💍", misc: "✨" }[key] || "✨";
+          thumb.innerHTML = `<span class="slot-placeholder">${ph}</span>`;
+        }
+      });
+      updateOutfitTotal();
+    }
+
+    function updateOutfitTotal() {
+      let total = 0;
       SLOT_KEYS.forEach(key => {
-        const sel = document.getElementById("slot-" + key);
-        const current = sel.value;
-        sel.innerHTML = `<option value="">— none —</option>`;
-        products.forEach(p => {
-          const opt = document.createElement("option");
-          opt.value = p.link;
-          opt.textContent = `${p.title ? p.title.substring(0, 48) : "Untitled"} (${p.price || "?"}€)`;
-          sel.appendChild(opt);
+        const item = currentOutfitSlots[key];
+        if (item && item.price) {
+          const p = parseFloat((item.price || "0").toString().replace(",", "."));
+          if (!isNaN(p)) total += p;
+        }
+      });
+      const el = document.getElementById("outfit-total-preview");
+      el.textContent = total > 0 ? `💰 Outfit total: ${total.toFixed(2)} €` : "";
+    }
+
+    // ─── Item picker ───
+    const pickerOverlay = document.getElementById("picker-overlay");
+    const pickerBody = document.getElementById("picker-body");
+    const pickerSearch = document.getElementById("picker-search");
+    const pickerTitle = document.getElementById("picker-title");
+
+    function openPicker(slotKey) {
+      activePickerSlot = slotKey;
+      pickerTitle.textContent = "Pick: " + (SLOT_LABELS[slotKey] || slotKey);
+      pickerSearch.value = "";
+      renderPickerGrid("");
+      pickerOverlay.classList.add("open");
+      setTimeout(() => pickerSearch.focus(), 100);
+    }
+    function closePicker() {
+      pickerOverlay.classList.remove("open");
+      activePickerSlot = null;
+    }
+
+    function renderPickerGrid(term) {
+      term = (term || "").toLowerCase();
+      const withImg = products.filter(p => p && p.image &&
+        (!term || (p.title || "").toLowerCase().includes(term) || (p.category || "").toLowerCase().includes(term)));
+
+      if (!withImg.length) {
+        pickerBody.innerHTML = `<div class="picker-empty">No matching items.</div>`;
+        return;
+      }
+
+      // Group by category
+      const byCat = {};
+      withImg.forEach(p => {
+        const cat = (p.category || "Uncategorized").trim() || "Uncategorized";
+        (byCat[cat] = byCat[cat] || []).push(p);
+      });
+
+      const cats = Object.keys(byCat).sort((a, b) => a.localeCompare(b));
+      pickerBody.innerHTML = cats.map(cat => `
+        <div class="picker-cat-title">${cat.replace(/</g,"&lt;")} (${byCat[cat].length})</div>
+        <div class="picker-grid">
+          ${byCat[cat].map(p => `
+            <div class="picker-item" data-link="${(p.link||"").replace(/"/g,"&quot;")}" title="${(p.title||"").replace(/"/g,"&quot;")}">
+              <img class="pi-img" src="${p.image}" alt="" loading="lazy">
+              <div class="pi-price">${p.price || "?"} €</div>
+            </div>
+          `).join("")}
+        </div>
+      `).join("");
+
+      pickerBody.querySelectorAll(".picker-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const link = el.dataset.link;
+          const p = products.find(p => p.link === link);
+          if (p && activePickerSlot) {
+            currentOutfitSlots[activePickerSlot] = { title: p.title, image: p.image, price: p.price, link: p.link };
+            renderOutfitSlots();
+            closePicker();
+          }
         });
-        sel.value = current;
       });
     }
+
+    document.querySelectorAll(".outfit-slot").forEach(slotEl => {
+      slotEl.addEventListener("click", () => {
+        if (!products.length) { showToast("Load your products first.", true); return; }
+        openPicker(slotEl.dataset.slot);
+      });
+    });
+    document.getElementById("picker-close").addEventListener("click", closePicker);
+    pickerOverlay.addEventListener("click", (e) => { if (e.target === pickerOverlay) closePicker(); });
+    pickerSearch.addEventListener("input", () => renderPickerGrid(pickerSearch.value));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && pickerOverlay.classList.contains("open")) closePicker();
+    });
 
     function renderOutfitList() {
       const el = document.getElementById("outfit-list-admin");
@@ -876,17 +1161,18 @@
       if (!o) return;
       editingOutfitId = id;
       document.getElementById("outfit-name").value = o.name || "";
-      SLOT_KEYS.forEach(key => {
-        document.getElementById("slot-" + key).value = (o.slots && o.slots[key]) ? o.slots[key].link || "" : "";
-      });
+      currentOutfitSlots = JSON.parse(JSON.stringify(o.slots || {}));
+      renderOutfitSlots();
       document.getElementById("outfit-save-btn").textContent = "Save changes";
       document.getElementById("outfit-cancel-btn").style.display = "inline-block";
+      document.getElementById("outfit-form").scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     function resetOutfitForm() {
       editingOutfitId = null;
       document.getElementById("outfit-name").value = "";
-      SLOT_KEYS.forEach(key => { document.getElementById("slot-" + key).value = ""; });
+      currentOutfitSlots = {};
+      renderOutfitSlots();
       document.getElementById("outfit-save-btn").textContent = "Save outfit";
       document.getElementById("outfit-cancel-btn").style.display = "none";
     }
@@ -898,15 +1184,7 @@
       const name = document.getElementById("outfit-name").value.trim();
       if (!name) { showToast("Please give the outfit a name.", true); return; }
 
-      const slots = {};
-      SLOT_KEYS.forEach(key => {
-        const link = document.getElementById("slot-" + key).value;
-        if (link) {
-          const p = products.find(p => p.link === link);
-          if (p) slots[key] = { title: p.title, image: p.image, price: p.price, link: p.link };
-        }
-      });
-
+      const slots = JSON.parse(JSON.stringify(currentOutfitSlots));
       if (!Object.keys(slots).length) {
         showToast("Add at least one item to the outfit.", true);
         return;
