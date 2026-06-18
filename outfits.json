@@ -94,5 +94,41 @@
         "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099720828523&sku_id=17592995788701&_oak_page_source=501"
       }
     }
+  },
+  {
+    "id": "outfit_1781818028305",
+    "name": "Goth outdoor",
+    "slots": {
+      "top": {
+        "title": "Women Summer 2pcs Set for Women Outfits Y2K Streetwear Short Sleeve Polo Collar Chain Shirt High Waist Ruffles Patchwork Cake Mini Skirts Sets Women Harajuku Clothings 2pcs Tracksuits Women Matching Set",
+        "image": "https://img.kwcdn.com/product/fancy/2c15fcac-9ed1-4737-ae17-ea2abcfd3cd8.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "27,50",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=606205120485751&sku_id=90849698388084&_oak_page_source=501"
+      },
+      "bottom": {
+        "title": "1 Pair Elegant Black Lace Ruffle Edge Leg Warmers with Bow Detail - Women'S Sweet And Warm Mid-Tube Socks, Suitable for Autumn And Winter, Hand Wash/Dry Clean, Acrylic, Cute Socks Y2K Style",
+        "image": "https://img.kwcdn.com/product/fancy/6d694b90-90e8-4809-966c-dec9dfe944b7.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "3,93",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601101269203933&sku_id=17599019320902&_oak_page_source=501"
+      },
+      "shoes": {
+        "title": "Women'S Ultra-High Heel Ankle Boots, Elegant And Fashionable Side Zipper Chunky Heel Low-Top Boots, Comfortable Platform Women'S Short Boots Suitable for Formal Occasions, Women Shoes",
+        "image": "https://img.kwcdn.com/product/fancy/ec874e32-dd0f-4bf1-9f13-f1d4c02e7e23.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "16,18",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601102025832766&sku_id=17602637912647&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "1pc Easy Solid Color New Premium Korean Style Women'S Belt Fashion Trendy All-Match Buckle Jeans Belt Waist Belt",
+        "image": "https://img.kwcdn.com/product/fancy/351dc3ee-689a-44c9-ace4-4db3c9b2daa6.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "1,84",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099715739008&sku_id=17592974034998&_oak_page_source=501"
+      },
+      "misc": {
+        "title": "40.64cm/Black highlights are dyed purple\nLong Curly Wig with Ombre Purple Color, Featuring Bangs, Perfect for Daily Wear Or Parties, Made from Synthetic Hair",
+        "image": "https://img.kwcdn.com/product/fancy/2ee880d2-5752-4172-bd96-76594df13235.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "12,34",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099656560085&sku_id=17592742354034&_oak_page_source=501"
+      }
+    }
   }
 ]
