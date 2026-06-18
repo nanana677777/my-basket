@@ -2227,6 +2227,40 @@
         color: #1b1b26;
       }
       .mem-next-btn:hover { transform: translateY(-1px) scale(1.03); }
+
+      /* 🧭 Top navigation menu */
+      #top-nav {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 6px auto 22px;
+        max-width: 600px;
+      }
+      #top-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--text, #f3f3f7);
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        transition: all 0.2s ease;
+      }
+      #top-nav a:hover {
+        border-color: rgba(255,158,203,0.5);
+        background: rgba(255,158,203,0.1);
+        transform: translateY(-1px);
+      }
+      #top-nav a.nav-current {
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        color: #1b1b26;
+        border-color: transparent;
+      }
     </style>
   </head>
   <!-- ✨ magical sparkles on mouse move -->
@@ -2284,6 +2318,11 @@
 
   <body>
     <h1>My Temu Basket</h1>
+    <nav id="top-nav">
+      <a href="./index.html" class="nav-current">🧺 Wishlist</a>
+      <a href="./outfits.html">👗 Complete Looks</a>
+      <a href="./about.html">ℹ️ About</a>
+    </nav>
     <div class="counter" id="counter"></div>
     <div id="pie-chart-wrapper">
       <svg id="pie-svg" width="110" height="110" viewBox="0 0 110 110"></svg>
@@ -2374,12 +2413,6 @@
     </div>
 
     <div class="gallery" id="gallery"></div>
-
-    <footer style="text-align:center;padding:36px 0 10px;color:#7a7588;font-size:12.5px;">
-      <a href="./outfits.html" style="color:#7a7588;text-decoration:none;border-bottom:1px dashed rgba(255,158,203,0.3);transition:color 0.2s ease;">👗 Complete Looks</a>
-      &nbsp;·&nbsp;
-      <a href="./about.html" style="color:#7a7588;text-decoration:none;border-bottom:1px dashed rgba(255,158,203,0.3);transition:color 0.2s ease;">About this page / FAQ</a>
-    </footer>
 
     <script>
       const gallery = document.getElementById("gallery");
