@@ -473,6 +473,57 @@
         100% { transform: scale(1); opacity: 1; }
       }
 
+      /* ✅ Already bought badge */
+      .bought-pin {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: linear-gradient(135deg, #6ee7a0, #34d399);
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        color: #08321c;
+        box-shadow: 0 2px 8px rgba(52, 211, 153, 0.55), 0 0 0 1.5px rgba(255,255,255,0.15);
+        animation: crownPop 0.35s cubic-bezier(.34,1.56,.64,1);
+        pointer-events: none;
+        z-index: 10;
+        letter-spacing: 0.01em;
+      }
+      .card.is-bought img { opacity: 0.55; }
+
+      /* 🏷️ Bought filter chips (reuses category-chip look) */
+      #bought-filters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin: 4px 0 4px;
+      }
+      .bought-chip {
+        padding: 6px 16px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #cfc9d8;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+      .bought-chip:hover {
+        background: rgba(110,231,160,0.15);
+        border-color: rgba(110,231,160,0.4);
+        color: #fff;
+      }
+      .bought-chip.active {
+        background: linear-gradient(135deg, #6ee7a0, #34d399);
+        border-color: transparent;
+        color: #08321c;
+        box-shadow: 0 0 14px rgba(52,211,153,0.4);
+      }
+
       /* 📸 Screenshot button */
       #screenshot-btn {
         padding: 8px 18px;
@@ -888,6 +939,12 @@
         position: static !important;
         top: auto !important;
         left: auto !important;
+        align-self: flex-start;
+      }
+      .gallery.list-view .card .bought-pin {
+        position: static !important;
+        top: auto !important;
+        right: auto !important;
         align-self: flex-start;
       }
 
@@ -2385,6 +2442,7 @@
       </button>
     </div>
     <div id="category-filters"></div>
+    <div id="bought-filters"></div>
     <input type="text" id="search" placeholder="🔎 Search products..." />
     <!-- 🛍️ Product detail modal -->
     <div id="product-modal">
@@ -2439,6 +2497,7 @@
       let showingWishlist = sessionStorage.getItem("showingWishlist") === "1";
       let tintEnabled = localStorage.getItem("temuTintEnabled") !== "0"; // default ON
       let activeCategory = sessionStorage.getItem("activeCategory") || null; // null = all categories
+      let activeBoughtFilter = sessionStorage.getItem("activeBoughtFilter") || null; // null = all, "bought" = already bought, "not" = not bought yet
 
       // Fetch JSON
       document
@@ -2456,6 +2515,7 @@
               localStorage.setItem("temuBasketData", e.target.result);
 
               renderCategoryFilters();
+              renderBoughtFilters();
               displayProducts(rawProducts);
 
               // 👻 hide after loading
@@ -2561,6 +2621,44 @@
         });
       }
 
+      // ✅ Build the "Already bought" filter bar
+      function renderBoughtFilters() {
+        const container = document.getElementById("bought-filters");
+        const boughtCount = rawProducts.filter(p => p.bought).length;
+        const notBoughtCount = rawProducts.length - boughtCount;
+
+        if (!boughtCount) {
+          container.innerHTML = "";
+          return;
+        }
+
+        const opts = [
+          { key: null, label: "All", count: rawProducts.length },
+          { key: "not", label: "🛒 Not bought yet", count: notBoughtCount },
+          { key: "bought", label: "✅ Already bought", count: boughtCount },
+        ];
+
+        container.innerHTML = opts.map(o => `
+          <div class="bought-chip${activeBoughtFilter === o.key ? " active" : ""}" data-bought="${o.key || ""}">
+            ${o.label} <span class="chip-count">${o.count}</span>
+          </div>
+        `).join("");
+
+        container.querySelectorAll(".bought-chip").forEach(chip => {
+          chip.addEventListener("click", () => {
+            const val = chip.getAttribute("data-bought");
+            activeBoughtFilter = val === "" ? null : val;
+            if (activeBoughtFilter) {
+              sessionStorage.setItem("activeBoughtFilter", activeBoughtFilter);
+            } else {
+              sessionStorage.removeItem("activeBoughtFilter");
+            }
+            renderBoughtFilters();
+            applyAllFilters();
+          });
+        });
+      }
+
       // 🔎 Single source of truth: combines wishlist + price range + category + search
       function getFilteredProducts() {
         let base = showingWishlist
@@ -2569,6 +2667,12 @@
 
         if (activeCategory) {
           base = base.filter(p => (p.category || "").trim() === activeCategory);
+        }
+
+        if (activeBoughtFilter === "bought") {
+          base = base.filter(p => p.bought);
+        } else if (activeBoughtFilter === "not") {
+          base = base.filter(p => !p.bought);
         }
 
         if (activeRangeFilter !== null) {
@@ -2734,7 +2838,7 @@
 
         products.forEach((product) => {
           const wrapper = document.createElement("div");
-          wrapper.className = "card card-wrapper";
+          wrapper.className = "card card-wrapper" + (product.bought ? " is-bought" : "");
           wrapper.innerHTML = `
             <img src="${product.image}" alt="${product.title}" style="width:100%;border-radius:14px;margin-bottom:8px;cursor:pointer;">
             <div class="card-info">
@@ -2743,6 +2847,7 @@
             </div>
             <div class="heartFav ${favorites.includes(product.link) ? "favorited" : ""}">♥</div>
             ${throneAdded.has(product.link) ? '<div class="throne-pin">👑 <span>Wishlisted</span></div>' : ''}
+            ${product.bought ? '<div class="bought-pin">✅ Already bought</div>' : ''}
           `;
 
           // 🎨 Tint card with a unique color derived from the image URL
@@ -2911,6 +3016,7 @@
         .then(function (data) {
           rawProducts = data;
           renderCategoryFilters();
+          renderBoughtFilters();
           applyAllFilters();
           jsonLoader.style.display = "none";
         })
@@ -2920,6 +3026,7 @@
             try {
               rawProducts = JSON.parse(savedBasket);
               renderCategoryFilters();
+              renderBoughtFilters();
               applyAllFilters();
               jsonLoader.style.display = "none";
             } catch (e) {
@@ -3199,6 +3306,7 @@
 
           localStorage.setItem("temuBasketData", JSON.stringify(rawProducts));
           renderCategoryFilters();
+          renderBoughtFilters();
           displayProducts(rawProducts);
 
           // Hide file picker
