@@ -521,6 +521,114 @@
         color: var(--muted, #8a8499);
         margin-right: 4px;
       }
+
+      /* ➖ Divider before the price range slider */
+      #price-filter-divider {
+        width: 92%;
+        max-width: 480px;
+        height: 1px;
+        margin: 16px auto 16px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      }
+
+      /* 💰 Price range dual slider */
+      #price-filter-wrap {
+        max-width: 380px;
+        margin: 0 auto 14px;
+        text-align: center;
+      }
+      #price-filter-label {
+        font-size: 13px;
+        font-weight: 800;
+        color: #f3f3f7;
+        margin-bottom: 10px;
+        letter-spacing: 0.2px;
+      }
+      #price-slider-track {
+        position: relative;
+        height: 28px;
+        margin: 0 6px;
+      }
+      #price-slider-track::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        transform: translateY(-50%);
+      }
+      #price-slider-fill {
+        position: absolute;
+        top: 50%;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+      #price-slider-track input[type="range"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 28px;
+        margin: 0;
+        background: none;
+        -webkit-appearance: none;
+        appearance: none;
+        pointer-events: none;
+      }
+      #price-slider-track input[type="range"]::-webkit-slider-runnable-track {
+        background: transparent;
+      }
+      #price-slider-track input[type="range"]::-moz-range-track {
+        background: transparent;
+      }
+      #price-slider-track input[type="range"]::-webkit-slider-thumb {
+        pointer-events: auto;
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        margin-top: 5px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #ff9ecb;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+      }
+      #price-slider-track input[type="range"]::-moz-range-thumb {
+        pointer-events: auto;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #ff9ecb;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+      }
+      #price-filter-reset {
+        margin-top: 10px;
+        padding: 5px 16px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.14);
+        color: #cfc9d8;
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      #price-filter-reset:hover {
+        background: rgba(255,158,203,0.14);
+        border-color: rgba(255,158,203,0.4);
+        color: #fff;
+      }
+      #price-filter-reset.is-hidden { display: none; }
+
       .bought-chip {
         padding: 6px 16px;
         border-radius: 999px;
@@ -2465,6 +2573,16 @@
     <div id="category-filters"></div>
     <div id="filters-divider"></div>
     <div id="bought-filters"></div>
+    <div id="price-filter-divider"></div>
+    <div id="price-filter-wrap">
+      <div id="price-filter-label">💰 <span id="price-min-label">0 €</span> – <span id="price-max-label">100 €</span></div>
+      <div id="price-slider-track">
+        <div id="price-slider-fill"></div>
+        <input type="range" id="price-min-range" min="0" max="100" value="0" step="0.5" />
+        <input type="range" id="price-max-range" min="0" max="100" value="100" step="0.5" />
+      </div>
+      <button id="price-filter-reset" type="button">Reset</button>
+    </div>
     <input type="text" id="search" placeholder="🔎 Search products..." />
     <!-- 🛍️ Product detail modal -->
     <div id="product-modal">
@@ -2520,6 +2638,10 @@
       let tintEnabled = localStorage.getItem("temuTintEnabled") !== "0"; // default ON
       let activeCategory = sessionStorage.getItem("activeCategory") || null; // null = all categories
       let activeBoughtFilter = sessionStorage.getItem("activeBoughtFilter") || null; // null = all, "bought" = already bought, "not" = not bought yet
+      let priceBounds = { min: 0, max: 100 };
+      let activePriceMin = -Infinity;
+      let activePriceMax = Infinity;
+      let priceSliderBound = false;
 
       // Fetch JSON
       document
@@ -2538,6 +2660,7 @@
 
               renderCategoryFilters();
               renderBoughtFilters();
+              renderPriceFilter();
               displayProducts(rawProducts);
 
               // 👻 hide after loading
@@ -2684,6 +2807,125 @@
         });
       }
 
+      // 💰 Price range dual-slider: bounds adapt to data, value persisted in sessionStorage
+      function renderPriceFilter() {
+        const prices = rawProducts.map(p => priceNumber(p.price)).filter(v => !isNaN(v));
+        const newBounds = prices.length
+          ? { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) }
+          : { min: 0, max: 100 };
+
+        const isFirstRun = priceBounds.min === priceBounds.max; // sentinel: never initialized with real data
+        priceBounds = newBounds;
+
+        const minInput = document.getElementById("price-min-range");
+        const maxInput = document.getElementById("price-max-range");
+        if (!minInput || !maxInput) return;
+
+        minInput.min = priceBounds.min;
+        minInput.max = priceBounds.max;
+        maxInput.min = priceBounds.min;
+        maxInput.max = priceBounds.max;
+
+        if (isFirstRun) {
+          const savedMin = sessionStorage.getItem("priceFilterMin");
+          const savedMax = sessionStorage.getItem("priceFilterMax");
+          activePriceMin = savedMin !== null ? parseFloat(savedMin) : priceBounds.min;
+          activePriceMax = savedMax !== null ? parseFloat(savedMax) : priceBounds.max;
+        }
+
+        // Clamp current values to the (possibly new) bounds
+        activePriceMin = Math.min(Math.max(activePriceMin, priceBounds.min), priceBounds.max);
+        activePriceMax = Math.min(Math.max(activePriceMax, priceBounds.min), priceBounds.max);
+        if (activePriceMin > activePriceMax) {
+          const tmp = activePriceMin; activePriceMin = activePriceMax; activePriceMax = tmp;
+        }
+
+        minInput.value = activePriceMin;
+        maxInput.value = activePriceMax;
+        updatePriceSliderUI();
+
+        if (!priceSliderBound) {
+          priceSliderBound = true;
+          bindPriceSlider();
+        }
+      }
+
+      function updatePriceSliderUI() {
+        const minLabel = document.getElementById("price-min-label");
+        const maxLabel = document.getElementById("price-max-label");
+        const fill = document.getElementById("price-slider-fill");
+        const resetBtn = document.getElementById("price-filter-reset");
+        if (!minLabel || !maxLabel || !fill) return;
+
+        minLabel.textContent = activePriceMin.toFixed(2).replace(/\.00$/, "") + " €";
+        maxLabel.textContent = activePriceMax.toFixed(2).replace(/\.00$/, "") + " €";
+
+        const range = (priceBounds.max - priceBounds.min) || 1;
+        const leftPct = ((activePriceMin - priceBounds.min) / range) * 100;
+        const rightPct = ((activePriceMax - priceBounds.min) / range) * 100;
+        fill.style.left = leftPct + "%";
+        fill.style.width = Math.max(0, rightPct - leftPct) + "%";
+
+        const isFiltering = activePriceMin > priceBounds.min || activePriceMax < priceBounds.max;
+        if (resetBtn) resetBtn.classList.toggle("is-hidden", !isFiltering);
+      }
+
+      function persistPriceFilter() {
+        if (activePriceMin <= priceBounds.min && activePriceMax >= priceBounds.max) {
+          sessionStorage.removeItem("priceFilterMin");
+          sessionStorage.removeItem("priceFilterMax");
+        } else {
+          sessionStorage.setItem("priceFilterMin", String(activePriceMin));
+          sessionStorage.setItem("priceFilterMax", String(activePriceMax));
+        }
+      }
+
+      function bindPriceSlider() {
+        const minInput = document.getElementById("price-min-range");
+        const maxInput = document.getElementById("price-max-range");
+        const resetBtn = document.getElementById("price-filter-reset");
+
+        // Bring whichever thumb the user grabs to the front, so overlapping thumbs stay draggable
+        [minInput, maxInput].forEach(inp => {
+          const bringToFront = () => {
+            inp.style.zIndex = 3;
+            (inp === minInput ? maxInput : minInput).style.zIndex = 2;
+          };
+          inp.addEventListener("mousedown", bringToFront);
+          inp.addEventListener("touchstart", bringToFront);
+        });
+
+        minInput.addEventListener("input", () => {
+          let v = parseFloat(minInput.value);
+          if (v > activePriceMax) { v = activePriceMax; minInput.value = v; }
+          activePriceMin = v;
+          updatePriceSliderUI();
+          persistPriceFilter();
+          applyAllFilters();
+        });
+
+        maxInput.addEventListener("input", () => {
+          let v = parseFloat(maxInput.value);
+          if (v < activePriceMin) { v = activePriceMin; maxInput.value = v; }
+          activePriceMax = v;
+          updatePriceSliderUI();
+          persistPriceFilter();
+          applyAllFilters();
+        });
+
+        if (resetBtn) {
+          resetBtn.addEventListener("click", () => {
+            activePriceMin = priceBounds.min;
+            activePriceMax = priceBounds.max;
+            minInput.value = activePriceMin;
+            maxInput.value = activePriceMax;
+            updatePriceSliderUI();
+            persistPriceFilter();
+            applyAllFilters();
+          });
+        }
+      }
+
       // 🔎 Single source of truth: combines wishlist + price range + category + search
       function getFilteredProducts() {
         let base = showingWishlist
@@ -2699,6 +2941,11 @@
         } else if (activeBoughtFilter === "not") {
           base = base.filter(p => !p.bought);
         }
+
+        base = base.filter(p => {
+          const v = priceNumber(p.price);
+          return isNaN(v) || (v >= activePriceMin && v <= activePriceMax);
+        });
 
         if (activeRangeFilter !== null) {
           const { test } = PIE_RANGES[activeRangeFilter];
@@ -3043,6 +3290,7 @@
           rawProducts = data;
           renderCategoryFilters();
           renderBoughtFilters();
+          renderPriceFilter();
           applyAllFilters();
           jsonLoader.style.display = "none";
         })
@@ -3053,6 +3301,7 @@
               rawProducts = JSON.parse(savedBasket);
               renderCategoryFilters();
               renderBoughtFilters();
+              renderPriceFilter();
               applyAllFilters();
               jsonLoader.style.display = "none";
             } catch (e) {
@@ -3333,6 +3582,7 @@
           localStorage.setItem("temuBasketData", JSON.stringify(rawProducts));
           renderCategoryFilters();
           renderBoughtFilters();
+          renderPriceFilter();
           displayProducts(rawProducts);
 
           // Hide file picker
