@@ -117,29 +117,64 @@
 
   .product-row {
     display: flex;
-    gap: 9px;
+    gap: 12px;
     align-items: center;
-    padding: 7px 9px;
-    border-radius: 9px;
+    padding: 10px 12px;
+    border-radius: 11px;
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
   .product-row img {
-    width: 34px; height: 34px;
+    width: 52px; height: 52px;
     object-fit: cover;
-    border-radius: 7px;
+    border-radius: 9px;
     flex-shrink: 0;
     background: rgba(255,255,255,0.05);
   }
   .product-row .info { flex: 1; min-width: 0; }
   .product-row .title {
-    font-size: 12px; font-weight: 600;
+    font-size: 13.5px; font-weight: 600;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .product-row .price { font-size: 11px; color: var(--cyan); }
-  .product-row .actions { display: flex; gap: 5px; flex-shrink: 0; }
-  .product-row .actions button { padding: 4px 10px; font-size: 11px; }
+  .product-row .price { font-size: 12px; color: var(--cyan); margin-top: 2px; }
+  .product-row .actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .product-row .actions button { padding: 5px 12px; font-size: 11.5px; }
+  .admin-cat-chip {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  .admin-cat-chip:hover {
+    background: rgba(255,158,203,0.12);
+    border-color: rgba(255,158,203,0.4);
+    color: #fff;
+  }
+  .admin-cat-chip.active {
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    border-color: transparent;
+    color: #121218;
+  }
+  .admin-cat-chip .chip-count {
+    display: inline-block;
+    margin-left: 5px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .admin-cat-chip.active .chip-count {
+    background: rgba(18,18,24,0.18);
+    color: #121218;
+  }
   .bought-tag {
     display: inline-block;
     background: linear-gradient(135deg, #6ee7a0, #34d399);
@@ -519,6 +554,7 @@
 
     <div class="card">
       <h2>🧺 Current items (<span id="count">0</span>)</h2>
+      <div id="admin-category-filters" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;"></div>
       <div id="product-list"><div class="empty-state">Connect your token to load the list.</div></div>
     </div>
 
@@ -591,6 +627,7 @@
     let editingIndex = null;
     const PRODUCTS_PAGE_SIZE = 12;
     let productsShown = PRODUCTS_PAGE_SIZE;
+    let adminCategoryFilter = null; // null = all categories
     let outfits = [];
     let outfitsSha = null;
     let editingOutfitId = null;
@@ -675,16 +712,61 @@
       }
     }
 
+    function renderAdminCategoryFilters() {
+      const container = $("admin-category-filters");
+      const cats = Array.from(new Set(products.map(p => (p.category || "").trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+      if (!cats.length) {
+        container.innerHTML = "";
+        return;
+      }
+
+      if (adminCategoryFilter && !cats.includes(adminCategoryFilter)) {
+        adminCategoryFilter = null;
+      }
+
+      const counts = {};
+      cats.forEach(c => { counts[c] = 0; });
+      products.forEach(p => {
+        const c = (p.category || "").trim();
+        if (c) counts[c] = (counts[c] || 0) + 1;
+      });
+
+      container.innerHTML = `<div class="admin-cat-chip${adminCategoryFilter === null ? " active" : ""}" data-cat="">All <span class="chip-count">${products.length}</span></div>`
+        + cats.map(c => `<div class="admin-cat-chip${adminCategoryFilter === c ? " active" : ""}" data-cat="${c.replace(/"/g, "&quot;")}">${c.replace(/</g, "&lt;")} <span class="chip-count">${counts[c]}</span></div>`).join("");
+
+      container.querySelectorAll(".admin-cat-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const cat = chip.getAttribute("data-cat");
+          adminCategoryFilter = cat === "" ? null : cat;
+          productsShown = PRODUCTS_PAGE_SIZE;
+          renderProducts();
+        });
+      });
+    }
+
     function renderProducts() {
-      countEl.textContent = products.length;
+      renderAdminCategoryFilters();
       updateCategorySuggestions();
+
+      const filtered = products
+        .map((p, idx) => ({ p, idx }))
+        .filter(({ p }) => !adminCategoryFilter || (p.category || "").trim() === adminCategoryFilter);
+
+      countEl.textContent = adminCategoryFilter ? `${filtered.length} / ${products.length}` : products.length;
+
       if (!products.length) {
         productList.innerHTML = '<div class="empty-state">No items yet. Add the first one above.</div>';
         return;
       }
+      if (!filtered.length) {
+        productList.innerHTML = '<div class="empty-state">No items in this category.</div>';
+        return;
+      }
       productList.innerHTML = "";
-      const visible = products.slice(0, productsShown);
-      visible.forEach((p, i) => {
+      const visible = filtered.slice(0, productsShown);
+      visible.forEach(({ p, idx }) => {
+        const i = idx;
         const row = document.createElement("div");
         row.className = "product-row";
         row.innerHTML = `
@@ -702,7 +784,7 @@
         productList.appendChild(row);
       });
 
-      const remaining = products.length - visible.length;
+      const remaining = filtered.length - visible.length;
       if (remaining > 0) {
         const moreWrap = document.createElement("div");
         moreWrap.style.textAlign = "center";
@@ -713,7 +795,7 @@
           productsShown += PRODUCTS_PAGE_SIZE;
           renderProducts();
         });
-      } else if (products.length > PRODUCTS_PAGE_SIZE) {
+      } else if (filtered.length > PRODUCTS_PAGE_SIZE) {
         const lessWrap = document.createElement("div");
         lessWrap.style.textAlign = "center";
         lessWrap.style.marginTop = "10px";
