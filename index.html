@@ -1,7 +1,8 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>My Temu Basket</title>
 
     <!-- OG / Schema tags — filled dynamically from URL params so Throne can scrape them -->
@@ -2843,7 +2844,8 @@
         const seen = new Set();
         const products = rawProducts.filter(
           (p) =>
-            p.link.includes("goods.html") &&
+            p.link &&
+            p.link.includes("temu.com") &&
             !seen.has(p.link) &&
             seen.add(p.link),
         );
