@@ -275,10 +275,10 @@
       .voteStar {
         display: none; /* hidden by default, revealed by body.vote-mode-on */
         position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 36px;
-        height: 36px;
+        bottom: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
         cursor: pointer;
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
         transition:
@@ -2702,18 +2702,13 @@
       });
 
       // Load saved favorites once
-      // 👍 Cute hand-drawn thumb icon used by the vote button (kept as one constant
-      // so it's not duplicated/rebuilt per card — just reused as a string)
+      // ⬆️ Cute Reddit-style upvote badge used by the vote button (kept as one
+      // constant so it's not duplicated/rebuilt per card — just reused as a string)
       const VOTE_THUMB_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="40" width="22" height="18" rx="9" fill="#ff9ecb" stroke="#ff7eb3" stroke-width="1.3"/>
-        <rect x="14" y="22" width="38" height="30" rx="15" fill="#ffd24c" stroke="#e8a92e" stroke-width="1.3"/>
-        <g transform="rotate(-18 24 24)">
-          <rect x="16" y="2" width="15" height="32" rx="7.5" fill="#ffd24c" stroke="#e8a92e" stroke-width="1.3"/>
-        </g>
-        <line x1="34" y1="28" x2="34" y2="48" stroke="#e8a92e" stroke-width="2.2" stroke-linecap="round" opacity="0.5"/>
-        <line x1="42" y1="28" x2="42" y2="48" stroke="#e8a92e" stroke-width="2.2" stroke-linecap="round" opacity="0.5"/>
-        <ellipse cx="21" cy="11" rx="3.5" ry="5" fill="#fff3c4" opacity="0.9" transform="rotate(-18 21 11)"/>
-        <path d="M52 12 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6-4 -4-1.6 4-1.6Z" fill="#fff3c4" opacity="0.9"/>
+        <circle cx="32" cy="32" r="26" fill="#ffd24c" stroke="#ffb74c" stroke-width="2.5"/>
+        <path d="M32 16 L48 36 L37 36 L37 48 L27 48 L27 36 L16 36 Z"
+              fill="#fff8e8" stroke="#e8a92e" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M50 10 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6-4 -4-1.6 4-1.6Z" fill="#fff3c4" opacity="0.9"/>
       </svg>`;
 
       let rawProducts = []; // 🌟 make this global so sorting and wishlist can use it
