@@ -140,6 +140,18 @@
   .product-row .price { font-size: 11px; color: var(--cyan); }
   .product-row .actions { display: flex; gap: 5px; flex-shrink: 0; }
   .product-row .actions button { padding: 4px 10px; font-size: 11px; }
+  .bought-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #6ee7a0, #34d399);
+    color: #08321c;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 999px;
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+  .btn-bought-toggle { white-space: nowrap; }
 
   #toast {
     position: fixed;
@@ -487,6 +499,10 @@
       <label for="f-category">Category (free text — type an existing or new name)</label>
       <input id="f-category" type="text" list="category-suggestions" placeholder="Clothing, Accessories, Decor..." />
       <datalist id="category-suggestions"></datalist>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;">
+        <input id="f-bought" type="checkbox" style="width:auto;margin:0;" />
+        <span>✅ Already bought</span>
+      </label>
       <div class="row-actions-top">
         <button class="btn-primary" id="save-btn">Add item</button>
         <button class="btn-ghost" id="cancel-edit-btn" style="display:none;">Cancel</button>
@@ -674,10 +690,11 @@
         row.innerHTML = `
           <img src="${p.image || ""}" alt="" onerror="this.style.opacity=0">
           <div class="info">
-            <div class="title">${(p.title || "Untitled").replace(/</g, "&lt;")}</div>
+            <div class="title">${(p.title || "Untitled").replace(/</g, "&lt;")}${p.bought ? ' <span class="bought-tag">✅ Bought</span>' : ""}</div>
             <div class="price">💰 ${p.price || "?"} €${p.quantity ? " · x" + p.quantity : ""}${p.category ? " · 🏷️ " + p.category.replace(/</g, "&lt;") : ""}</div>
           </div>
           <div class="actions">
+            <button class="btn-ghost btn-bought-toggle" data-bought-toggle="${i}">${p.bought ? "↩️ Unmark" : "✅ Bought"}</button>
             <button class="btn-ghost" data-edit="${i}">Edit</button>
             <button class="btn-danger" data-delete="${i}">Delete</button>
           </div>
@@ -721,9 +738,17 @@
     productList.addEventListener("click", (e) => {
       const editIdx = e.target.getAttribute("data-edit");
       const delIdx = e.target.getAttribute("data-delete");
+      const boughtIdx = e.target.getAttribute("data-bought-toggle");
       if (editIdx !== null) startEdit(parseInt(editIdx));
       if (delIdx !== null) deleteProduct(parseInt(delIdx));
+      if (boughtIdx !== null) toggleBought(parseInt(boughtIdx));
     });
+
+    async function toggleBought(i) {
+      if (!token) { showToast("Connect your token first.", true); return; }
+      products[i].bought = !products[i].bought;
+      await pushProducts(products[i].bought ? "Mark item as bought via admin" : "Unmark item as bought via admin");
+    }
 
     function startEdit(i) {
       editingIndex = i;
@@ -734,6 +759,7 @@
       $("f-image").value = p.image || "";
       $("f-link").value = p.link || "";
       $("f-category").value = p.category || "";
+      $("f-bought").checked = !!p.bought;
       formTitle.textContent = "✏️ Edit item";
       saveBtn.textContent = "Save changes";
       cancelEditBtn.style.display = "inline-block";
@@ -743,6 +769,7 @@
     function resetForm() {
       editingIndex = null;
       ["f-title", "f-price", "f-quantity", "f-image", "f-link", "f-category"].forEach(id => $(id).value = "");
+      $("f-bought").checked = false;
       formTitle.textContent = "➕ Add an item manually";
       saveBtn.textContent = "Add item";
       cancelEditBtn.style.display = "none";
@@ -770,7 +797,8 @@
         quantity: $("f-quantity").value.trim() || "1",
         image: $("f-image").value.trim(),
         link,
-        category: $("f-category").value.trim()
+        category: $("f-category").value.trim(),
+        bought: $("f-bought").checked
       };
 
       if (editingIndex !== null) {
