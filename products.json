@@ -262,7 +262,8 @@
     "image": "https://img.kwcdn.com/product/fancy/ec874e32-dd0f-4bf1-9f13-f1d4c02e7e23.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
     "price": "16,18",
     "quantity": "1",
-    "category": "Shoes"
+    "category": "Shoes",
+    "bought": true
   },
   {
     "title": "A Stylish And Trendy Headband Featuring Cute Cow Horns, Perfect for Parties, Performances, And Costume Events",
