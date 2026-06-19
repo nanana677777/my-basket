@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stats · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --gold: #ffc400;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--pink); }
+
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 36px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid rgba(255,158,203,0.16);
+    border-radius: 20px;
+    padding: 26px 24px;
+    margin-bottom: 22px;
+  }
+  .card-emoji {
+    font-size: 26px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .card h2 {
+    font-size: 17px;
+    margin: 0 0 16px;
+    color: var(--pink);
+    letter-spacing: 0.2px;
+  }
+
+  /* Stat grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .stat-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Category breakdown bars */
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .cat-name {
+    width: 130px;
+    flex-shrink: 0;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cat-bar-wrap {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .cat-bar {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--pink), var(--violet));
+  }
+  .cat-count {
+    width: 28px;
+    text-align: right;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  /* Top voted ranking */
+  .vote-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .vote-row:last-child { border-bottom: none; }
+  .vote-rank {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold);
+    width: 22px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .vote-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .vote-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .vote-title {
+    font-size: 13px;
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .vote-title:hover { color: var(--pink); }
+  .vote-price {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .vote-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .loading, .empty-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    padding: 20px 0;
+  }
+  .spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid rgba(255,255,255,0.12);
+    border-top-color: var(--pink);
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .cta-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+  .cta-basket {
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    color: #1b1b26;
+    box-shadow: 0 4px 16px rgba(255, 158, 203, 0.35);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 28px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .cta-basket:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 22px rgba(255, 158, 203, 0.5);
+  }
+  .cta-basket:active { transform: scale(0.97); }
+
+  .foot-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 36px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="./index.html">← Back to the basket</a>
+
+    <h1>📊 Wishlist Stats</h1>
+    <p class="subtitle">A quick public look at the basket — no admin data here</p>
+
+    <div class="card">
+      <span class="card-emoji">🧺</span>
+      <h2>Overview</h2>
+      <div class="stat-grid" id="overview-grid">
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-emoji">🗂️</span>
+      <h2>By category</h2>
+      <div id="category-breakdown">
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-emoji">⭐</span>
+      <h2>Top demandé</h2>
+      <div id="top-voted">
+        <div class="loading"><div class="spinner"></div>Loading votes…</div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <a class="cta-basket" href="./index.html">🧺 Back to the basket</a>
+    </div>
+
+    <p class="foot-note">Made with 🩷 by Nana677</p>
+  </div>
+
+  <script>
+    const GOATCOUNTER_BASE = "https://nana677.goatcounter.com";
+    const VOTE_CACHE_KEY = "temuVoteStatsCache";
+    const VOTE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min, avoid hammering the counter API on repeat visits
+
+    function priceNumber(p) {
+      return parseFloat((p || "0").replace(",", "."));
+    }
+
+    function getVoteId(link) {
+      const m = (link || "").match(/goods_id=(\d+)/);
+      return m ? m[1] : null;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str || "";
+      return div.innerHTML;
+    }
+
+    async function fetchVoteCount(pid) {
+      try {
+        const res = await fetch(
+          GOATCOUNTER_BASE + "/counter/" + encodeURIComponent("/vote/" + pid) + ".json"
+        );
+        if (!res.ok) return 0; // 404 = nobody voted for it yet
+        const data = await res.json();
+        return data.count_unique || data.count || 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    // Fetch vote counts in small concurrent batches so we don't fire 100+ requests at once
+    async function fetchVotesForProducts(products) {
+      const cached = sessionStorage.getItem(VOTE_CACHE_KEY);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Date.now() - parsed.ts < VOTE_CACHE_TTL_MS) return parsed.votes;
+        } catch (e) {}
+      }
+
+      const withIds = products
+        .map((p) => ({ product: p, pid: getVoteId(p.link) }))
+        .filter((x) => x.pid);
+
+      const BATCH_SIZE = 10;
+      const results = [];
+      for (let i = 0; i < withIds.length; i += BATCH_SIZE) {
+        const batch = withIds.slice(i, i + BATCH_SIZE);
+        const counts = await Promise.all(batch.map((x) => fetchVoteCount(x.pid)));
+        batch.forEach((x, j) => results.push({ product: x.product, votes: counts[j] }));
+      }
+
+      sessionStorage.setItem(VOTE_CACHE_KEY, JSON.stringify({ ts: Date.now(), votes: results }));
+      return results;
+    }
+
+    function renderOverview(products) {
+      const seen = new Set();
+      const clean = products.filter(
+        (p) => p.link && p.link.includes("temu.com") && !seen.has(p.link) && seen.add(p.link)
+      );
+
+      const prices = clean.map((p) => priceNumber(p.price)).filter((v) => !isNaN(v));
+      const totalValue = clean.reduce(
+        (sum, p) => sum + priceNumber(p.price) * (parseInt(p.quantity) || 1),
+        0
+      );
+      const avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+      const boughtCount = clean.filter((p) => p.bought).length;
+
+      const catCounts = {};
+      clean.forEach((p) => {
+        const cat = (p.category || "Uncategorized").trim();
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
+      });
+      const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+
+      document.getElementById("overview-grid").innerHTML = `
+        <div class="stat-box">
+          <div class="stat-value">${clean.length}</div>
+          <div class="stat-label">Items in the list</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${totalValue.toFixed(2)} €</div>
+          <div class="stat-label">Total wishlist value</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${avgPrice.toFixed(2)} €</div>
+          <div class="stat-label">Average price</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${topCat ? escapeHtml(topCat[0]) : "—"}</div>
+          <div class="stat-label">Top category</div>
+        </div>
+      `;
+
+      return { clean, catCounts, boughtCount };
+    }
+
+    function renderCategoryBreakdown(catCounts, total) {
+      const sorted = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+      const max = sorted.length ? sorted[0][1] : 1;
+
+      document.getElementById("category-breakdown").innerHTML = sorted
+        .map(
+          ([cat, count]) => `
+        <div class="cat-row">
+          <div class="cat-name">${escapeHtml(cat)}</div>
+          <div class="cat-bar-wrap"><div class="cat-bar" style="width:${(count / max) * 100}%"></div></div>
+          <div class="cat-count">${count}</div>
+        </div>
+      `
+        )
+        .join("");
+    }
+
+    function renderTopVoted(votesData) {
+      const ranked = votesData
+        .filter((v) => v.votes > 0)
+        .sort((a, b) => b.votes - a.votes)
+        .slice(0, 10);
+
+      const container = document.getElementById("top-voted");
+
+      if (!ranked.length) {
+        container.innerHTML = `<div class="empty-note">No votes yet — be the first to ⭐ an item on the wishlist!</div>`;
+        return;
+      }
+
+      container.innerHTML = ranked
+        .map(
+          (entry, i) => `
+        <div class="vote-row">
+          <div class="vote-rank">#${i + 1}</div>
+          <img class="vote-thumb" src="${entry.product.image}" alt="">
+          <div class="vote-info">
+            <a class="vote-title" href="${entry.product.link}" target="_blank">${escapeHtml(entry.product.title)}</a>
+            <div class="vote-price">💰 ${entry.product.price || "?"} €</div>
+          </div>
+          <div class="vote-count">⭐ ${entry.votes}</div>
+        </div>
+      `
+        )
+        .join("");
+    }
+
+    async function init() {
+      try {
+        const res = await fetch("./products.json");
+        const products = await res.json();
+
+        const { clean, catCounts } = renderOverview(products);
+        renderCategoryBreakdown(catCounts, clean.length);
+
+        const votesData = await fetchVotesForProducts(clean);
+        renderTopVoted(votesData);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("overview-grid").innerHTML =
+          `<div class="empty-note">Couldn't load the wishlist data.</div>`;
+        document.getElementById("category-breakdown").innerHTML = "";
+        document.getElementById("top-voted").innerHTML = "";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
