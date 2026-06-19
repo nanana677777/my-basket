@@ -2642,6 +2642,7 @@
       let activePriceMin = -Infinity;
       let activePriceMax = Infinity;
       let priceSliderBound = false;
+      let activeSortOrder = sessionStorage.getItem("activeSortOrder") || null; // null, "asc" (low→high), "desc" (high→low)
 
       // Fetch JSON
       document
@@ -2955,6 +2956,12 @@
         const term = (document.getElementById("search") ? document.getElementById("search").value : "").toLowerCase();
         if (term) {
           base = base.filter(p => (p.title || "").toLowerCase().includes(term));
+        }
+
+        if (activeSortOrder === "asc") {
+          base = [...base].sort((a, b) => priceNumber(a.price) - priceNumber(b.price));
+        } else if (activeSortOrder === "desc") {
+          base = [...base].sort((a, b) => priceNumber(b.price) - priceNumber(a.price));
         }
 
         return base;
@@ -3395,27 +3402,33 @@
       }
 
       // Sorting buttons that respect wishlist filter
+      // Sorting now goes through the centralized filter pipeline (getFilteredProducts),
+      // so it stays in sync with the price slider, category, bought-status, and search filters.
       document.getElementById("sort-low").addEventListener("click", () => {
-        const base = showingWishlist
-          ? rawProducts.filter((p) => favorites.includes(p.link))
-          : rawProducts;
-
-        const sorted = [...base].sort(
-          (a, b) => priceNumber(b.price) - priceNumber(a.price),
-        );
-        displayProducts(sorted);
+        activeSortOrder = activeSortOrder === "asc" ? null : "asc";
+        if (activeSortOrder) sessionStorage.setItem("activeSortOrder", activeSortOrder);
+        else sessionStorage.removeItem("activeSortOrder");
+        updateSortButtonsUI();
+        applyAllFilters();
       });
 
       document.getElementById("sort-high").addEventListener("click", () => {
-        const base = showingWishlist
-          ? rawProducts.filter((p) => favorites.includes(p.link))
-          : rawProducts;
-
-        const sorted = [...base].sort(
-          (a, b) => priceNumber(a.price) - priceNumber(b.price),
-        );
-        displayProducts(sorted);
+        activeSortOrder = activeSortOrder === "desc" ? null : "desc";
+        if (activeSortOrder) sessionStorage.setItem("activeSortOrder", activeSortOrder);
+        else sessionStorage.removeItem("activeSortOrder");
+        updateSortButtonsUI();
+        applyAllFilters();
       });
+
+      function updateSortButtonsUI() {
+        const lowBtn = document.getElementById("sort-low");
+        const highBtn = document.getElementById("sort-high");
+        lowBtn.style.outline = activeSortOrder === "asc" ? "2px solid #fff" : "none";
+        lowBtn.style.boxShadow = activeSortOrder === "asc" ? "0 0 14px rgba(125,249,255,0.8)" : "";
+        highBtn.style.outline = activeSortOrder === "desc" ? "2px solid #fff" : "none";
+        highBtn.style.boxShadow = activeSortOrder === "desc" ? "0 0 14px rgba(255,158,203,0.8)" : "";
+      }
+      updateSortButtonsUI();
 
       document.querySelectorAll("#sort-low, #sort-high").forEach((btn) => {
         btn.addEventListener("click", () => {
