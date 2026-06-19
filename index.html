@@ -2754,7 +2754,7 @@
       // public, backend-free vote tally. Each product gets a fake "page path"
       // /vote/<goods_id> that we hit once per browser; the public Stats page
       // reads those counts back via GoatCounter's public counter.json endpoint
-      // to build the "Top demandé" ranking.
+      // to build the "Top requested" ranking.
       function getVoteId(link) {
         const m = (link || "").match(/goods_id=(\d+)/);
         return m ? m[1] : null;
@@ -3218,7 +3218,7 @@
               <div class="price-badge">💰 ${product.price || "?"} €</div>
             </div>
             <div class="heartFav ${favorites.includes(product.link) ? "favorited" : ""}">♥</div>
-            ${votePid ? `<div class="voteStar ${alreadyVoted ? "voted disabled" : ""}" data-pid="${votePid}" title="${alreadyVoted ? "Tu as déjà voté pour cet article" : "Voter pour cet article"}">⭐</div>` : ''}
+            ${votePid ? `<div class="voteStar ${alreadyVoted ? "voted disabled" : ""}" data-pid="${votePid}" title="${alreadyVoted ? "You already voted for this item" : "Vote for this item"}">⭐</div>` : ''}
             ${throneAdded.has(product.link) ? '<div class="throne-pin">👑 <span>Wishlisted</span></div>' : ''}
             ${product.bought ? '<div class="bought-pin">✅ Already bought</div>' : ''}
           `;
@@ -3886,10 +3886,10 @@
 
     <div id="linktree-overlay">
       <div id="linktree-panel">
-        <!-- 🔢 Reddit affiche le karma en LIVE via l'API publique Reddit (about.json). -->
+        <!-- 🔢 Reddit karma is displayed LIVE via the public Reddit API (about.json). -->
         <div id="linktree-panel-head">
           <h3>🩷 Find me here</h3>
-          <button id="linktree-close" title="Fermer">✕</button>
+          <button id="linktree-close" title="Close">✕</button>
         </div>
         <a class="social-link sl-throne" href="https://throne.com/nana677" target="_blank">
           <span class="social-icon">🎁</span> Throne
