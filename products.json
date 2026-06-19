@@ -606,7 +606,8 @@
     "image": "https://img.kwcdn.com/product/fancy/1946a5bb-d54f-47c2-b805-cb9f5e7f6470.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
     "price": "6,02",
     "quantity": "1",
-    "category": "Jumpsuits & Sets"
+    "category": "Jumpsuits & Sets",
+    "bought": true
   },
   {
     "title": "Latest Women's Fashion Full-Body Printed Bodysuit with Long Sleeves",
