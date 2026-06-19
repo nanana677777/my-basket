@@ -492,13 +492,33 @@
       }
       .card.is-bought img { opacity: 0.55; }
 
+      /* ➖ Divider between category filters and bought-status filters */
+      #filters-divider {
+        width: 92%;
+        max-width: 480px;
+        height: 1px;
+        margin: 16px auto 14px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+        display: none;
+      }
+
       /* 🏷️ Bought filter chips (reuses category-chip look) */
       #bought-filters {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
+        align-items: center;
         gap: 8px;
-        margin: 4px 0 4px;
+        margin: 4px 0 14px;
+      }
+      #bought-filters::before {
+        content: "Status:";
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted, #8a8499);
+        margin-right: 4px;
       }
       .bought-chip {
         padding: 6px 16px;
@@ -2442,6 +2462,7 @@
       </button>
     </div>
     <div id="category-filters"></div>
+    <div id="filters-divider"></div>
     <div id="bought-filters"></div>
     <input type="text" id="search" placeholder="🔎 Search products..." />
     <!-- 🛍️ Product detail modal -->
@@ -2624,13 +2645,16 @@
       // ✅ Build the "Already bought" filter bar
       function renderBoughtFilters() {
         const container = document.getElementById("bought-filters");
+        const divider = document.getElementById("filters-divider");
         const boughtCount = rawProducts.filter(p => p.bought).length;
         const notBoughtCount = rawProducts.length - boughtCount;
 
         if (!boughtCount) {
           container.innerHTML = "";
+          if (divider) divider.style.display = "none";
           return;
         }
+        if (divider) divider.style.display = "block";
 
         const opts = [
           { key: null, label: "All", count: rawProducts.length },
