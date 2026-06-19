@@ -271,6 +271,44 @@
           0 0 8px #ff69b4,
           0 0 18px #ff85c1;
       }
+      /* ⭐ Vote star on product card ======================*/
+      .voteStar {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        cursor: pointer;
+        font-size: 32px;
+        color: #fff3c4;
+        text-shadow:
+          0 0 2px #ffd24c,
+          0 0 4px #ffe08a;
+        transition:
+          transform 0.2s,
+          color 0.3s,
+          text-shadow 0.3s;
+        user-select: none;
+        z-index: 10;
+      }
+      .voteStar.voted {
+        color: #ffc400;
+        transform: scale(1.3);
+        animation: heartBounce 0.5s;
+        text-shadow:
+          0 0 8px #ffc400,
+          0 0 18px #ffda6a;
+      }
+      .voteStar.disabled {
+        cursor: default;
+      }
+      .gallery.list-view .card .voteStar {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        font-size: 22px !important;
+        flex-shrink: 0;
+        align-self: center;
+        order: -1;
+      }
       /* cute bounce animation */
       @keyframes heartBounce {
         0% {
@@ -2507,6 +2545,7 @@
     <nav id="top-nav">
       <a href="./index.html" class="nav-current">🧺 Wishlist</a>
       <a href="./outfits.html">👗 Complete Looks</a>
+      <a href="./stats.html">📊 Stats</a>
       <a href="./about.html">ℹ️ About</a>
     </nav>
     <div class="counter" id="counter"></div>
@@ -2633,6 +2672,7 @@
       // Load saved favorites once
       let rawProducts = []; // 🌟 make this global so sorting and wishlist can use it
       let favorites = JSON.parse(localStorage.getItem("temuFavorites")) || [];
+      let votedProducts = JSON.parse(localStorage.getItem("temuVotes")) || []; // ⭐ product IDs this browser already voted for
       let throneAdded = new Set(JSON.parse(localStorage.getItem("temuThroneAdded")) || []);
       let showingWishlist = sessionStorage.getItem("showingWishlist") === "1";
       let tintEnabled = localStorage.getItem("temuTintEnabled") !== "0"; // default ON
@@ -2708,6 +2748,56 @@
         }
 
         localStorage.setItem("temuFavorites", JSON.stringify(favorites));
+      }
+
+      // ⭐ Vote system — uses GoatCounter (already loaded on this page) as the
+      // public, backend-free vote tally. Each product gets a fake "page path"
+      // /vote/<goods_id> that we hit once per browser; the public Stats page
+      // reads those counts back via GoatCounter's public counter.json endpoint
+      // to build the "Top demandé" ranking.
+      function getVoteId(link) {
+        const m = (link || "").match(/goods_id=(\d+)/);
+        return m ? m[1] : null;
+      }
+
+      function castVote(pid, starEl) {
+        if (!pid || votedProducts.includes(pid)) return;
+
+        votedProducts.push(pid);
+        localStorage.setItem("temuVotes", JSON.stringify(votedProducts));
+
+        starEl.classList.add("voted", "disabled");
+
+        if (window.goatcounter && window.goatcounter.count) {
+          window.goatcounter.count({
+            path: "/vote/" + pid,
+            title: "Vote " + pid,
+            event: false,
+          });
+        }
+
+        // ✨ little floating "+1" feedback, same spirit as the favorite heart
+        const plusOne = document.createElement("div");
+        plusOne.innerText = "+1";
+        plusOne.style.position = "absolute";
+        plusOne.style.left = "0%";
+        plusOne.style.top = "0%";
+        plusOne.style.transform = "translate(-20%, -50%) scale(1.1)";
+        plusOne.style.fontSize = "14px";
+        plusOne.style.fontWeight = "bold";
+        plusOne.style.color = "#ffc400";
+        plusOne.style.opacity = "1";
+        plusOne.style.pointerEvents = "none";
+        plusOne.style.transition = "all 1s ease-out";
+
+        starEl.parentElement.appendChild(plusOne);
+
+        requestAnimationFrame(() => {
+          plusOne.style.transform = "translate(-20%, -150%) scale(0.6)";
+          plusOne.style.opacity = "0";
+        });
+
+        setTimeout(() => plusOne.remove(), 1000);
       }
 
       // 🥧 Pie chart — price range breakdown
@@ -3119,6 +3209,8 @@
         products.forEach((product) => {
           const wrapper = document.createElement("div");
           wrapper.className = "card card-wrapper" + (product.bought ? " is-bought" : "");
+          const votePid = getVoteId(product.link);
+          const alreadyVoted = votePid && votedProducts.includes(votePid);
           wrapper.innerHTML = `
             <img src="${product.image}" alt="${product.title}" style="width:100%;border-radius:14px;margin-bottom:8px;cursor:pointer;">
             <div class="card-info">
@@ -3126,6 +3218,7 @@
               <div class="price-badge">💰 ${product.price || "?"} €</div>
             </div>
             <div class="heartFav ${favorites.includes(product.link) ? "favorited" : ""}">♥</div>
+            ${votePid ? `<div class="voteStar ${alreadyVoted ? "voted disabled" : ""}" data-pid="${votePid}" title="${alreadyVoted ? "Tu as déjà voté pour cet article" : "Voter pour cet article"}">⭐</div>` : ''}
             ${throneAdded.has(product.link) ? '<div class="throne-pin">👑 <span>Wishlisted</span></div>' : ''}
             ${product.bought ? '<div class="bought-pin">✅ Already bought</div>' : ''}
           `;
@@ -3150,7 +3243,7 @@
 
           // Open modal on image/card click (but not heart)
           wrapper.addEventListener("click", (e) => {
-            if (e.target.classList.contains("heartFav")) return;
+            if (e.target.classList.contains("heartFav") || e.target.classList.contains("voteStar")) return;
             document.getElementById("modal-img").src = product.image;
             document.getElementById("modal-img").alt = product.title;
             document.getElementById("modal-title").textContent = product.title || "";
@@ -3248,6 +3341,11 @@
           heart.addEventListener("click", () =>
             toggleFavorite(product.link, heart),
           );
+
+          const star = wrapper.querySelector(".voteStar");
+          if (star) {
+            star.addEventListener("click", () => castVote(votePid, star));
+          }
 
           gallery.appendChild(wrapper);
         });
