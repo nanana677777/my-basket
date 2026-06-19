@@ -953,7 +953,8 @@
     "image": "https://img.kwcdn.com/product/fancy/553e24a4-f018-4958-8288-859f90beb68c.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
     "price": "10,03",
     "quantity": "1",
-    "category": "Tops & Jackets"
+    "category": "Tops & Jackets",
+    "bought": true
   },
   {
     "title": "Jumpsuit with Hood",
