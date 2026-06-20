@@ -2142,6 +2142,7 @@
       #propose-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+        grid-auto-rows: 58px; /* fixed row height — don't rely on aspect-ratio inside an auto-row grid, iOS Safari mishandles that combo */
         gap: 8px;
         overflow-y: auto;
         overflow-x: hidden;
@@ -2153,7 +2154,8 @@
       .propose-item {
         position: relative;
         width: 100%;
-        aspect-ratio: 1;
+        height: 100%;
+        aspect-ratio: 1; /* harmless on browsers that support it; height:100% is the real source of truth */
         border-radius: 10px;
         overflow: hidden;
         cursor: pointer;
