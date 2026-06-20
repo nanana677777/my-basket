@@ -3552,7 +3552,6 @@
         const products = rawProducts.filter(
           (p) =>
             p.link &&
-            p.link.includes("temu.com") &&
             !seen.has(p.link) &&
             seen.add(p.link),
         );
