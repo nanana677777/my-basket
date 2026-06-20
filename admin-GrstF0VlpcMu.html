@@ -1443,9 +1443,17 @@
     }
 
     function matchProposalProducts(path) {
-      const ids = path.replace("/outfit-proposal/", "").split(",").filter(Boolean);
-      return ids
-        .map(id => products.find(prod => (prod.link || "").includes("goods_id=" + id)))
+      // New format: "/outfit-proposal/top:123,shoes:456" — each part is "slotKey:goodsId".
+      // Legacy fallback: "/outfit-proposal/123,456" — plain ids, no slot info.
+      const parts = path.replace("/outfit-proposal/", "").split(",").filter(Boolean);
+      return parts
+        .map(part => {
+          const hasSlot = part.includes(":");
+          const slot = hasSlot ? part.split(":")[0] : null;
+          const id = hasSlot ? part.split(":")[1] : part;
+          const product = products.find(prod => (prod.link || "").includes("goods_id=" + id));
+          return product ? { slot, product } : null;
+        })
         .filter(Boolean);
     }
 
@@ -1456,17 +1464,17 @@
       }
 
       proposalsListEl.innerHTML = loadedProposals.map((p, i) => {
-        const matched = matchProposalProducts(p.path);
+        const matches = matchProposalProducts(p.path);
         const name = (p.title || "Untitled proposal").replace(/</g, "&lt;");
-        const thumbs = matched.length
-          ? matched.slice(0, 5).map(m => `<img src="${m.image}" alt="">`).join("")
+        const thumbs = matches.length
+          ? matches.slice(0, 5).map(m => `<img src="${m.product.image}" alt="">`).join("")
           : `<span style="font-size:11px;color:var(--muted);">No matching items found</span>`;
         return `
           <div class="product-row">
             <div class="proposal-thumbs">${thumbs}</div>
             <div class="info">
               <div class="title">${name}</div>
-              <div class="price">${matched.length} item${matched.length === 1 ? "" : "s"} matched</div>
+              <div class="price">${matches.length} item${matches.length === 1 ? "" : "s"} matched</div>
             </div>
             <div class="actions">
               <button class="btn-primary" data-build-proposal="${i}">✅ Build</button>
@@ -1489,14 +1497,26 @@
     }
 
     function buildFromProposal(p) {
-      const matched = matchProposalProducts(p.path);
-      if (!matched.length) { showToast("None of the proposed items matched current products.", true); return; }
+      const matches = matchProposalProducts(p.path);
+      if (!matches.length) { showToast("None of the proposed items matched current products.", true); return; }
 
       editingOutfitId = null;
       currentOutfitSlots = {};
-      matched.slice(0, SLOT_KEYS.length).forEach((m, i) => {
-        currentOutfitSlots[SLOT_KEYS[i]] = { title: m.title, image: m.image, price: m.price, link: m.link };
+
+      // Use the visitor's slot choice when available; anything without a
+      // recognized slot (legacy proposals) falls back to the next free slot.
+      let fallbackIdx = 0;
+      matches.forEach(m => {
+        let slotKey = m.slot && SLOT_KEYS.includes(m.slot) ? m.slot : null;
+        if (!slotKey) {
+          while (fallbackIdx < SLOT_KEYS.length && currentOutfitSlots[SLOT_KEYS[fallbackIdx]]) fallbackIdx++;
+          slotKey = SLOT_KEYS[fallbackIdx] || null;
+        }
+        if (slotKey) {
+          currentOutfitSlots[slotKey] = { title: m.product.title, image: m.product.image, price: m.product.price, link: m.product.link };
+        }
       });
+
       renderOutfitSlots();
       document.getElementById("outfit-name").value = (p.title || "").replace(/^Outfit proposal:\s*/i, "");
       document.getElementById("outfit-save-btn").textContent = "Save outfit";
