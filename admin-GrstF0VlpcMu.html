@@ -148,6 +148,13 @@
   .product-row .price { font-size: 12px; color: var(--cyan); margin-top: 2px; }
   .product-row .actions { display: flex; gap: 6px; flex-shrink: 0; }
   .product-row .actions button { padding: 5px 12px; font-size: 11.5px; }
+  .proposal-thumbs { display: flex; gap: 4px; flex-shrink: 0; }
+  .proposal-thumbs img {
+    width: 40px; height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+  }
   .admin-cat-chip {
     padding: 6px 14px;
     border-radius: 999px;
@@ -607,6 +614,20 @@
           <button class="btn-ghost" id="outfit-cancel-btn" style="display:none;">Cancel</button>
         </div>
       </div>
+    </div>
+
+    <div class="card">
+      <h2>💡 Outfit Proposals</h2>
+      <p class="sub" style="margin:0 0 14px;">Visitors can propose outfit combos from the wishlist (via the 💡 button on the public site). Proposals are stored as GoatCounter hits, not in this repo — review them here, then build/save the ones you like as a real outfit above.</p>
+
+      <div id="gc-token-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+        <input id="gc-api-token" type="password" placeholder="GoatCounter API token (Settings → API on goatcounter.com)" style="flex:1;min-width:220px;" />
+        <button class="btn-primary" id="gc-token-connect-btn">Connect</button>
+        <button class="btn-ghost" id="gc-token-disconnect-btn" style="display:none;">Disconnect</button>
+      </div>
+
+      <button class="btn-primary" id="proposals-refresh-btn" style="display:none;margin-bottom:14px;">🔄 Refresh proposals</button>
+      <div id="proposals-list"><div class="empty-state">Connect your GoatCounter API token to load proposals.</div></div>
     </div>
   </div>
 
@@ -1356,6 +1377,157 @@
       await pushOutfits(editingOutfitId ? "Update outfit via admin" : "Add outfit via admin");
       resetOutfitForm();
     });
+
+    // ─── 💡 Outfit Proposals (read from GoatCounter, no extra backend) ───
+    // Public visitors "vote" an outfit combo by hitting a fake path like
+    // /outfit-proposal/<id1>,<id2>,... (same trick as the vote system).
+    // We read them back here with a GoatCounter *API* token (different from
+    // the public counter.json reads used elsewhere) since listing *all*
+    // paths requires authentication.
+    const GC_BASE = "https://nana677.goatcounter.com";
+    const DISMISSED_KEY = "dismissedOutfitProposals";
+    let gcToken = sessionStorage.getItem("gcApiToken") || "";
+
+    const gcTokenInput = document.getElementById("gc-api-token");
+    const gcConnectBtn = document.getElementById("gc-token-connect-btn");
+    const gcDisconnectBtn = document.getElementById("gc-token-disconnect-btn");
+    const proposalsRefreshBtn = document.getElementById("proposals-refresh-btn");
+    const proposalsListEl = document.getElementById("proposals-list");
+    let loadedProposals = [];
+
+    function setGcConnectedUI(connected) {
+      gcConnectBtn.style.display = connected ? "none" : "inline-block";
+      gcDisconnectBtn.style.display = connected ? "inline-block" : "none";
+      gcTokenInput.style.display = connected ? "none" : "block";
+      proposalsRefreshBtn.style.display = connected ? "inline-block" : "none";
+    }
+
+    function getDismissed() {
+      try { return JSON.parse(localStorage.getItem(DISMISSED_KEY)) || []; } catch (e) { return []; }
+    }
+    function dismissProposal(path) {
+      const d = getDismissed();
+      if (!d.includes(path)) d.push(path);
+      localStorage.setItem(DISMISSED_KEY, JSON.stringify(d));
+    }
+
+    async function loadProposals() {
+      if (!gcToken) return;
+      proposalsListEl.innerHTML = `<div class="empty-state">Loading…</div>`;
+      try {
+        let all = [];
+        let after = null;
+        for (let page = 0; page < 5; page++) {
+          const url = GC_BASE + "/api/v0/paths" + (after ? ("?after=" + after) : "");
+          const res = await fetch(url, { headers: { "Authorization": "Bearer " + gcToken } });
+          if (res.status === 401 || res.status === 403) {
+            showToast("❌ GoatCounter token invalid or missing permission", true);
+            proposalsListEl.innerHTML = `<div class="empty-state">Token rejected — check it has stats-read permission.</div>`;
+            return;
+          }
+          if (!res.ok) throw new Error("GoatCounter API error " + res.status);
+          const data = await res.json();
+          const list = data.paths || (Array.isArray(data) ? data : []);
+          all = all.concat(list);
+          if (!data.more || !list.length) break;
+          after = list[list.length - 1].id;
+        }
+
+        const dismissed = getDismissed();
+        loadedProposals = all.filter(p => p.path && p.path.startsWith("/outfit-proposal/") && !dismissed.includes(p.path));
+        renderProposals();
+      } catch (e) {
+        console.error("loadProposals error:", e);
+        proposalsListEl.innerHTML = `<div class="empty-state">Couldn't load proposals — check your token and connection.</div>`;
+      }
+    }
+
+    function matchProposalProducts(path) {
+      const ids = path.replace("/outfit-proposal/", "").split(",").filter(Boolean);
+      return ids
+        .map(id => products.find(prod => (prod.link || "").includes("goods_id=" + id)))
+        .filter(Boolean);
+    }
+
+    function renderProposals() {
+      if (!loadedProposals.length) {
+        proposalsListEl.innerHTML = `<div class="empty-state" style="padding:14px 0;">No pending proposals.</div>`;
+        return;
+      }
+
+      proposalsListEl.innerHTML = loadedProposals.map((p, i) => {
+        const matched = matchProposalProducts(p.path);
+        const name = (p.title || "Untitled proposal").replace(/</g, "&lt;");
+        const thumbs = matched.length
+          ? matched.slice(0, 5).map(m => `<img src="${m.image}" alt="">`).join("")
+          : `<span style="font-size:11px;color:var(--muted);">No matching items found</span>`;
+        return `
+          <div class="product-row">
+            <div class="proposal-thumbs">${thumbs}</div>
+            <div class="info">
+              <div class="title">${name}</div>
+              <div class="price">${matched.length} item${matched.length === 1 ? "" : "s"} matched</div>
+            </div>
+            <div class="actions">
+              <button class="btn-primary" data-build-proposal="${i}">✅ Build</button>
+              <button class="btn-ghost" data-dismiss-proposal="${i}">Dismiss</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      proposalsListEl.querySelectorAll("[data-build-proposal]").forEach(btn => {
+        btn.addEventListener("click", () => buildFromProposal(loadedProposals[parseInt(btn.dataset.buildProposal)]));
+      });
+      proposalsListEl.querySelectorAll("[data-dismiss-proposal]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          dismissProposal(loadedProposals[parseInt(btn.dataset.dismissProposal)].path);
+          loadedProposals = loadedProposals.filter(p => p.path !== loadedProposals[parseInt(btn.dataset.dismissProposal)]?.path);
+          loadProposals();
+        });
+      });
+    }
+
+    function buildFromProposal(p) {
+      const matched = matchProposalProducts(p.path);
+      if (!matched.length) { showToast("None of the proposed items matched current products.", true); return; }
+
+      editingOutfitId = null;
+      currentOutfitSlots = {};
+      matched.slice(0, SLOT_KEYS.length).forEach((m, i) => {
+        currentOutfitSlots[SLOT_KEYS[i]] = { title: m.title, image: m.image, price: m.price, link: m.link };
+      });
+      renderOutfitSlots();
+      document.getElementById("outfit-name").value = (p.title || "").replace(/^Outfit proposal:\s*/i, "");
+      document.getElementById("outfit-save-btn").textContent = "Save outfit";
+      document.getElementById("outfit-cancel-btn").style.display = "none";
+      document.getElementById("outfit-form").scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast("💡 Proposal loaded into the outfit builder — adjust slots, then Save.");
+    }
+
+    gcConnectBtn.addEventListener("click", () => {
+      const val = gcTokenInput.value.trim();
+      if (!val) { showToast("Paste your GoatCounter API token first.", true); return; }
+      gcToken = val;
+      sessionStorage.setItem("gcApiToken", gcToken);
+      setGcConnectedUI(true);
+      loadProposals();
+    });
+
+    gcDisconnectBtn.addEventListener("click", () => {
+      gcToken = "";
+      sessionStorage.removeItem("gcApiToken");
+      gcTokenInput.value = "";
+      setGcConnectedUI(false);
+      proposalsListEl.innerHTML = `<div class="empty-state">Connect your GoatCounter API token to load proposals.</div>`;
+    });
+
+    proposalsRefreshBtn.addEventListener("click", loadProposals);
+
+    if (gcToken) {
+      setGcConnectedUI(true);
+      loadProposals();
+    }
   </script>
 </body>
 </html>
