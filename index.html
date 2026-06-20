@@ -3284,7 +3284,7 @@
 
           // Open modal on image/card click (but not heart)
           wrapper.addEventListener("click", (e) => {
-            if (e.target.classList.contains("heartFav") || e.target.classList.contains("voteStar")) return;
+            if (e.target.closest(".heartFav") || e.target.closest(".voteStar")) return;
             document.getElementById("modal-img").src = product.image;
             document.getElementById("modal-img").alt = product.title;
             document.getElementById("modal-title").textContent = product.title || "";
