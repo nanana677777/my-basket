@@ -1900,6 +1900,13 @@
       }
 
       /* 💡 Propose-an-outfit launcher tab */
+      /* Scoped box-sizing reset: the site has no global border-box reset, so
+         any width:100% element with padding/border here would overflow its
+         parent by that amount (e.g. the "Name your look" input). */
+      #propose-overlay, #propose-overlay *,
+      #outfit-picker-overlay, #outfit-picker-overlay * {
+        box-sizing: border-box;
+      }
       #propose-tab {
         position: fixed;
         left: 0;
