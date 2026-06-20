@@ -1434,7 +1434,7 @@
         }
 
         const dismissed = getDismissed();
-        loadedProposals = all.filter(p => p.path && p.path.startsWith("/outfit-proposal/") && !dismissed.includes(p.path));
+        loadedProposals = all.filter(p => p.path && /^\/?outfit-proposal\//.test(p.path) && !dismissed.includes(p.path));
         renderProposals();
       } catch (e) {
         console.error("loadProposals error:", e);
@@ -1445,7 +1445,8 @@
     function matchProposalProducts(path) {
       // New format: "/outfit-proposal/top:123,shoes:456" — each part is "slotKey:goodsId".
       // Legacy fallback: "/outfit-proposal/123,456" — plain ids, no slot info.
-      const parts = path.replace("/outfit-proposal/", "").split(",").filter(Boolean);
+      // Note: GoatCounter sometimes stores the path without the leading slash.
+      const parts = path.replace(/^\/?outfit-proposal\//, "").split(",").filter(Boolean);
       return parts
         .map(part => {
           const hasSlot = part.includes(":");
