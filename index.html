@@ -2029,6 +2029,101 @@
         text-align: center;
         font-family: inherit;
       }
+      .propose-outfit-slots {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .propose-slot {
+        position: relative;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 8px 4px 7px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, transform 0.15s;
+      }
+      .propose-slot:hover { transform: translateY(-2px); border-color: rgba(255,210,76,0.5); }
+      .propose-slot-thumb {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-bottom: 5px;
+      }
+      .propose-slot-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .propose-slot-thumb .slot-placeholder { font-size: 18px; opacity: 0.5; }
+      .propose-slot-label { font-size: 9.5px; font-weight: 700; color: #b8b2c4; letter-spacing: 0.3px; text-transform: uppercase; }
+      .propose-slot.filled .propose-slot-label { color: #ffd24c; }
+      .propose-slot-clear {
+        display: none;
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2a2a36;
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #cfc9d8;
+        font-size: 10px;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .propose-slot.filled .propose-slot-clear { display: flex; }
+      .propose-slot-clear:hover { background: #ff6b81; color: #1b1b26; }
+
+      /* Nested item picker (opens on top of the propose modal when a slot is clicked) */
+      #outfit-picker-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 2600;
+        background: rgba(8, 8, 14, 0.85);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      #outfit-picker-overlay.open { display: flex; animation: overlayFade 0.2s ease; }
+      #outfit-picker-panel {
+        width: 100%;
+        max-width: 380px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        background: #1b1b26;
+        border: 1px solid rgba(255, 210, 76, 0.3);
+        border-radius: 22px;
+        padding: 20px 18px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      }
+      #outfit-picker-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        flex-shrink: 0;
+      }
+      #outfit-picker-head h3 { margin: 0; font-size: 14px; color: #ffd24c; }
+      #outfit-picker-close {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #cfc9d8;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
       #propose-search {
         display: block;
         width: 100%;
@@ -2042,6 +2137,7 @@
         font-size: 12.5px;
         text-align: center;
         font-family: inherit;
+        flex-shrink: 0;
       }
       #propose-grid {
         display: grid;
@@ -2050,7 +2146,6 @@
         overflow-y: auto;
         overflow-x: hidden;
         padding-right: 2px;
-        margin-bottom: 14px;
         flex: 1;
         min-height: 120px;
         min-width: 0;
@@ -2068,26 +2163,6 @@
       }
       .propose-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
       .propose-item:hover { transform: scale(1.05); }
-      .propose-item.selected {
-        border-color: #ffd24c;
-        box-shadow: 0 0 10px rgba(255, 210, 76, 0.5);
-      }
-      .propose-item.selected::after {
-        content: "✓";
-        position: absolute;
-        top: 3px;
-        right: 3px;
-        width: 17px;
-        height: 17px;
-        border-radius: 50%;
-        background: #ffd24c;
-        color: #1b1b26;
-        font-size: 10px;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
       #propose-empty {
         text-align: center;
         font-size: 12.5px;
@@ -4077,12 +4152,51 @@
       <div id="propose-panel">
         <button id="propose-close" title="Close">✕</button>
         <h3>💡 Propose an outfit</h3>
-        <p class="propose-sub">Pick 2+ items from the wishlist — Nana reviews every proposal before it goes live.</p>
+        <p class="propose-sub">Click a slot to pick an item — 2+ filled, Nana reviews every proposal before it goes live.</p>
         <input id="propose-name" type="text" placeholder="Name your look (optional)" maxlength="60" />
-        <input id="propose-search" type="text" placeholder="🔎 Search items..." autocomplete="off" />
-        <div id="propose-grid"></div>
+
+        <div class="propose-outfit-slots" id="propose-slots">
+          <div class="propose-slot" data-slot="top">
+            <div class="propose-slot-thumb"><span class="slot-placeholder">👕</span></div>
+            <div class="propose-slot-label">Top</div>
+            <div class="propose-slot-clear" data-clear-slot="top">✕</div>
+          </div>
+          <div class="propose-slot" data-slot="bottom">
+            <div class="propose-slot-thumb"><span class="slot-placeholder">👖</span></div>
+            <div class="propose-slot-label">Bottom</div>
+            <div class="propose-slot-clear" data-clear-slot="bottom">✕</div>
+          </div>
+          <div class="propose-slot" data-slot="shoes">
+            <div class="propose-slot-thumb"><span class="slot-placeholder">👟</span></div>
+            <div class="propose-slot-label">Shoes</div>
+            <div class="propose-slot-clear" data-clear-slot="shoes">✕</div>
+          </div>
+          <div class="propose-slot" data-slot="accessory">
+            <div class="propose-slot-thumb"><span class="slot-placeholder">💍</span></div>
+            <div class="propose-slot-label">Accessory</div>
+            <div class="propose-slot-clear" data-clear-slot="accessory">✕</div>
+          </div>
+          <div class="propose-slot" data-slot="misc">
+            <div class="propose-slot-thumb"><span class="slot-placeholder">✨</span></div>
+            <div class="propose-slot-label">Extra</div>
+            <div class="propose-slot-clear" data-clear-slot="misc">✕</div>
+          </div>
+        </div>
+
         <div id="propose-count">0 items selected</div>
         <button id="propose-submit-btn" disabled>✨ Submit proposal</button>
+      </div>
+    </div>
+
+    <!-- 👗 Item picker for the propose-an-outfit slots -->
+    <div id="outfit-picker-overlay">
+      <div id="outfit-picker-panel">
+        <div id="outfit-picker-head">
+          <h3 id="outfit-picker-title">Pick an item</h3>
+          <button id="outfit-picker-close" title="Close">✕</button>
+        </div>
+        <input id="propose-search" type="text" placeholder="🔎 Search items..." autocomplete="off" />
+        <div id="propose-grid"></div>
       </div>
     </div>
 
@@ -4363,22 +4477,28 @@
     // 💡 Propose-an-outfit
     (function () {
       const proposeOverlay = document.getElementById("propose-overlay");
-      const proposeGrid = document.getElementById("propose-grid");
-      const proposeSearch = document.getElementById("propose-search");
       const proposeName = document.getElementById("propose-name");
       const proposeCount = document.getElementById("propose-count");
       const proposeSubmitBtn = document.getElementById("propose-submit-btn");
       const proposePanel = document.getElementById("propose-panel");
+      const proposeSlotsEls = document.querySelectorAll(".propose-slot");
 
-      const MAX_ITEMS = 5; // mirrors the 5 outfit slots in admin (top/bottom/shoes/accessory/extra)
-      let selected = new Map(); // pid -> product
-      let pool = [];
+      const pickerOverlay = document.getElementById("outfit-picker-overlay");
+      const pickerTitle = document.getElementById("outfit-picker-title");
+      const proposeSearch = document.getElementById("propose-search");
+      const proposeGrid = document.getElementById("propose-grid");
+
+      const SLOT_KEYS = ["top", "bottom", "shoes", "accessory", "misc"];
+      const SLOT_LABELS = { top: "Top", bottom: "Bottom", shoes: "Shoes", accessory: "Accessory", misc: "Extra" };
+      const SLOT_ICONS = { top: "👕", bottom: "👖", shoes: "👟", accessory: "💍", misc: "✨" };
+
+      let currentSlots = {}; // slotKey -> product
+      let activeSlot = null;
 
       function openPropose() {
-        selected = new Map();
+        currentSlots = {};
         proposeName.value = "";
-        proposeSearch.value = "";
-        renderGrid("");
+        renderSlots();
         updateCount();
         proposeOverlay.classList.add("open");
       }
@@ -4386,9 +4506,44 @@
         proposeOverlay.classList.remove("open");
       }
 
+      function renderSlots() {
+        proposeSlotsEls.forEach((slotEl) => {
+          const key = slotEl.dataset.slot;
+          const item = currentSlots[key];
+          const thumb = slotEl.querySelector(".propose-slot-thumb");
+          if (item) {
+            slotEl.classList.add("filled");
+            thumb.innerHTML = `<img src="${item.image}" alt="">`;
+          } else {
+            slotEl.classList.remove("filled");
+            thumb.innerHTML = `<span class="slot-placeholder">${SLOT_ICONS[key]}</span>`;
+          }
+        });
+        updateCount();
+      }
+
+      function updateCount() {
+        const n = Object.keys(currentSlots).length;
+        proposeCount.textContent = n === 0 ? "0 items selected" : `${n} item${n === 1 ? "" : "s"} selected`;
+        proposeSubmitBtn.disabled = n < 2;
+      }
+
+      function openItemPicker(slotKey) {
+        activeSlot = slotKey;
+        pickerTitle.textContent = "Pick: " + (SLOT_LABELS[slotKey] || slotKey);
+        proposeSearch.value = "";
+        renderGrid("");
+        pickerOverlay.classList.add("open");
+        setTimeout(() => proposeSearch.focus(), 100);
+      }
+      function closeItemPicker() {
+        pickerOverlay.classList.remove("open");
+        activeSlot = null;
+      }
+
       function renderGrid(term) {
         term = (term || "").toLowerCase();
-        pool = (typeof rawProducts !== "undefined" ? rawProducts : [])
+        const pool = (typeof rawProducts !== "undefined" ? rawProducts : [])
           .filter((p) => p && p.image && getVoteId(p.link))
           .filter(
             (p) =>
@@ -4403,42 +4558,28 @@
         }
 
         proposeGrid.innerHTML = pool
-          .map((p) => {
-            const pid = getVoteId(p.link);
-            const isSel = selected.has(pid);
-            return `<div class="propose-item${isSel ? " selected" : ""}" data-pid="${pid}" title="${(p.title || "").replace(/"/g, "&quot;")}">
+          .map(
+            (p) => `<div class="propose-item" data-link="${(p.link || "").replace(/"/g, "&quot;")}" title="${(p.title || "").replace(/"/g, "&quot;")}">
               <img src="${p.image}" alt="" loading="lazy">
-            </div>`;
-          })
+            </div>`
+          )
           .join("");
 
         proposeGrid.querySelectorAll(".propose-item").forEach((el) => {
           el.addEventListener("click", () => {
-            const pid = el.dataset.pid;
-            if (selected.has(pid)) {
-              selected.delete(pid);
-              el.classList.remove("selected");
-            } else {
-              if (selected.size >= MAX_ITEMS) return;
-              const product = pool.find((p) => getVoteId(p.link) === pid);
-              selected.set(pid, product);
-              el.classList.add("selected");
+            const link = el.dataset.link;
+            const product = pool.find((p) => p.link === link);
+            if (product && activeSlot) {
+              currentSlots[activeSlot] = product;
+              renderSlots();
+              closeItemPicker();
             }
-            updateCount();
           });
         });
       }
 
-      function updateCount() {
-        proposeCount.textContent =
-          selected.size === 0
-            ? "0 items selected"
-            : `${selected.size} item${selected.size === 1 ? "" : "s"} selected${selected.size >= MAX_ITEMS ? " (max)" : ""}`;
-        proposeSubmitBtn.disabled = selected.size < 2;
-      }
-
       function showThanks() {
-        const toHide = [proposeName, proposeSearch, proposeGrid, proposeCount, proposeSubmitBtn];
+        const toHide = [proposeName, document.getElementById("propose-slots"), proposeCount, proposeSubmitBtn];
         toHide.forEach((el) => (el.style.display = "none"));
         let thanks = proposePanel.querySelector("#propose-thanks");
         if (!thanks) {
@@ -4456,10 +4597,11 @@
       }
 
       function submitProposal() {
-        if (selected.size < 2) return;
-        const ids = Array.from(selected.keys());
+        const filled = Object.keys(currentSlots);
+        if (filled.length < 2) return;
         const name = proposeName.value.trim();
-        const path = "/outfit-proposal/" + ids.join(",");
+        const pairs = filled.map((slotKey) => slotKey + ":" + getVoteId(currentSlots[slotKey].link));
+        const path = "/outfit-proposal/" + pairs.join(",");
         const title = "Outfit proposal: " + (name || "Untitled");
 
         if (window.goatcounter && window.goatcounter.count) {
@@ -4469,13 +4611,31 @@
         showThanks();
       }
 
+      proposeSlotsEls.forEach((slotEl) => {
+        slotEl.addEventListener("click", () => openItemPicker(slotEl.dataset.slot));
+      });
+      proposeSlotsEls.forEach((slotEl) => {
+        const clearBtn = slotEl.querySelector(".propose-slot-clear");
+        clearBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          delete currentSlots[slotEl.dataset.slot];
+          renderSlots();
+        });
+      });
+
       document.getElementById("propose-tab").addEventListener("click", openPropose);
       document.getElementById("propose-close").addEventListener("click", closePropose);
       proposeOverlay.addEventListener("click", (e) => {
         if (e.target === proposeOverlay) closePropose();
       });
+      document.getElementById("outfit-picker-close").addEventListener("click", closeItemPicker);
+      pickerOverlay.addEventListener("click", (e) => {
+        if (e.target === pickerOverlay) closeItemPicker();
+      });
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && proposeOverlay.classList.contains("open")) closePropose();
+        if (e.key !== "Escape") return;
+        if (pickerOverlay.classList.contains("open")) closeItemPicker();
+        else if (proposeOverlay.classList.contains("open")) closePropose();
       });
       proposeSearch.addEventListener("input", () => renderGrid(proposeSearch.value));
       proposeSubmitBtn.addEventListener("click", submitProposal);
