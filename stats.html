@@ -406,7 +406,7 @@
     function renderOverview(products) {
       const seen = new Set();
       const clean = products.filter(
-        (p) => p.link && p.link.includes("temu.com") && !seen.has(p.link) && seen.add(p.link)
+        (p) => p.link && !seen.has(p.link) && seen.add(p.link)
       );
 
       const prices = clean.map((p) => priceNumber(p.price)).filter((v) => !isNaN(v));
