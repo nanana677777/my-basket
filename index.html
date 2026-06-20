@@ -1899,6 +1899,230 @@
         }
       }
 
+      /* 💡 Propose-an-outfit launcher tab */
+      #propose-tab {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) translateY(-410px);
+        z-index: 999;
+        background: linear-gradient(135deg, #ffd24c, #ff9ecb);
+        color: #1b1b26;
+        font-weight: 900;
+        font-size: 13px;
+        width: 40px;
+        height: 64px;
+        border-radius: 0 14px 14px 0;
+        cursor: pointer;
+        box-shadow: 4px 0 20px rgba(255, 210, 76, 0.45), 0 0 0 3px rgba(255,210,76,0.14);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        user-select: none;
+        border: none;
+        font-family: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        writing-mode: vertical-rl;
+        letter-spacing: 1px;
+        padding: 10px 0;
+      }
+      #propose-tab .tab-icon { writing-mode: horizontal-tb; font-size: 17px; }
+      #propose-tab:hover {
+        width: 46px;
+        box-shadow: 6px 0 28px rgba(255, 210, 76, 0.65), 0 0 0 4px rgba(255,210,76,0.2);
+      }
+      @media (max-width: 640px) {
+        #propose-tab {
+          width: 36px;
+          height: 56px;
+          font-size: 11px;
+          transform: translateY(-50%) translateY(-350px);
+        }
+      }
+
+      /* 💡 Propose-an-outfit modal */
+      #propose-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 2500;
+        background: rgba(8, 8, 14, 0.78);
+        backdrop-filter: blur(10px);
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      #propose-overlay.open {
+        display: flex;
+        animation: overlayFade 0.25s ease;
+      }
+      #propose-panel {
+        width: 100%;
+        max-width: 420px;
+        max-height: 86vh;
+        display: flex;
+        flex-direction: column;
+        background: #1b1b26;
+        border: 1px solid rgba(255, 210, 76, 0.3);
+        border-radius: 24px;
+        padding: 26px 22px;
+        box-shadow: 0 0 60px rgba(255, 210, 76, 0.12), 0 20px 50px rgba(0,0,0,0.6);
+        position: relative;
+        transform: scale(0.92) translateY(10px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #propose-overlay.open #propose-panel {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+      #propose-panel h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+        color: #ffd24c;
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 12px rgba(255, 210, 76, 0.4);
+        text-align: center;
+      }
+      #propose-panel .propose-sub {
+        text-align: center;
+        font-size: 12px;
+        color: #b8b2c4;
+        margin: 0 0 16px;
+      }
+      #propose-close {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #cfc9d8;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+      #propose-close:hover {
+        background: rgba(255,210,76,0.2);
+        color: #fff;
+        transform: rotate(90deg);
+      }
+      #propose-name {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 210, 76, 0.4);
+        background: #14141c;
+        color: #fff;
+        outline: none;
+        font-size: 13px;
+        text-align: center;
+        font-family: inherit;
+      }
+      #propose-search {
+        display: block;
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: #14141c;
+        color: #fff;
+        outline: none;
+        font-size: 12.5px;
+        text-align: center;
+        font-family: inherit;
+      }
+      #propose-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+        gap: 8px;
+        overflow-y: auto;
+        padding-right: 2px;
+        margin-bottom: 14px;
+        flex: 1;
+        min-height: 120px;
+      }
+      .propose-item {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.2s, transform 0.15s;
+        background: rgba(255,255,255,0.04);
+      }
+      .propose-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .propose-item:hover { transform: scale(1.05); }
+      .propose-item.selected {
+        border-color: #ffd24c;
+        box-shadow: 0 0 10px rgba(255, 210, 76, 0.5);
+      }
+      .propose-item.selected::after {
+        content: "✓";
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        width: 17px;
+        height: 17px;
+        border-radius: 50%;
+        background: #ffd24c;
+        color: #1b1b26;
+        font-size: 10px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #propose-empty {
+        text-align: center;
+        font-size: 12.5px;
+        color: #b8b2c4;
+        padding: 20px 0;
+        grid-column: 1 / -1;
+      }
+      #propose-count {
+        text-align: center;
+        font-size: 12px;
+        color: #b8b2c4;
+        margin-bottom: 12px;
+      }
+      #propose-submit-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #ffd24c, #ff9ecb);
+        color: #1b1b26;
+        font-weight: 800;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        flex-shrink: 0;
+      }
+      #propose-submit-btn:hover { transform: translateY(-2px) scale(1.02); }
+      #propose-submit-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+      #propose-thanks {
+        text-align: center;
+        padding: 30px 10px;
+        font-size: 14px;
+        color: #ffd24c;
+        font-weight: 700;
+      }
+
       /* 📱 Fullscreen swipe overlay */
       #swipe-overlay {
         display: none;
@@ -3844,6 +4068,22 @@
     <!-- 🧠 Memory game launcher -->
     <button id="mem-tab"><span class="tab-icon">🧠</span>memory</button>
 
+    <!-- 💡 Propose-an-outfit launcher -->
+    <button id="propose-tab"><span class="tab-icon">💡</span>propose</button>
+
+    <div id="propose-overlay">
+      <div id="propose-panel">
+        <button id="propose-close" title="Close">✕</button>
+        <h3>💡 Propose an outfit</h3>
+        <p class="propose-sub">Pick 2+ items from the wishlist — Nana reviews every proposal before it goes live.</p>
+        <input id="propose-name" type="text" placeholder="Name your look (optional)" maxlength="60" />
+        <input id="propose-search" type="text" placeholder="🔎 Search items..." autocomplete="off" />
+        <div id="propose-grid"></div>
+        <div id="propose-count">0 items selected</div>
+        <button id="propose-submit-btn" disabled>✨ Submit proposal</button>
+      </div>
+    </div>
+
     <div id="pick-overlay">
       <div id="pick-panel">
         <button id="pick-close" title="Close">✕</button>
@@ -4116,6 +4356,127 @@
       }
 
       pickSpinBtn.addEventListener("click", spin);
+    })();
+
+    // 💡 Propose-an-outfit
+    (function () {
+      const proposeOverlay = document.getElementById("propose-overlay");
+      const proposeGrid = document.getElementById("propose-grid");
+      const proposeSearch = document.getElementById("propose-search");
+      const proposeName = document.getElementById("propose-name");
+      const proposeCount = document.getElementById("propose-count");
+      const proposeSubmitBtn = document.getElementById("propose-submit-btn");
+      const proposePanel = document.getElementById("propose-panel");
+
+      const MAX_ITEMS = 5; // mirrors the 5 outfit slots in admin (top/bottom/shoes/accessory/extra)
+      let selected = new Map(); // pid -> product
+      let pool = [];
+
+      function openPropose() {
+        selected = new Map();
+        proposeName.value = "";
+        proposeSearch.value = "";
+        renderGrid("");
+        updateCount();
+        proposeOverlay.classList.add("open");
+      }
+      function closePropose() {
+        proposeOverlay.classList.remove("open");
+      }
+
+      function renderGrid(term) {
+        term = (term || "").toLowerCase();
+        pool = (typeof rawProducts !== "undefined" ? rawProducts : [])
+          .filter((p) => p && p.image && getVoteId(p.link))
+          .filter(
+            (p) =>
+              !term ||
+              (p.title || "").toLowerCase().includes(term) ||
+              (p.category || "").toLowerCase().includes(term)
+          );
+
+        if (!pool.length) {
+          proposeGrid.innerHTML = `<div id="propose-empty">No matching items.</div>`;
+          return;
+        }
+
+        proposeGrid.innerHTML = pool
+          .map((p) => {
+            const pid = getVoteId(p.link);
+            const isSel = selected.has(pid);
+            return `<div class="propose-item${isSel ? " selected" : ""}" data-pid="${pid}" title="${(p.title || "").replace(/"/g, "&quot;")}">
+              <img src="${p.image}" alt="" loading="lazy">
+            </div>`;
+          })
+          .join("");
+
+        proposeGrid.querySelectorAll(".propose-item").forEach((el) => {
+          el.addEventListener("click", () => {
+            const pid = el.dataset.pid;
+            if (selected.has(pid)) {
+              selected.delete(pid);
+              el.classList.remove("selected");
+            } else {
+              if (selected.size >= MAX_ITEMS) return;
+              const product = pool.find((p) => getVoteId(p.link) === pid);
+              selected.set(pid, product);
+              el.classList.add("selected");
+            }
+            updateCount();
+          });
+        });
+      }
+
+      function updateCount() {
+        proposeCount.textContent =
+          selected.size === 0
+            ? "0 items selected"
+            : `${selected.size} item${selected.size === 1 ? "" : "s"} selected${selected.size >= MAX_ITEMS ? " (max)" : ""}`;
+        proposeSubmitBtn.disabled = selected.size < 2;
+      }
+
+      function showThanks() {
+        const toHide = [proposeName, proposeSearch, proposeGrid, proposeCount, proposeSubmitBtn];
+        toHide.forEach((el) => (el.style.display = "none"));
+        let thanks = proposePanel.querySelector("#propose-thanks");
+        if (!thanks) {
+          thanks = document.createElement("div");
+          thanks.id = "propose-thanks";
+          proposePanel.appendChild(thanks);
+        }
+        thanks.textContent = "✨ Thanks! Your outfit proposal was sent for review.";
+        thanks.style.display = "block";
+        setTimeout(() => {
+          closePropose();
+          thanks.style.display = "none";
+          toHide.forEach((el) => (el.style.display = ""));
+        }, 2200);
+      }
+
+      function submitProposal() {
+        if (selected.size < 2) return;
+        const ids = Array.from(selected.keys());
+        const name = proposeName.value.trim();
+        const path = "/outfit-proposal/" + ids.join(",");
+        const title = "Outfit proposal: " + (name || "Untitled");
+
+        if (window.goatcounter && window.goatcounter.count) {
+          window.goatcounter.count({ path: path, title: title, event: true });
+        }
+
+        showThanks();
+      }
+
+      document.getElementById("propose-tab").addEventListener("click", openPropose);
+      document.getElementById("propose-close").addEventListener("click", closePropose);
+      proposeOverlay.addEventListener("click", (e) => {
+        if (e.target === proposeOverlay) closePropose();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && proposeOverlay.classList.contains("open")) closePropose();
+      });
+      proposeSearch.addEventListener("input", () => renderGrid(proposeSearch.value));
+      proposeSubmitBtn.addEventListener("click", submitProposal);
     })();
   </script>
 
