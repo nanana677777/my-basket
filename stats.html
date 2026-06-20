@@ -135,6 +135,51 @@
     flex-shrink: 0;
   }
 
+  /* Price extremes (cheapest / priciest) */
+  .extreme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .extreme-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .extreme-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 8px;
+  }
+  .extreme-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .extreme-title {
+    font-size: 12.5px;
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 4px;
+  }
+  .extreme-title:hover { color: var(--pink); }
+  .extreme-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
   /* Top voted ranking */
   .vote-row {
     display: flex;
@@ -260,6 +305,22 @@
     </div>
 
     <div class="card">
+      <span class="card-emoji">💎</span>
+      <h2>Price extremes</h2>
+      <div class="extreme-grid" id="price-extremes">
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-emoji">💸</span>
+      <h2>Price ranges</h2>
+      <div id="price-breakdown">
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+    </div>
+
+    <div class="card">
       <span class="card-emoji">⭐</span>
       <h2>Top Requested</h2>
       <div id="top-voted">
@@ -333,6 +394,13 @@
       return results;
     }
 
+    function median(sortedNums) {
+      const n = sortedNums.length;
+      if (!n) return 0;
+      const mid = Math.floor(n / 2);
+      return n % 2 !== 0 ? sortedNums[mid] : (sortedNums[mid - 1] + sortedNums[mid]) / 2;
+    }
+
     function renderOverview(products) {
       const seen = new Set();
       const clean = products.filter(
@@ -340,12 +408,18 @@
       );
 
       const prices = clean.map((p) => priceNumber(p.price)).filter((v) => !isNaN(v));
+      const sortedPrices = [...prices].sort((a, b) => a - b);
       const totalValue = clean.reduce(
         (sum, p) => sum + priceNumber(p.price) * (parseInt(p.quantity) || 1),
         0
       );
+      const remainingValue = clean
+        .filter((p) => !p.bought)
+        .reduce((sum, p) => sum + priceNumber(p.price) * (parseInt(p.quantity) || 1), 0);
       const avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+      const medianPrice = median(sortedPrices);
       const boughtCount = clean.filter((p) => p.bought).length;
+      const boughtPct = clean.length ? (boughtCount / clean.length) * 100 : 0;
 
       const catCounts = {};
       clean.forEach((p) => {
@@ -364,8 +438,20 @@
           <div class="stat-label">Total wishlist value</div>
         </div>
         <div class="stat-box">
+          <div class="stat-value">${remainingValue.toFixed(2)} €</div>
+          <div class="stat-label">Still to buy</div>
+        </div>
+        <div class="stat-box">
           <div class="stat-value">${avgPrice.toFixed(2)} €</div>
           <div class="stat-label">Average price</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${medianPrice.toFixed(2)} €</div>
+          <div class="stat-label">Median price</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${boughtPct.toFixed(0)}%</div>
+          <div class="stat-label">Already bought</div>
         </div>
         <div class="stat-box">
           <div class="stat-value">${topCat ? escapeHtml(topCat[0]) : "—"}</div>
@@ -387,6 +473,63 @@
           <div class="cat-name">${escapeHtml(cat)}</div>
           <div class="cat-bar-wrap"><div class="cat-bar" style="width:${(count / max) * 100}%"></div></div>
           <div class="cat-count">${count}</div>
+        </div>
+      `
+        )
+        .join("");
+    }
+
+    function renderPriceExtremes(clean) {
+      const withPrice = clean
+        .map((p) => ({ product: p, price: priceNumber(p.price) }))
+        .filter((x) => !isNaN(x.price));
+
+      const container = document.getElementById("price-extremes");
+      if (!withPrice.length) {
+        container.innerHTML = `<div class="empty-note">No price data yet.</div>`;
+        return;
+      }
+
+      const cheapest = withPrice.reduce((a, b) => (b.price < a.price ? b : a));
+      const priciest = withPrice.reduce((a, b) => (b.price > a.price ? b : a));
+
+      const box = (entry, label, emoji) => `
+        <div class="extreme-box">
+          <div class="extreme-label">${emoji} ${label}</div>
+          <img class="extreme-thumb" src="${entry.product.image}" alt="">
+          <a class="extreme-title" href="${entry.product.link}" target="_blank">${escapeHtml(entry.product.title)}</a>
+          <div class="extreme-price">${entry.price.toFixed(2)} €</div>
+        </div>
+      `;
+
+      container.innerHTML =
+        box(cheapest, "Cheapest", "🪙") + box(priciest, "Most expensive", "💎");
+    }
+
+    function renderPriceBreakdown(clean) {
+      const buckets = [
+        { label: "Under 10 €", min: 0, max: 10, count: 0 },
+        { label: "10 – 20 €", min: 10, max: 20, count: 0 },
+        { label: "20 – 35 €", min: 20, max: 35, count: 0 },
+        { label: "35 €+", min: 35, max: Infinity, count: 0 },
+      ];
+
+      clean.forEach((p) => {
+        const price = priceNumber(p.price);
+        if (isNaN(price)) return;
+        const bucket = buckets.find((b) => price >= b.min && price < b.max);
+        if (bucket) bucket.count++;
+      });
+
+      const max = Math.max(...buckets.map((b) => b.count), 1);
+
+      document.getElementById("price-breakdown").innerHTML = buckets
+        .map(
+          (b) => `
+        <div class="cat-row">
+          <div class="cat-name">${b.label}</div>
+          <div class="cat-bar-wrap"><div class="cat-bar" style="width:${(b.count / max) * 100}%"></div></div>
+          <div class="cat-count">${b.count}</div>
         </div>
       `
         )
@@ -430,6 +573,8 @@
 
         const { clean, catCounts } = renderOverview(products);
         renderCategoryBreakdown(catCounts, clean.length);
+        renderPriceExtremes(clean);
+        renderPriceBreakdown(clean);
 
         const votesData = await fetchVotesForProducts(clean);
         renderTopVoted(votesData);
@@ -438,6 +583,8 @@
         document.getElementById("overview-grid").innerHTML =
           `<div class="empty-note">Couldn't load the wishlist data.</div>`;
         document.getElementById("category-breakdown").innerHTML = "";
+        document.getElementById("price-extremes").innerHTML = "";
+        document.getElementById("price-breakdown").innerHTML = "";
         document.getElementById("top-voted").innerHTML = "";
       }
     }
