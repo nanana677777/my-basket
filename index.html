@@ -2148,6 +2148,17 @@
         border: none;
         text-decoration: none;
       }
+      .swipe-action-btn.swipe-vote {
+        background: transparent;
+        border: none;
+        padding: 0;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+      }
+      .swipe-action-btn.swipe-vote svg { width: 100%; height: 100%; display: block; }
+      .swipe-action-btn.swipe-vote.voted {
+        filter: drop-shadow(0 0 8px rgba(255, 196, 0, 0.9));
+        cursor: default;
+      }
       #swipe-close {
         position: fixed;
         top: 18px;
@@ -4565,6 +4576,8 @@
 
         const isFav = favorites.includes(product.link);
         const priceClean = (product.price || "").toString();
+        const votePid = getVoteId(product.link);
+        const alreadyVoted = votePid && votedProducts.includes(votePid);
 
         slide.innerHTML = `
           <img src="${product.image || ""}" alt="" loading="lazy">
@@ -4575,6 +4588,7 @@
           </div>
           <div class="swipe-side-actions">
             <button class="swipe-action-btn swipe-heart ${isFav ? "favorited" : ""}" title="Favorite">♥</button>
+            ${votePid ? `<button class="swipe-action-btn swipe-vote ${alreadyVoted ? "voted disabled" : ""}" title="${alreadyVoted ? "You already voted for this item" : "Vote for this item"}">${VOTE_THUMB_SVG}</button>` : ""}
             <a class="swipe-action-btn swipe-link" href="${product.link || "#"}" target="_blank" title="View item">🛒</a>
           </div>
         `;
@@ -4583,6 +4597,13 @@
         heartBtn.addEventListener("click", () => {
           toggleFavorite(product.link, heartBtn);
         });
+
+        const voteBtn = slide.querySelector(".swipe-vote");
+        if (voteBtn) {
+          voteBtn.addEventListener("click", () => {
+            castVote(votePid, voteBtn);
+          });
+        }
 
         return slide;
       }
