@@ -1125,7 +1125,8 @@
     "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099683796492&sku_id=17592847023611&_oak_page_source=501",
     "image": "https://img.kwcdn.com/product/fancy/6f161a26-d53a-4930-88eb-24995519960b.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
     "price": "7,21",
-    "quantity": "1"
+    "quantity": "1",
+    "bought": true
   },
   {
     "title": "New Women'S Long-Sleeve T-Shirt",
