@@ -1245,7 +1245,8 @@
     "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099652401116&sku_id=17592726952776&_oak_page_source=501",
     "image": "https://img.kwcdn.com/product/algo_check/auto/6f5f01e19a5b385013d89e8e6725b05a1724901485206.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
     "price": "6,21",
-    "quantity": "1"
+    "quantity": "1",
+    "bought": true
   },
   {
     "title": "Women's Plaid Fashion Skirt",
