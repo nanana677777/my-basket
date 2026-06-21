@@ -1026,11 +1026,13 @@
     "bought": true
   },
   {
-    "title": "White 1 Pair/One-size\nWhite 1 Pair of Cow Print Over-The-Knee Socks",
-    "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601103756802185&sku_id=17611402229869&_oak_page_source=501",
-    "image": "https://img.kwcdn.com/product/fancy/0ee54850-7a65-4be8-bf44-ac2efbc4a6ae.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+    "title": "White 1 Pair/One-sizeWhite 1 Pair of Cow Print Over-The-Knee Socks",
     "price": "2,35",
-    "quantity": "1"
+    "quantity": "1",
+    "image": "https://img.kwcdn.com/product/fancy/0ee54850-7a65-4be8-bf44-ac2efbc4a6ae.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+    "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601103756802185&sku_id=17611402229869&_oak_page_source=501",
+    "category": "Socks & Tights",
+    "bought": true
   },
   {
     "title": "Y2K Solid Color American Hooded Sweatshirt Women'S Sweet Spicy Sexy Fashion Top Women'S Spring Summer Fall 2023 New Salt Style Street Casual Jacket",
