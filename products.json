@@ -1237,7 +1237,8 @@
     "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099513888102&sku_id=17592199706748&_oak_page_source=501",
     "image": "https://img.kwcdn.com/product/1e298232b2/5a50ca46-aa81-4274-8fff-f0f4ccdfcaef_1200x1200.jpeg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
     "price": "1,98",
-    "quantity": "1"
+    "quantity": "1",
+    "bought": true
   },
   {
     "title": "Pink/Label size: One-size\nSexy Lingerie Includes Headband, Clothes, Bracelet, Fishnet Stockings",
