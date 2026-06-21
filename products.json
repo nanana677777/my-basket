@@ -1205,7 +1205,8 @@
     "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601103651707945&sku_id=17620434765955&_oak_page_source=501",
     "image": "https://img.kwcdn.com/product/fancy/93b38784-393f-4957-ae73-7b06a76b9cc8.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
     "price": "11,96",
-    "quantity": "1"
+    "quantity": "1",
+    "bought": true
   },
   {
     "title": "Seamless High-Waist Tummy Control Athletic Yoga Pants",
