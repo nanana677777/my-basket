@@ -700,67 +700,6 @@
         box-shadow: 0 0 14px rgba(52,211,153,0.4);
       }
 
-      /* 🔗 Share button */
-      #share-btn {
-        padding: 8px 18px;
-        border-radius: 999px;
-        border: none;
-        background: linear-gradient(135deg, #ffe066, #ffb700);
-        color: #3a2500;
-        font-weight: bold;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(255, 183, 0, 0.4);
-        position: relative;
-        overflow: hidden;
-      }
-      #share-btn:hover {
-        transform: translateY(-2px) scale(1.05);
-        box-shadow: 0 6px 18px rgba(255, 183, 0, 0.6), 0 0 18px rgba(255, 230, 102, 0.4);
-      }
-      #share-btn:active { transform: scale(0.95); }
-      #share-btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
-
-      /* 🔗 Share toast */
-      #share-toast {
-        position: fixed;
-        bottom: 32px;
-        left: 50%;
-        transform: translateX(-50%) translateY(20px);
-        background: #1b1b26;
-        border: 1px solid rgba(255, 183, 0, 0.4);
-        color: #ffe066;
-        font-size: 13px;
-        font-weight: bold;
-        padding: 12px 22px;
-        border-radius: 999px;
-        box-shadow: 0 0 20px rgba(255, 183, 0, 0.3);
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-        z-index: 3000;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        white-space: nowrap;
-      }
-      #share-toast.visible {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-        pointer-events: all;
-      }
-      #share-toast a {
-        color: #ffb700;
-        text-decoration: underline;
-        cursor: pointer;
-        max-width: 180px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: inline-block;
-        vertical-align: middle;
-      }
-
       /* 🛍️ Product modal */
       #product-modal {
         display: none;
@@ -2653,17 +2592,10 @@
     <div class="action-bar">
       <div id="wishlist-toggle">Show Wishlist ❤️</div>
       <button id="clear-basket" style="display:none;">Reset Basket</button>
-      <button id="share-btn">🔗 Share Basket</button>
       <button id="tint-toggle">🎨 Color Tint: ON</button>
       <button id="view-toggle">🎴 List View</button>
       <button id="cloud-toggle">☁️ Cloud View</button>
       <button id="vote-toggle">👍 Vote Mode</button>
-    </div>
-
-    <!-- 🔗 Share toast -->
-    <div id="share-toast">
-      <span id="share-toast-text">🔗 Link copied!</span>
-      <a id="share-link" href="#" target="_blank">open</a>
     </div>
 
     <div
@@ -3664,108 +3596,6 @@
       });
 
       // 🔗 Share basket via GitHub Gist
-      document.getElementById("share-btn").addEventListener("click", async () => {
-        if (!rawProducts || rawProducts.length === 0) {
-          alert("Load a basket first!");
-          return;
-        }
-
-        // Get or ask for GitHub token (stored locally, never sent anywhere but api.github.com)
-        let ghToken = localStorage.getItem("ghToken");
-        if (!ghToken) {
-          ghToken = prompt("Enter a GitHub Personal Access Token with 'gist' scope:\n(stored locally in your browser, only used to create secret gists)");
-          if (!ghToken) return;
-          localStorage.setItem("ghToken", ghToken.trim());
-        }
-        ghToken = ghToken.trim();
-
-        const btn = document.getElementById("share-btn");
-        btn.disabled = true;
-        btn.textContent = "⏳ Uploading...";
-
-        try {
-          const res = await fetch("https://api.github.com/gists", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `token ${ghToken}`
-            },
-            body: JSON.stringify({
-              description: "My Temu Basket 🧺",
-              public: false,
-              files: {
-                "basket.json": { content: JSON.stringify(rawProducts, null, 2) }
-              }
-            })
-          });
-
-          const gist = await res.json();
-          if (!gist.id) {
-            // Bad token — clear it so user can re-enter
-            if (res.status === 401) {
-              localStorage.removeItem("ghToken");
-              alert("Invalid token — it's been cleared. Click Share again to re-enter.");
-            } else {
-              throw new Error("Gist creation failed: " + (gist.message || "unknown error"));
-            }
-            return;
-          }
-
-          // Build the shareable URL: our page + ?gist=ID
-          const shareURL = `${location.origin}${location.pathname}?gist=${gist.id}`;
-
-          // Copy to clipboard
-          await navigator.clipboard.writeText(shareURL);
-
-          // Show toast
-          const toast = document.getElementById("share-toast");
-          const link = document.getElementById("share-link");
-          link.href = shareURL;
-          link.textContent = "open ↗";
-          toast.classList.add("visible");
-          setTimeout(() => toast.classList.remove("visible"), 5000);
-
-        } catch (err) {
-          console.error("Share failed:", err);
-          alert("Share failed — check console.");
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "🔗 Share Basket";
-        }
-      });
-
-      // 🔗 On load: if ?gist=ID in URL, fetch and load that basket
-      (async function loadFromGist() {
-        const gistId = new URLSearchParams(location.search).get("gist");
-        if (!gistId) return;
-
-        try {
-          const res = await fetch(`https://api.github.com/gists/${gistId}`);
-          const gist = await res.json();
-          const file = gist.files && gist.files["basket.json"];
-          if (!file) throw new Error("basket.json not found in gist");
-
-          // Fetch raw content (may be truncated otherwise)
-          const raw = await fetch(file.raw_url);
-          rawProducts = await raw.json();
-
-          localStorage.setItem("temuBasketData", JSON.stringify(rawProducts));
-          renderCategoryFilters();
-          renderBoughtFilters();
-          renderPriceFilter();
-          displayProducts(rawProducts);
-
-          // Hide file picker
-          const loader = document.getElementById("jsonLoader");
-          if (loader) { loader.style.opacity = "0"; setTimeout(() => loader.style.display = "none", 400); }
-
-          // Clean URL
-          history.replaceState(null, "", location.pathname);
-        } catch (err) {
-          console.error("Failed to load gist:", err);
-        }
-      })();
-
       // 🔝 Back to top button
       window.addEventListener("scroll", () => {
         const btn = document.getElementById("back-to-top");
