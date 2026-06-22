@@ -58,6 +58,7 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
       /* container for wishlist + reset */
@@ -3766,25 +3767,17 @@
         btn.textContent = "⏳ Capturing...";
 
         try {
-          // Ask browser to capture the current tab
-          const stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { displaySurface: "browser" },
-            preferCurrentTab: true,
+          if (typeof html2canvas !== "function") {
+            throw new Error("html2canvas not loaded");
+          }
+
+          const target = document.getElementById("gallery");
+          const canvas = await html2canvas(target, {
+            backgroundColor: "#14141c",
+            useCORS: true, // best effort — Temu's CDN may or may not allow cross-origin reads,
+                           // layout/prices/titles render regardless even if a product photo doesn't
+            scale: Math.min(2, window.devicePixelRatio || 1),
           });
-
-          // Give browser a moment to actually capture
-          await new Promise(r => setTimeout(r, 300));
-
-          const track = stream.getVideoTracks()[0];
-          const imageCapture = new ImageCapture(track);
-          const bitmap = await imageCapture.grabFrame();
-          stream.getTracks().forEach(t => t.stop());
-
-          // Draw to canvas and export
-          const canvas = document.createElement("canvas");
-          canvas.width = bitmap.width;
-          canvas.height = bitmap.height;
-          canvas.getContext("2d").drawImage(bitmap, 0, 0);
 
           const dataURL = canvas.toDataURL("image/png");
           document.getElementById("screenshot-preview").src = dataURL;
@@ -3792,10 +3785,8 @@
           document.getElementById("screenshot-overlay").classList.add("open");
 
         } catch (err) {
-          if (err.name !== "NotAllowedError") {
-            console.error("Screenshot failed:", err);
-            alert("Screenshot failed — try again!");
-          }
+          console.error("Screenshot failed:", err);
+          alert("Screenshot failed — try again!");
         } finally {
           btn.disabled = false;
           btn.textContent = "📸 Screenshot";
