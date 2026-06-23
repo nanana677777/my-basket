@@ -155,6 +155,44 @@
     border-radius: 8px;
     background: rgba(255,255,255,0.05);
   }
+  .lb-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+    min-height: 0;
+  }
+  .lb-chip {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .lb-chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .lb-chip-remove {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #2a2a36;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--muted);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .lb-chip-remove:hover { background: #ff6b81; color: #1b1b26; }
+  .lb-total-preview {
+    font-size: 13px;
+    color: var(--gold, #ffd24c);
+    font-weight: 700;
+  }
   .admin-cat-chip {
     padding: 6px 14px;
     border-radius: 999px;
@@ -396,6 +434,56 @@
     overflow-y: auto;
     flex: 1;
   }
+  #lb-picker-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    background: rgba(8,8,14,0.82);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #lb-picker-overlay.open { display: flex; }
+  #lb-picker-panel {
+    width: 100%;
+    max-width: 680px;
+    max-height: 88vh;
+    background: var(--panel);
+    border: 1px solid rgba(255,158,203,0.25);
+    border-radius: 22px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  #lb-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  #lb-picker-head h3 { margin: 0; font-size: 16px; color: var(--pink); }
+  #lb-picker-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  #lb-picker-search {
+    width: 100%;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  #lb-picker-body {
+    overflow-y: auto;
+    flex: 1;
+  }
   .picker-cat-title {
     font-size: 12px;
     font-weight: 800;
@@ -423,6 +511,27 @@
     transition: border-color 0.15s ease, transform 0.15s ease;
   }
   .picker-item:hover { border-color: var(--pink); transform: scale(1.04); }
+  .picker-item.selected {
+    border-color: var(--gold, #ffd24c);
+    box-shadow: 0 0 0 2px rgba(255, 210, 76, 0.4);
+  }
+  .picker-item.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffd24c;
+    color: #1b1b26;
+    font-size: 11px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .picker-item { position: relative; }
   .picker-item .pi-img {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -641,6 +750,41 @@
       <button class="btn-primary" id="proposals-refresh-btn" style="display:none;margin-bottom:14px;">🔄 Refresh proposals</button>
       <div id="proposals-list"><div class="empty-state">Connect your GoatCounter API token to load proposals.</div></div>
     </div>
+
+    <div class="card">
+      <h2>🏆 Leaderboard</h2>
+      <p class="sub" style="margin:0 0 14px;">People who bought you stuff — link them to the products they got and they'll show up on <a href="./leaderboard.html" target="_blank" style="color:var(--accent);">the leaderboard page</a>, ranked by total spent.</p>
+
+      <div id="lb-list-admin" style="margin-bottom:18px;"></div>
+
+      <div id="lb-form">
+        <label for="lb-name">Name</label>
+        <input id="lb-name" type="text" placeholder="Sarah, Mom, Best friend..." />
+
+        <label style="margin-top:8px;">Products they bought</label>
+        <div class="lb-chip-row" id="lb-chip-row"></div>
+        <button class="btn-ghost" id="lb-pick-btn">📦 Add products</button>
+
+        <div class="lb-total-preview" id="lb-total-preview" style="margin-top:12px;"></div>
+
+        <div class="row-actions-top" style="margin-top:14px;">
+          <button class="btn-primary" id="lb-save-btn">Add person</button>
+          <button class="btn-ghost" id="lb-cancel-btn" style="display:none;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🏆 Leaderboard product picker (multi-select) -->
+  <div id="lb-picker-overlay">
+    <div id="lb-picker-panel">
+      <div id="lb-picker-head">
+        <h3>Pick products</h3>
+        <button id="lb-picker-close" title="Close">✕</button>
+      </div>
+      <input id="lb-picker-search" type="text" placeholder="🔎 Search items..." autocomplete="off" />
+      <div id="lb-picker-body"></div>
+    </div>
   </div>
 
   <!-- 👗 Item picker modal -->
@@ -672,6 +816,10 @@
     let outfits = [];
     let outfitsSha = null;
     let editingOutfitId = null;
+    let leaderboard = [];
+    let leaderboardSha = null;
+    let editingPersonId = null;
+    let currentPersonProducts = []; // array of product links for the person being added/edited
     let currentOutfitSlots = {};
     let activePickerSlot = null;
 
@@ -860,6 +1008,7 @@
 
       renderOutfitSlots();
       if (outfitsSha === null && token) loadOutfits();
+      if (leaderboardSha === null && token) loadLeaderboard();
     }
 
     function updateCategorySuggestions() {
@@ -1161,6 +1310,7 @@
 
     // ─── 👗 Outfit management ───
     const OUTFIT_API = "https://api.github.com/repos/" + REPO + "/contents/outfits.json";
+    const LEADERBOARD_API = "https://api.github.com/repos/" + REPO + "/contents/leaderboard.json";
     const SLOT_KEYS = ["top", "bottom", "shoes", "accessory", "misc"];
     const SLOT_LABELS = { top: "Top", bottom: "Bottom", shoes: "Shoes", accessory: "Accessory", misc: "Extra" };
 
@@ -1205,6 +1355,235 @@
         console.error("pushOutfits error:", e);
       }
     }
+
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch(LEADERBOARD_API, {
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json" }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        leaderboardSha = data.sha;
+        leaderboard = JSON.parse(decodeURIComponent(
+          atob(data.content.replace(/\n/g, ""))
+            .split("").map(c => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")
+        ) || "[]");
+        renderLeaderboardList();
+      } catch (e) { console.error("Leaderboard load error", e); }
+    }
+
+    async function pushLeaderboard(msg) {
+      try {
+        const body = JSON.stringify(leaderboard, null, 2);
+        const encoded = btoa(unescape(encodeURIComponent(body)));
+        const payload = { message: msg, content: encoded, sha: leaderboardSha, branch: "main" };
+        const res = await fetch(LEADERBOARD_API, {
+          method: "PUT",
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.content) {
+          leaderboardSha = data.content.sha;
+          renderLeaderboardList();
+          showToast("✅ Leaderboard saved to GitHub");
+        } else {
+          showToast("❌ Save failed: " + (data.message || "Unknown error — reload and retry"), true);
+          await loadLeaderboard();
+        }
+      } catch (e) {
+        showToast("❌ Network error — leaderboard not saved", true);
+        console.error("pushLeaderboard error:", e);
+      }
+    }
+
+    function personTotal(person) {
+      return (person.products || [])
+        .map(link => products.find(p => p.link === link))
+        .filter(Boolean)
+        .reduce((sum, p) => sum + (parseFloat((p.price || "0").toString().replace(",", ".")) || 0), 0);
+    }
+
+    function renderLeaderboardList() {
+      const el = document.getElementById("lb-list-admin");
+      if (!leaderboard.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:14px 0;">No one added yet — add your first person below.</div>`;
+        return;
+      }
+
+      const sorted = [...leaderboard].sort((a, b) => personTotal(b) - personTotal(a));
+
+      el.innerHTML = sorted.map(person => {
+        const matched = (person.products || []).map(link => products.find(p => p.link === link)).filter(Boolean);
+        const thumbs = matched.length
+          ? matched.slice(0, 5).map(p => `<img src="${p.image}" alt="">`).join("")
+          : `<span style="font-size:11px;color:var(--muted);">No products linked</span>`;
+        return `
+          <div class="product-row">
+            <div class="proposal-thumbs">${thumbs}</div>
+            <div class="info">
+              <div class="title">${(person.name || "Anonymous").replace(/</g, "&lt;")}</div>
+              <div class="price">${matched.length} item${matched.length === 1 ? "" : "s"} · ${personTotal(person).toFixed(2)} €</div>
+            </div>
+            <div class="actions">
+              <button class="btn-ghost" data-edit-person="${person.id}">Edit</button>
+              <button class="btn-ghost" data-delete-person="${person.id}">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      el.querySelectorAll("[data-edit-person]").forEach(btn => {
+        btn.addEventListener("click", () => startEditPerson(btn.dataset.editPerson));
+      });
+      el.querySelectorAll("[data-delete-person]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.deletePerson;
+          const person = leaderboard.find(p => p.id === id);
+          if (!person) return;
+          if (!confirm(`Delete "${person.name}" from the leaderboard?`)) return;
+          leaderboard = leaderboard.filter(p => p.id !== id);
+          pushLeaderboard("Remove leaderboard entry: " + person.name);
+          if (editingPersonId === id) resetPersonForm();
+        });
+      });
+    }
+
+    function renderPersonChips() {
+      const row = document.getElementById("lb-chip-row");
+      const matched = currentPersonProducts.map(link => products.find(p => p.link === link)).filter(Boolean);
+
+      row.innerHTML = matched.map(p => `
+        <div class="lb-chip" data-link="${p.link.replace(/"/g, "&quot;")}">
+          <img src="${p.image}" alt="">
+          <div class="lb-chip-remove" data-remove-link="${p.link.replace(/"/g, "&quot;")}">✕</div>
+        </div>
+      `).join("");
+
+      row.querySelectorAll("[data-remove-link]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          currentPersonProducts = currentPersonProducts.filter(l => l !== btn.dataset.removeLink);
+          renderPersonChips();
+        });
+      });
+
+      const total = matched.reduce((sum, p) => sum + (parseFloat((p.price || "0").toString().replace(",", ".")) || 0), 0);
+      document.getElementById("lb-total-preview").textContent = matched.length
+        ? `💰 Total so far: ${total.toFixed(2)} €`
+        : "";
+    }
+
+    function startEditPerson(id) {
+      const person = leaderboard.find(p => p.id === id);
+      if (!person) return;
+      editingPersonId = id;
+      currentPersonProducts = [...(person.products || [])];
+      document.getElementById("lb-name").value = person.name || "";
+      renderPersonChips();
+      document.getElementById("lb-save-btn").textContent = "Update person";
+      document.getElementById("lb-cancel-btn").style.display = "inline-block";
+      document.getElementById("lb-form").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function resetPersonForm() {
+      editingPersonId = null;
+      currentPersonProducts = [];
+      document.getElementById("lb-name").value = "";
+      renderPersonChips();
+      document.getElementById("lb-save-btn").textContent = "Add person";
+      document.getElementById("lb-cancel-btn").style.display = "none";
+    }
+
+    document.getElementById("lb-save-btn").addEventListener("click", () => {
+      const name = document.getElementById("lb-name").value.trim();
+      if (!name) { showToast("Give this person a name first.", true); return; }
+      if (!currentPersonProducts.length) { showToast("Add at least one product.", true); return; }
+
+      if (editingPersonId) {
+        const person = leaderboard.find(p => p.id === editingPersonId);
+        if (person) {
+          person.name = name;
+          person.products = [...currentPersonProducts];
+        }
+        pushLeaderboard("Update leaderboard entry: " + name);
+      } else {
+        leaderboard.push({ id: "p" + Date.now(), name, products: [...currentPersonProducts] });
+        pushLeaderboard("Add leaderboard entry: " + name);
+      }
+      resetPersonForm();
+    });
+
+    document.getElementById("lb-cancel-btn").addEventListener("click", resetPersonForm);
+
+    // ─── Leaderboard product picker (multi-select, reuses .picker-item/.picker-grid styles) ───
+    const lbPickerOverlay = document.getElementById("lb-picker-overlay");
+    const lbPickerBody = document.getElementById("lb-picker-body");
+    const lbPickerSearch = document.getElementById("lb-picker-search");
+
+    function openLbPicker() {
+      lbPickerSearch.value = "";
+      renderLbPickerGrid("");
+      lbPickerOverlay.classList.add("open");
+      setTimeout(() => lbPickerSearch.focus(), 100);
+    }
+    function closeLbPicker() {
+      lbPickerOverlay.classList.remove("open");
+    }
+
+    function renderLbPickerGrid(term) {
+      term = (term || "").toLowerCase();
+      const withImg = products.filter(p => p && p.image &&
+        (!term || (p.title || "").toLowerCase().includes(term) || (p.category || "").toLowerCase().includes(term)));
+
+      if (!withImg.length) {
+        lbPickerBody.innerHTML = `<div class="picker-empty">No matching items.</div>`;
+        return;
+      }
+
+      const byCat = {};
+      withImg.forEach(p => {
+        const cat = (p.category || "Uncategorized").trim() || "Uncategorized";
+        (byCat[cat] = byCat[cat] || []).push(p);
+      });
+
+      const cats = Object.keys(byCat).sort((a, b) => a.localeCompare(b));
+      lbPickerBody.innerHTML = cats.map(cat => `
+        <div class="picker-cat-title">${cat.replace(/</g,"&lt;")} (${byCat[cat].length})</div>
+        <div class="picker-grid">
+          ${byCat[cat].map(p => `
+            <div class="picker-item${currentPersonProducts.includes(p.link) ? " selected" : ""}" data-link="${(p.link||"").replace(/"/g,"&quot;")}" title="${(p.title||"").replace(/"/g,"&quot;")}">
+              <img class="pi-img" src="${p.image}" alt="" loading="lazy">
+              <div class="pi-price">${p.price || "?"} €</div>
+            </div>
+          `).join("")}
+        </div>
+      `).join("");
+
+      lbPickerBody.querySelectorAll(".picker-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const link = el.dataset.link;
+          if (currentPersonProducts.includes(link)) {
+            currentPersonProducts = currentPersonProducts.filter(l => l !== link);
+            el.classList.remove("selected");
+          } else {
+            currentPersonProducts.push(link);
+            el.classList.add("selected");
+          }
+          renderPersonChips();
+        });
+      });
+    }
+
+    document.getElementById("lb-pick-btn").addEventListener("click", () => {
+      if (!products.length) { showToast("Load your products first.", true); return; }
+      openLbPicker();
+    });
+    document.getElementById("lb-picker-close").addEventListener("click", closeLbPicker);
+    lbPickerOverlay.addEventListener("click", (e) => { if (e.target === lbPickerOverlay) closeLbPicker(); });
+    lbPickerSearch.addEventListener("input", () => renderLbPickerGrid(lbPickerSearch.value));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && lbPickerOverlay.classList.contains("open")) closeLbPicker();
+    });
 
     function renderOutfitSlots() {
       document.querySelectorAll(".outfit-slot").forEach(slotEl => {
