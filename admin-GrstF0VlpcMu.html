@@ -1044,7 +1044,7 @@
       formTitle.textContent = "✏️ Edit item";
       saveBtn.textContent = "Save changes";
       cancelEditBtn.style.display = "inline-block";
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      formTitle.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function resetForm() {
