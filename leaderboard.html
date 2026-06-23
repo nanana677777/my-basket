@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Leaderboard · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --gold: #ffd24c;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+    --border: rgba(255,158,203,0.15);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--pink); }
+
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, var(--gold), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 40px;
+  }
+
+  /* ─── Leaderboard row ─── */
+  .lb-row {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .lb-row.rank-1 { border-color: rgba(255, 210, 76, 0.5); box-shadow: 0 0 24px rgba(255, 210, 76, 0.12); }
+  .lb-row.rank-2 { border-color: rgba(201, 166, 255, 0.4); }
+  .lb-row.rank-3 { border-color: rgba(255, 158, 203, 0.35); }
+
+  .lb-rank {
+    font-size: 22px;
+    font-weight: 900;
+    width: 40px;
+    flex-shrink: 0;
+    text-align: center;
+    color: var(--muted);
+  }
+  .lb-row.rank-1 .lb-rank { font-size: 28px; }
+
+  .lb-main {
+    flex: 1;
+    min-width: 160px;
+  }
+  .lb-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .lb-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .lb-total {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--gold);
+    background: rgba(255, 210, 76, 0.08);
+    border: 1px solid rgba(255, 210, 76, 0.25);
+    padding: 6px 16px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .lb-thumbs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .lb-thumbs a {
+    display: block;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: transform 0.15s ease;
+  }
+  .lb-thumbs a:hover { transform: scale(1.1); border-color: var(--pink); }
+  .lb-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ─── Empty state ─── */
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+
+  footer {
+    text-align: center;
+    padding: 36px 0 10px;
+    color: #7a7588;
+    font-size: 12.5px;
+  }
+  footer a {
+    color: #7a7588;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,158,203,0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="./index.html">← Back to the basket</a>
+    <h1>🏆 Leaderboard</h1>
+    <p class="subtitle">The people who've spoiled me most — ranked by total spent 💸</p>
+
+    <div id="lb-container">
+      <div class="empty-state">
+        <div class="big">🏆</div>
+        Loading leaderboard…
+      </div>
+    </div>
+
+    <footer>
+      <a href="./index.html">← Full wishlist</a> &nbsp;·&nbsp;
+      <a href="./about.html">About this page</a>
+    </footer>
+  </div>
+
+  <script>
+    function priceNumber(price) {
+      const n = parseFloat((price || "0").toString().replace(",", "."));
+      return isNaN(n) ? 0 : n;
+    }
+
+    async function loadLeaderboard() {
+      const container = document.getElementById("lb-container");
+      try {
+        const [lbRes, productsRes] = await Promise.all([
+          fetch("./leaderboard.json?t=" + Date.now()),
+          fetch("./products.json?t=" + Date.now()),
+        ]);
+        if (!lbRes.ok) throw new Error("HTTP " + lbRes.status);
+        const people = await lbRes.json();
+        const products = productsRes.ok ? await productsRes.json() : [];
+
+        if (!people.length) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="big">🏆</div>
+              No one on the leaderboard yet — check back soon!
+            </div>`;
+          return;
+        }
+
+        const byLink = {};
+        products.forEach(p => { if (p.link) byLink[p.link] = p; });
+
+        const ranked = people
+          .map(person => {
+            const items = (person.products || [])
+              .map(link => byLink[link])
+              .filter(Boolean);
+            const total = items.reduce((sum, p) => sum + priceNumber(p.price), 0);
+            return { name: person.name || "Anonymous", items, total };
+          })
+          .sort((a, b) => b.total - a.total);
+
+        const medals = ["🥇", "🥈", "🥉"];
+
+        container.innerHTML = "";
+        ranked.forEach((person, idx) => {
+          const row = document.createElement("div");
+          row.className = "lb-row" + (idx < 3 ? " rank-" + (idx + 1) : "");
+
+          const thumbsHtml = person.items.length
+            ? `<div class="lb-thumbs">${person.items
+                .map(p => `<a href="${p.link}" target="_blank" rel="noopener" title="${(p.title || "").replace(/"/g, "&quot;")}"><img src="${p.image}" alt="" loading="lazy"></a>`)
+                .join("")}</div>`
+            : "";
+
+          row.innerHTML = `
+            <div class="lb-rank">${medals[idx] || "#" + (idx + 1)}</div>
+            <div class="lb-main">
+              <div class="lb-name">${person.name.replace(/</g, "&lt;")}</div>
+              <div class="lb-count">${person.items.length} item${person.items.length === 1 ? "" : "s"} bought</div>
+            </div>
+            <div class="lb-total">💰 ${person.total.toFixed(2)} €</div>
+            ${thumbsHtml}
+          `;
+          container.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Leaderboard load error:", err);
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="big">😢</div>
+            Couldn't load the leaderboard right now. Try again later!
+          </div>`;
+      }
+    }
+
+    loadLeaderboard();
+  </script>
+</body>
+</html>
