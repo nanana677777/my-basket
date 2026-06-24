@@ -440,7 +440,8 @@
 
       /* 🩷 Cute glowy price filter buttons */
       #sort-low,
-      #sort-high {
+      #sort-high,
+      #sort-recent {
         margin: 0 5px;
         padding: 8px 16px;
         border-radius: 999px;
@@ -464,6 +465,9 @@
       #sort-high {
         background: linear-gradient(135deg, #ff9ecb, #d3a6ff);
       }
+      #sort-recent {
+        background: linear-gradient(135deg, #c9a6ff, #ffd24c);
+      }
 
       /* Hover effect with glowy pop */
       #sort-low:hover {
@@ -478,10 +482,17 @@
           0 6px 18px rgba(255, 158, 203, 0.6),
           0 0 15px rgba(201, 166, 255, 0.5);
       }
+      #sort-recent:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow:
+          0 6px 18px rgba(201, 166, 255, 0.6),
+          0 0 15px rgba(255, 210, 76, 0.5);
+      }
 
       /* Tiny sparkles on hover */
       #sort-low::after,
-      #sort-high::after {
+      #sort-high::after,
+      #sort-recent::after {
         content: "✨";
         position: absolute;
         top: -4px;
@@ -491,7 +502,8 @@
         transition: all 0.3s ease;
       }
       #sort-low:hover::after,
-      #sort-high:hover::after {
+      #sort-high:hover::after,
+      #sort-recent:hover::after {
         opacity: 1;
         transform: translate(3px, -3px) rotate(10deg) scale(1.2);
       }
@@ -918,6 +930,18 @@
       }
       .category-chip.active .chip-count {
         background: rgba(27,27,38,0.18);
+        color: #1b1b26;
+      }
+      .category-chip.warn {
+        border-color: rgba(255, 107, 129, 0.4);
+        color: #ff8a9a;
+      }
+      .category-chip.warn:hover {
+        background: rgba(255, 107, 129, 0.15);
+        border-color: rgba(255, 107, 129, 0.6);
+      }
+      .category-chip.warn.active {
+        background: linear-gradient(135deg, #ff6b81, #ff9ecb);
         color: #1b1b26;
       }
 
@@ -2637,6 +2661,20 @@
       >
         Price ↓
       </button>
+      <button
+        id="sort-recent"
+        style="
+          margin: 0 5px;
+          padding: 6px 12px;
+          border-radius: 20px;
+          background: #c9a6ff;
+          color: #ffffff;
+          font-weight: bold;
+          cursor: pointer;
+        "
+      >
+        🆕 Recent
+      </button>
     </div>
     <div id="category-filters"></div>
     <div id="filters-divider"></div>
@@ -2849,14 +2887,15 @@
         const cats = Array.from(new Set(
           rawProducts.map(p => (p.category || "").trim()).filter(Boolean)
         )).sort((a, b) => a.localeCompare(b));
+        const uncategorizedCount = rawProducts.filter(p => !(p.category || "").trim()).length;
 
-        if (!cats.length) {
+        if (!cats.length && !uncategorizedCount) {
           container.innerHTML = "";
           return;
         }
 
         // If the saved active category no longer exists in the data, reset it
-        if (activeCategory && !cats.includes(activeCategory)) {
+        if (activeCategory && activeCategory !== "__none__" && !cats.includes(activeCategory)) {
           activeCategory = null;
           sessionStorage.removeItem("activeCategory");
         }
@@ -2868,8 +2907,12 @@
           if (c) counts[c] = (counts[c] || 0) + 1;
         });
 
-        container.innerHTML = `<div class="category-chip${activeCategory === null ? " active" : ""}" data-cat="">All <span class="chip-count">${rawProducts.length}</span></div>`
-          + cats.map(c => `<div class="category-chip${activeCategory === c ? " active" : ""}" data-cat="${c.replace(/"/g, "&quot;")}">${c} <span class="chip-count">${counts[c]}</span></div>`).join("");
+        let html = `<div class="category-chip${activeCategory === null ? " active" : ""}" data-cat="">All <span class="chip-count">${rawProducts.length}</span></div>`;
+        if (uncategorizedCount > 0) {
+          html += `<div class="category-chip warn${activeCategory === "__none__" ? " active" : ""}" data-cat="__none__">🚫 No category <span class="chip-count">${uncategorizedCount}</span></div>`;
+        }
+        html += cats.map(c => `<div class="category-chip${activeCategory === c ? " active" : ""}" data-cat="${c.replace(/"/g, "&quot;")}">${c} <span class="chip-count">${counts[c]}</span></div>`).join("");
+        container.innerHTML = html;
 
         container.querySelectorAll(".category-chip").forEach(chip => {
           chip.addEventListener("click", () => {
@@ -3053,7 +3096,9 @@
           : rawProducts.slice();
 
         if (activeCategory) {
-          base = base.filter(p => (p.category || "").trim() === activeCategory);
+          base = activeCategory === "__none__"
+            ? base.filter(p => !(p.category || "").trim())
+            : base.filter(p => (p.category || "").trim() === activeCategory);
         }
 
         if (activeBoughtFilter === "bought") {
@@ -3081,6 +3126,10 @@
           base = [...base].sort((a, b) => priceNumber(a.price) - priceNumber(b.price));
         } else if (activeSortOrder === "desc") {
           base = [...base].sort((a, b) => priceNumber(b.price) - priceNumber(a.price));
+        } else if (activeSortOrder === "recent") {
+          // rawProducts order = insertion order (new items are appended), so
+          // the last items in the array are the most recently added ones.
+          base = [...base].sort((a, b) => rawProducts.indexOf(b) - rawProducts.indexOf(a));
         }
 
         return base;
@@ -3557,17 +3606,28 @@
         applyAllFilters();
       });
 
+      document.getElementById("sort-recent").addEventListener("click", () => {
+        activeSortOrder = activeSortOrder === "recent" ? null : "recent";
+        if (activeSortOrder) sessionStorage.setItem("activeSortOrder", activeSortOrder);
+        else sessionStorage.removeItem("activeSortOrder");
+        updateSortButtonsUI();
+        applyAllFilters();
+      });
+
       function updateSortButtonsUI() {
         const lowBtn = document.getElementById("sort-low");
         const highBtn = document.getElementById("sort-high");
+        const recentBtn = document.getElementById("sort-recent");
         lowBtn.style.outline = activeSortOrder === "asc" ? "2px solid #fff" : "none";
         lowBtn.style.boxShadow = activeSortOrder === "asc" ? "0 0 14px rgba(125,249,255,0.8)" : "";
         highBtn.style.outline = activeSortOrder === "desc" ? "2px solid #fff" : "none";
         highBtn.style.boxShadow = activeSortOrder === "desc" ? "0 0 14px rgba(255,158,203,0.8)" : "";
+        recentBtn.style.outline = activeSortOrder === "recent" ? "2px solid #fff" : "none";
+        recentBtn.style.boxShadow = activeSortOrder === "recent" ? "0 0 14px rgba(201,166,255,0.8)" : "";
       }
       updateSortButtonsUI();
 
-      document.querySelectorAll("#sort-low, #sort-high").forEach((btn) => {
+      document.querySelectorAll("#sort-low, #sort-high, #sort-recent").forEach((btn) => {
         btn.addEventListener("click", () => {
           const heart = document.createElement("div");
           heart.innerText = "🩷";
