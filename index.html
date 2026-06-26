@@ -1118,6 +1118,66 @@
         50% { box-shadow: 4px 0 28px rgba(255, 158, 203, 0.8), 0 0 0 6px rgba(255,158,203,0.05); }
       }
 
+      /* 🐱 Interactive mascot */
+      #mascot {
+        position: fixed;
+        bottom: 18px;
+        right: 18px;
+        z-index: 1500;
+        font-size: 38px;
+        line-height: 1;
+        cursor: pointer;
+        user-select: none;
+        animation: mascotBob 2.8s ease-in-out infinite;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.45));
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #mascot:hover { transform: scale(1.18) rotate(-6deg); }
+      #mascot:active { transform: scale(0.92); }
+      @keyframes mascotBob {
+        0%, 100% { transform: translateY(0) rotate(-3deg); }
+        50% { transform: translateY(-7px) rotate(3deg); }
+      }
+      #mascot-bubble {
+        position: fixed;
+        bottom: 72px;
+        right: 14px;
+        max-width: 190px;
+        background: #1b1b26;
+        border: 1px solid rgba(255,158,203,0.4);
+        border-radius: 16px;
+        padding: 10px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        z-index: 1500;
+        opacity: 0;
+        transform: translateY(8px) scale(0.9);
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+      }
+      #mascot-bubble.show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      #mascot-bubble::after {
+        content: "";
+        position: absolute;
+        bottom: -7px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-top: 7px solid #1b1b26;
+      }
+      @media (max-width: 640px) {
+        #mascot { font-size: 32px; bottom: 14px; right: 14px; }
+        #mascot-bubble { bottom: 62px; right: 10px; max-width: 160px; font-size: 11.5px; }
+      }
+
       /* 🎲 Pick-for-me modal */
       #pick-overlay {
         display: none;
@@ -2995,13 +3055,41 @@
         });
 
       // Toggle favorite helper with cute pop + float
+      // 🐱 Interactive mascot — reacts to favorites, votes, and clicks
+      const MASCOT_MESSAGES = {
+        favorite: ["Ooh, great pick! 🩷", "Adding that to the wishlist~ ✨", "Excellent taste!", "Mrow~ love that one!"],
+        unfavorite: ["Aww, okay~ 💭", "Maybe next time!", "No worries, plenty more to see!"],
+        vote: ["Thanks for voting! 👍", "Your vote counts~ ✨", "Ooh I like this one too!", "Noted! 📝"],
+        pick: ["Let's see what fate picks... 🎲", "Ta-da! ✨", "Ooh, surprise! 🎁"],
+        idle: ["Hi there! 👋", "Looking for something cute? 🌸", "Psst... check out the Stats page!", "I'm just vibing here~ 🐾", "Try the swipe mode, it's fun!", "Meow! 🐱"],
+      };
+      let mascotTimer = null;
+      function showMascotBubble(text) {
+        const bubble = document.getElementById("mascot-bubble");
+        if (!bubble) return;
+        bubble.textContent = text;
+        bubble.classList.add("show");
+        clearTimeout(mascotTimer);
+        mascotTimer = setTimeout(() => bubble.classList.remove("show"), 3200);
+      }
+      function mascotSay(category) {
+        const list = MASCOT_MESSAGES[category] || MASCOT_MESSAGES.idle;
+        showMascotBubble(list[Math.floor(Math.random() * list.length)]);
+      }
+      const mascotEl = document.getElementById("mascot");
+      document.addEventListener("click", (e) => {
+        if (e.target && e.target.closest && e.target.closest("#mascot")) mascotSay("idle");
+      });
+
       function toggleFavorite(link, heartEl) {
         if (favorites.includes(link)) {
           favorites = favorites.filter((l) => l !== link);
           heartEl.classList.remove("favorited");
+          mascotSay("unfavorite");
         } else {
           favorites.push(link);
           heartEl.classList.add("favorited");
+          mascotSay("favorite");
 
           // 💖 Floating mini heart animation
           const miniHeart = document.createElement("div");
@@ -3045,6 +3133,7 @@
         localStorage.setItem("temuVotes", JSON.stringify(votedProducts));
 
         starEl.classList.add("voted", "disabled");
+        mascotSay("vote");
 
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({
@@ -3851,6 +3940,10 @@
     <!-- 🎀 Linktree launcher + modal -->
     <button id="linktree-tab"><span class="tab-icon">🎀</span>links</button>
 
+    <!-- 🐱 Interactive mascot -->
+    <div id="mascot-bubble"></div>
+    <div id="mascot" title="Pspsps~">🐱</div>
+
     <div id="propose-overlay">
       <div id="propose-panel">
         <button id="propose-close" title="Close">✕</button>
@@ -4189,6 +4282,7 @@
             }
             pickSpinBtn.disabled = false;
             spinTimer = null;
+            if (typeof mascotSay === "function") mascotSay("pick");
             return;
           }
           spinTimer = setTimeout(step, delay);
