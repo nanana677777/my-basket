@@ -1716,7 +1716,8 @@
         color: #fff;
         transform: rotate(90deg);
       }
-      #propose-name {
+      #propose-name,
+      #propose-by {
         display: block;
         width: 100%;
         margin-bottom: 10px;
@@ -3737,6 +3738,7 @@
         <h3>💡 Propose an outfit</h3>
         <p class="propose-sub">Click a slot to pick an item — 2+ filled, Nana reviews every proposal before it goes live.</p>
         <input id="propose-name" type="text" placeholder="Name your look (optional)" maxlength="60" />
+        <input id="propose-by" type="text" placeholder="Your name (optional)" maxlength="40" />
 
         <div class="propose-outfit-slots" id="propose-slots">
           <div class="propose-slot" data-slot="top">
@@ -4061,6 +4063,7 @@
     (function () {
       const proposeOverlay = document.getElementById("propose-overlay");
       const proposeName = document.getElementById("propose-name");
+      const proposeBy = document.getElementById("propose-by");
       const proposeCount = document.getElementById("propose-count");
       const proposeSubmitBtn = document.getElementById("propose-submit-btn");
       const proposePanel = document.getElementById("propose-panel");
@@ -4081,6 +4084,7 @@
       function openPropose() {
         currentSlots = {};
         proposeName.value = "";
+        proposeBy.value = "";
         renderSlots();
         updateCount();
         proposeOverlay.classList.add("open");
@@ -4180,7 +4184,7 @@
       }
 
       function showThanks() {
-        const toHide = [proposeName, document.getElementById("propose-slots"), proposeCount, proposeSubmitBtn];
+        const toHide = [proposeName, proposeBy, document.getElementById("propose-slots"), proposeCount, proposeSubmitBtn];
         toHide.forEach((el) => (el.style.display = "none"));
         let thanks = proposePanel.querySelector("#propose-thanks");
         if (!thanks) {
@@ -4201,9 +4205,10 @@
         const filled = Object.keys(currentSlots);
         if (filled.length < 2) return;
         const name = proposeName.value.trim();
+        const by = proposeBy.value.trim();
         const pairs = filled.map((slotKey) => slotKey + ":" + getVoteId(currentSlots[slotKey].link));
         const path = "/outfit-proposal/" + pairs.join(",");
-        const title = "Outfit proposal: " + (name || "Untitled");
+        const title = "Outfit proposal: " + (name || "Untitled") + " ||| " + by;
 
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({ path: path, title: title, event: true });
