@@ -166,5 +166,41 @@
         "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100239701416&sku_id=17595312566697&_oak_page_source=501"
       }
     }
+  },
+  {
+    "id": "outfit_1782493156398",
+    "name": "School",
+    "slots": {
+      "top": {
+        "title": "Women'S Shirt Jk Uniform Long-Sleeved Top White Shirt Waist Autumn Long-Sleeved Inner Wear Spicy Slim Fit Shirt [Excluding Bow Tie]",
+        "image": "https://img.kwcdn.com/product/fancy/553e24a4-f018-4958-8288-859f90beb68c.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "10,03",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099701931168&sku_id=17592917931990&_oak_page_source=501"
+      },
+      "bottom": {
+        "title": "New Multifunctional High-Waist Women'S Short Skirt, 2-In-1 Running And Tennis Skirt with G-String Design, Casual Pleated Comfortable Mini Skirt, Suitable for Spring And Summer Wear",
+        "image": "https://img.kwcdn.com/product/fancy/2ed9e02d-8e9e-4da1-8a0b-9383c9bcfb2e.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "8,15",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601101117658288&sku_id=17598331213615&_oak_page_source=501"
+      },
+      "shoes": {
+        "title": "HW068A-3 Black Glossy PU + Buckle Strap, Trendy Elegant Fashion Solid Color Casual College Style Non-Slip Comfortable Penny Loafers, Women Shoes",
+        "image": "https://img.kwcdn.com/product/fancy/5a5ace00-d050-4336-a03a-3177d735219f.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "17,35",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099940296570&sku_id=17593996021951&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "1/2-Pair Sexy -Style Women's Over-the-Knee Socks - Sexy and Fashionable - Comfortable and Stretchy - Anti-Slip Design - Wear-Resistant and Pilling-Resistant - Leg-Shaping - Black and White Striped Knee-High Socks - Socks",
+        "image": "https://img.kwcdn.com/product/fancy/9bfd60ab-1202-4ad5-bbec-fce91645c5dc.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "1,98",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601101479875809&sku_id=17600043463910&_oak_page_source=501"
+      },
+      "misc": {
+        "title": "Mid-Length Straight Wigs in Black And Brown with Bangs, Featuring a Wolf Tail Hairstyle. These High-Layered Fashion Wigs Are Perfect for Daily Wear, Parties, And Halloween, And Are Made from Heat-Resistant Synthetic Materials, Measuring 50.8 cm",
+        "image": "https://img.kwcdn.com/product/fancy/93b38784-393f-4957-ae73-7b06a76b9cc8.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "11,96",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601103651707945&sku_id=17620434765955&_oak_page_source=501"
+      }
+    }
   }
 ]
