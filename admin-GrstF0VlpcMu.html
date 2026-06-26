@@ -193,6 +193,31 @@
     color: var(--gold, #ffd24c);
     font-weight: 700;
   }
+  .comment-admin-row {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .comment-admin-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .comment-admin-name { font-weight: 700; color: var(--pink); font-size: 13px; }
+  .comment-admin-date { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .comment-admin-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 10px;
+  }
+  .comment-admin-actions { display: flex; gap: 8px; }
   .admin-cat-chip {
     padding: 6px 14px;
     border-radius: 999px;
@@ -752,6 +777,17 @@
     </div>
 
     <div class="card">
+      <h2>💬 Comments</h2>
+      <p class="sub" style="margin:0 0 14px;">Visitors can leave a comment on <a href="./comments.html" target="_blank" style="color:var(--accent);">the comments page</a>. Pending ones are stored as GoatCounter hits too (same token as Outfit Proposals above) — approve to publish them to <code>comments.json</code>, or dismiss to hide them from this list.</p>
+
+      <h3 style="font-size:13px;color:var(--muted);margin:0 0 8px;">Pending</h3>
+      <div id="pending-comments-list"><div class="empty-state">Connect your GoatCounter API token above to load pending comments.</div></div>
+
+      <h3 style="font-size:13px;color:var(--muted);margin:18px 0 8px;">Published</h3>
+      <div id="approved-comments-list"><div class="empty-state">No comments published yet.</div></div>
+    </div>
+
+    <div class="card">
       <h2>🏆 Leaderboard</h2>
       <p class="sub" style="margin:0 0 14px;">People who bought you stuff — link them to the products they got and they'll show up on <a href="./leaderboard.html" target="_blank" style="color:var(--accent);">the leaderboard page</a>, ranked by total spent.</p>
 
@@ -820,6 +856,9 @@
     let leaderboardSha = null;
     let editingPersonId = null;
     let currentPersonProducts = []; // array of product links for the person being added/edited
+    let approvedComments = [];
+    let commentsSha = null;
+    let pendingComments = [];
     let currentOutfitSlots = {};
     let activePickerSlot = null;
 
@@ -1009,6 +1048,7 @@
       renderOutfitSlots();
       if (outfitsSha === null && token) loadOutfits();
       if (leaderboardSha === null && token) loadLeaderboard();
+      if (commentsSha === null && token) loadComments();
     }
 
     function updateCategorySuggestions() {
@@ -1311,6 +1351,7 @@
     // ─── 👗 Outfit management ───
     const OUTFIT_API = "https://api.github.com/repos/" + REPO + "/contents/outfits.json";
     const LEADERBOARD_API = "https://api.github.com/repos/" + REPO + "/contents/leaderboard.json";
+    const COMMENTS_API = "https://api.github.com/repos/" + REPO + "/contents/comments.json";
     const SLOT_KEYS = ["top", "bottom", "shoes", "accessory", "misc"];
     const SLOT_LABELS = { top: "Top", bottom: "Bottom", shoes: "Shoes", accessory: "Accessory", misc: "Extra" };
 
@@ -1395,6 +1436,138 @@
         showToast("❌ Network error — leaderboard not saved", true);
         console.error("pushLeaderboard error:", e);
       }
+    }
+
+    async function loadComments() {
+      try {
+        const res = await fetch(COMMENTS_API, {
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json" }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        commentsSha = data.sha;
+        approvedComments = JSON.parse(decodeURIComponent(
+          atob(data.content.replace(/\n/g, ""))
+            .split("").map(c => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")
+        ) || "[]");
+        renderApprovedComments();
+      } catch (e) { console.error("Comments load error", e); }
+    }
+
+    async function pushComments(msg) {
+      try {
+        const body = JSON.stringify(approvedComments, null, 2);
+        const encoded = btoa(unescape(encodeURIComponent(body)));
+        const payload = { message: msg, content: encoded, sha: commentsSha, branch: "main" };
+        const res = await fetch(COMMENTS_API, {
+          method: "PUT",
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.content) {
+          commentsSha = data.content.sha;
+          renderApprovedComments();
+          showToast("✅ Comments saved to GitHub");
+        } else {
+          showToast("❌ Save failed: " + (data.message || "Unknown error — reload and retry"), true);
+          await loadComments();
+        }
+      } catch (e) {
+        showToast("❌ Network error — comment not saved", true);
+        console.error("pushComments error:", e);
+      }
+    }
+
+    function renderApprovedComments() {
+      const el = document.getElementById("approved-comments-list");
+      if (!approvedComments.length) {
+        el.innerHTML = `<div class="empty-state">No comments published yet.</div>`;
+        return;
+      }
+      const sorted = [...approvedComments].sort((a, b) => new Date(b.date) - new Date(a.date));
+      el.innerHTML = sorted.map(c => `
+        <div class="comment-admin-row">
+          <div class="comment-admin-head">
+            <span class="comment-admin-name">${(c.name || "Anonymous").replace(/</g, "&lt;")}</span>
+            <span class="comment-admin-date">${c.date ? new Date(c.date).toLocaleDateString() : ""}</span>
+          </div>
+          <div class="comment-admin-text">${(c.text || "").replace(/</g, "&lt;")}</div>
+          <div class="comment-admin-actions">
+            <button class="btn-ghost" data-unpublish-comment="${c.id}">Remove from site</button>
+          </div>
+        </div>
+      `).join("");
+
+      el.querySelectorAll("[data-unpublish-comment]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.unpublishComment;
+          if (!confirm("Remove this comment from the public page?")) return;
+          approvedComments = approvedComments.filter(c => c.id !== id);
+          pushComments("Remove a published comment via admin");
+        });
+      });
+    }
+
+    function getDismissedComments() {
+      try { return JSON.parse(localStorage.getItem("dismissedComments")) || []; } catch (e) { return []; }
+    }
+    function dismissCommentPath(path) {
+      const d = getDismissedComments();
+      if (!d.includes(path)) d.push(path);
+      localStorage.setItem("dismissedComments", JSON.stringify(d));
+    }
+
+    function renderPendingComments() {
+      const el = document.getElementById("pending-comments-list");
+      if (!pendingComments.length) {
+        el.innerHTML = `<div class="empty-state">No pending comments.</div>`;
+        return;
+      }
+
+      el.innerHTML = pendingComments.map((p, i) => {
+        const raw = p.title || "";
+        const sep = raw.indexOf(" ||| ");
+        const name = sep === -1 ? "Anonymous" : raw.slice(0, sep);
+        const text = sep === -1 ? raw : raw.slice(sep + 5);
+        return `
+          <div class="comment-admin-row">
+            <div class="comment-admin-head">
+              <span class="comment-admin-name">${name.replace(/</g, "&lt;")}</span>
+            </div>
+            <div class="comment-admin-text">${text.replace(/</g, "&lt;")}</div>
+            <div class="comment-admin-actions">
+              <button class="btn-primary" data-approve-comment="${i}">✅ Approve</button>
+              <button class="btn-ghost" data-dismiss-comment="${i}">Dismiss</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      el.querySelectorAll("[data-approve-comment]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const p = pendingComments[parseInt(btn.dataset.approveComment)];
+          const raw = p.title || "";
+          const sep = raw.indexOf(" ||| ");
+          const name = (sep === -1 ? "Anonymous" : raw.slice(0, sep)).trim() || "Anonymous";
+          const text = (sep === -1 ? raw : raw.slice(sep + 5)).trim();
+          if (!text) { showToast("Empty comment — dismissing instead.", true); return; }
+
+          approvedComments.push({ id: "c" + Date.now(), name, text, date: new Date().toISOString() });
+          dismissCommentPath(p.path);
+          pendingComments = pendingComments.filter(c => c.path !== p.path);
+          renderPendingComments();
+          pushComments("Approve comment from " + name);
+        });
+      });
+      el.querySelectorAll("[data-dismiss-comment]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const p = pendingComments[parseInt(btn.dataset.dismissComment)];
+          dismissCommentPath(p.path);
+          pendingComments = pendingComments.filter(c => c.path !== p.path);
+          renderPendingComments();
+        });
+      });
     }
 
     function personTotal(person) {
@@ -1814,6 +1987,7 @@
     async function loadProposals() {
       if (!gcToken) return;
       proposalsListEl.innerHTML = `<div class="empty-state">Loading…</div>`;
+      document.getElementById("pending-comments-list").innerHTML = `<div class="empty-state">Loading…</div>`;
       try {
         let all = [];
         let after = null;
@@ -1836,6 +2010,10 @@
         const dismissed = getDismissed();
         loadedProposals = all.filter(p => p.path && /^\/?outfit-proposal\//.test(p.path) && !dismissed.includes(p.path));
         renderProposals();
+
+        const dismissedC = getDismissedComments();
+        pendingComments = all.filter(p => p.path && /^\/?comment-proposal\//.test(p.path) && !dismissedC.includes(p.path));
+        renderPendingComments();
       } catch (e) {
         console.error("loadProposals error:", e);
         proposalsListEl.innerHTML = `<div class="empty-state">Couldn't load proposals — check your token and connection.</div>`;
