@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Timeline · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --gold: #ffd24c;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+    --border: rgba(255,158,203,0.15);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--pink); }
+
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 8px;
+  }
+  .disclaimer {
+    text-align: center;
+    color: #7a7588;
+    font-size: 11.5px;
+    margin: 0 0 32px;
+    line-height: 1.5;
+  }
+
+  /* ─── Top stats ─── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+  .stat-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--cyan);
+    margin-bottom: 2px;
+  }
+  .stat-label {
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* ─── Timeline ─── */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+    border-left: 2px solid rgba(255,158,203,0.2);
+  }
+  .week-block {
+    position: relative;
+    margin-bottom: 30px;
+  }
+  .week-block::before {
+    content: "";
+    position: absolute;
+    left: -30px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--violet), var(--pink));
+    box-shadow: 0 0 0 4px var(--bg), 0 0 10px rgba(201,166,255,0.5);
+  }
+  .week-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .week-range {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .week-meta {
+    font-size: 12px;
+    color: var(--violet);
+    font-weight: 700;
+  }
+  .week-thumbs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .week-thumbs img {
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .week-more {
+    width: 54px;
+    height: 54px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--muted);
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+
+  footer {
+    text-align: center;
+    padding: 36px 0 10px;
+    color: #7a7588;
+    font-size: 12.5px;
+  }
+  footer a {
+    color: #7a7588;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,158,203,0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="./index.html">← Back to the basket</a>
+    <h1>🕰️ Wishlist Timeline</h1>
+    <p class="subtitle">How the list grew over time, week by week.</p>
+    <p class="disclaimer" id="disclaimer-note"></p>
+
+    <div class="stats-row" id="stats-row"></div>
+
+    <div id="timeline-container">
+      <div class="empty-state">
+        <div class="big">🕰️</div>
+        Loading timeline…
+      </div>
+    </div>
+
+    <footer>
+      <a href="./index.html">← Full wishlist</a> &nbsp;·&nbsp;
+      <a href="./about.html">About this page</a>
+    </footer>
+  </div>
+
+  <script>
+    function priceNumber(price) {
+      const n = parseFloat((price || "0").toString().replace(",", "."));
+      return isNaN(n) ? 0 : n;
+    }
+
+    // Monday-start week key, e.g. "2026-06-22"
+    function weekStart(date) {
+      const d = new Date(date);
+      const day = (d.getDay() + 6) % 7; // 0 = Monday
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - day);
+      return d;
+    }
+    function fmt(date) {
+      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    async function loadTimeline() {
+      const container = document.getElementById("timeline-container");
+      const statsRow = document.getElementById("stats-row");
+      try {
+        const res = await fetch("./products.json?t=" + Date.now());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const products = await res.json();
+
+        const dated = products.filter(p => p && p.dateAdded && !isNaN(new Date(p.dateAdded)));
+        if (!dated.length) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="big">🕰️</div>
+              No dated items yet — check back as the list grows!
+            </div>`;
+          return;
+        }
+
+        // ─── Top stats ───
+        const sortedByDate = [...dated].sort((a, b) => new Date(a.dateAdded) - new Date(b.dateAdded));
+        const firstDate = new Date(sortedByDate[0].dateAdded);
+        const totalValue = dated.reduce((sum, p) => sum + priceNumber(p.price) * (parseInt(p.quantity) || 1), 0);
+
+        const byDay = {};
+        dated.forEach(p => {
+          const key = new Date(p.dateAdded).toDateString();
+          byDay[key] = (byDay[key] || 0) + 1;
+        });
+        const busiest = Object.entries(byDay).sort((a, b) => b[1] - a[1])[0];
+
+        statsRow.innerHTML = `
+          <div class="stat-box">
+            <div class="stat-value">${dated.length}</div>
+            <div class="stat-label">Items tracked</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">${fmt(firstDate)}</div>
+            <div class="stat-label">First tracked add</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">${busiest ? busiest[1] : 0}</div>
+            <div class="stat-label">Busiest day (${busiest ? fmt(new Date(busiest[0])) : "—"})</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">${totalValue.toFixed(0)} €</div>
+            <div class="stat-label">Total value added</div>
+          </div>
+        `;
+
+        document.getElementById("disclaimer-note").textContent =
+          "Dates for items added before tracking started are estimated, spread across recent weeks — newer additions have real timestamps.";
+
+        // ─── Group by week, most recent first ───
+        const weeks = {};
+        dated.forEach(p => {
+          const ws = weekStart(p.dateAdded).getTime();
+          (weeks[ws] = weeks[ws] || []).push(p);
+        });
+        const weekKeys = Object.keys(weeks).map(Number).sort((a, b) => b - a);
+
+        container.innerHTML = `<div class="timeline">${weekKeys.map(wsTime => {
+          const items = weeks[wsTime];
+          const start = new Date(wsTime);
+          const end = new Date(wsTime);
+          end.setDate(end.getDate() + 6);
+          const value = items.reduce((sum, p) => sum + priceNumber(p.price) * (parseInt(p.quantity) || 1), 0);
+          const thumbs = items.slice(0, 6);
+          const extra = items.length - thumbs.length;
+
+          return `
+            <div class="week-block">
+              <div class="week-head">
+                <div class="week-range">${fmt(start)} – ${fmt(end)}</div>
+                <div class="week-meta">+${items.length} item${items.length === 1 ? "" : "s"} · ${value.toFixed(2)} €</div>
+              </div>
+              <div class="week-thumbs">
+                ${thumbs.map(p => `<img src="${p.image}" alt="" loading="lazy" title="${(p.title || "").replace(/"/g, "&quot;")}">`).join("")}
+                ${extra > 0 ? `<div class="week-more">+${extra}</div>` : ""}
+              </div>
+            </div>
+          `;
+        }).join("")}</div>`;
+      } catch (err) {
+        console.error("Timeline load error:", err);
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="big">😢</div>
+            Couldn't load the timeline right now. Try again later!
+          </div>`;
+      }
+    }
+
+    loadTimeline();
+  </script>
+</body>
+</html>
