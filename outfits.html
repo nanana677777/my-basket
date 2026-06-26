@@ -99,6 +99,51 @@
     margin-top: -10px;
     margin-bottom: 6px;
   }
+  .outfit-top-badge {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #1b1b26;
+    background: linear-gradient(135deg, var(--gold), var(--pink));
+    padding: 5px 12px;
+    border-radius: 999px;
+    width: 100%;
+    margin-bottom: 6px;
+    text-align: center;
+    box-shadow: 0 0 16px rgba(255,210,76,0.3);
+  }
+  .outfit-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .outfit-vote-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,158,203,0.3);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .outfit-vote-btn:hover {
+    border-color: rgba(255,158,203,0.6);
+    background: rgba(255,158,203,0.1);
+    transform: translateY(-1px);
+  }
+  .outfit-vote-btn.voted {
+    border-color: transparent;
+    background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+    color: #1b1b26;
+    cursor: default;
+    transform: none;
+  }
+  .ov-count { font-variant-numeric: tabular-nums; }
 
   /* ─── Flat lay grid ─── */
   .flat-lay {
@@ -204,6 +249,7 @@
     </footer>
   </div>
 
+  <script data-goatcounter="https://nana677.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   <script>
     const SLOT_LABELS = {
       top: "Top",
@@ -213,6 +259,29 @@
       misc: "Extra"
     };
     const SLOT_ORDER = ["top", "bottom", "shoes", "accessory", "misc"];
+    const GOATCOUNTER_BASE = "https://nana677.goatcounter.com";
+
+    function getVotedOutfits() {
+      try { return JSON.parse(localStorage.getItem("votedOutfits")) || []; } catch (e) { return []; }
+    }
+    function rememberVotedOutfit(id) {
+      const v = getVotedOutfits();
+      if (!v.includes(id)) {
+        v.push(id);
+        localStorage.setItem("votedOutfits", JSON.stringify(v));
+      }
+    }
+
+    async function fetchOutfitVoteCount(id) {
+      try {
+        const res = await fetch(GOATCOUNTER_BASE + "/counter/" + encodeURIComponent("/outfit-vote/" + id) + ".json");
+        if (!res.ok) return 0;
+        const data = await res.json();
+        return data.count_unique || data.count || 0;
+      } catch (e) {
+        return 0;
+      }
+    }
 
     async function loadOutfits() {
       const container = document.getElementById("outfits-container");
@@ -230,8 +299,16 @@
           return;
         }
 
+        // Fetch vote counts for all outfits, then show the most-loved looks first
+        const counts = await Promise.all(outfits.map(o => fetchOutfitVoteCount(o.id)));
+        outfits.forEach((o, i) => { o._votes = counts[i] || 0; });
+        outfits.sort((a, b) => b._votes - a._votes);
+
+        const voted = getVotedOutfits();
+        const topVotes = outfits[0] ? outfits[0]._votes : 0;
+
         container.innerHTML = "";
-        outfits.forEach(outfit => {
+        outfits.forEach((outfit, idx) => {
           const slots = outfit.slots || {};
           let totalPrice = 0;
           SLOT_ORDER.forEach(key => {
@@ -245,12 +322,19 @@
           const card = document.createElement("div");
           card.className = "outfit-card";
 
+          const isTop = idx === 0 && topVotes > 0;
+          const alreadyVoted = voted.includes(outfit.id);
+
           const header = document.createElement("div");
           header.className = "outfit-header";
           header.innerHTML = `
             ${outfit.proposedBy ? `<div class="outfit-proposed-by">💡 Proposed by ${outfit.proposedBy.replace(/</g,"&lt;")}</div>` : ""}
+            ${isTop ? `<div class="outfit-top-badge">🏆 Most loved look</div>` : ""}
             <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
-            ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
+            <div class="outfit-header-right">
+              <button class="outfit-vote-btn${alreadyVoted ? " voted" : ""}" data-outfit-id="${outfit.id}" ${alreadyVoted ? "disabled" : ""}>🩷 <span class="ov-count">${outfit._votes > 0 ? outfit._votes : ""}</span></button>
+              ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
+            </div>
           `;
           card.appendChild(header);
 
@@ -274,6 +358,20 @@
               ${item.price ? `<div class="slot-price">💰 ${item.price} €</div>` : ""}
             `;
             flatLay.appendChild(a);
+          });
+        });
+
+        container.querySelectorAll(".outfit-vote-btn:not([disabled])").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.dataset.outfitId;
+            if (window.goatcounter && window.goatcounter.count) {
+              window.goatcounter.count({ path: "/outfit-vote/" + id, title: "Outfit vote", event: true });
+            }
+            rememberVotedOutfit(id);
+            btn.disabled = true;
+            btn.classList.add("voted");
+            const c = btn.querySelector(".ov-count");
+            c.textContent = (parseInt(c.textContent) || 0) + 1;
           });
         });
       } catch (err) {
