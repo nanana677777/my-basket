@@ -766,6 +766,57 @@
         margin-bottom: 18px;
         box-shadow: 0 0 12px rgba(255, 158, 203, 0.5);
       }
+      #modal-similar { margin-top: 18px; text-align: left; }
+      .modal-similar-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #b8b2c4;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      .modal-similar-row {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .modal-similar-item {
+        flex: 0 0 76px;
+        width: 76px;
+        cursor: pointer;
+        text-align: center;
+      }
+      .modal-similar-item img {
+        width: 76px;
+        height: 76px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: block;
+        margin-bottom: 4px;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+      }
+      .modal-similar-item:hover img {
+        transform: scale(1.05);
+        border-color: rgba(255,158,203,0.5);
+      }
+      .modal-similar-name {
+        font-size: 10px;
+        color: #cfc9d8;
+        line-height: 1.3;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .modal-similar-price {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #ffd24c;
+        margin-top: 2px;
+      }
       .modal-store-btn {
         display: inline-block;
         background: linear-gradient(135deg, #7df9ff, #c9a6ff);
@@ -2728,6 +2779,7 @@
         <br><br>
         <a id="modal-share-x" class="modal-store-btn" href="#" target="_blank" style="background:#000;color:#fff;display:inline-flex;align-items:center;gap:6px;">𝕏 Share this item</a>
         <div id="throne-status" style="margin-top:12px;font-size:12px;color:#c9a6ff;min-height:18px;"></div>
+        <div id="modal-similar"></div>
       </div>
     </div>
 
@@ -2750,6 +2802,140 @@
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") closeModal();
       });
+
+      function openProductModal(product) {
+        document.getElementById("modal-img").src = product.image;
+        document.getElementById("modal-img").alt = product.title;
+        document.getElementById("modal-title").textContent = product.title || "";
+        document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
+        document.getElementById("modal-link").href = product.link;
+
+        // 🔑 Push URL with product data so Throne can fetch it server-side
+        const priceClean = (product.price || "0").replace(",", ".");
+        const params = new URLSearchParams({
+          title: product.title || "",
+          price: priceClean,
+          image: product.image || "",
+          link:  product.link  || ""
+        });
+        history.pushState(null, product.title || "", "?" + params.toString());
+        document.title = product.title || "My Temu Basket";
+
+        // Update live meta tags too (for local bookmarklet fallback)
+        const setMeta = (id, val) => { const el = document.getElementById(id); if (el) el.setAttribute("content", val); };
+        setMeta("og-title",  product.title || "");
+        setMeta("og-image",  product.image || "");
+        setMeta("og-url",    product.link  || "");
+        setMeta("og-price",  priceClean);
+        const ld = document.getElementById("throne-ld");
+        if (ld) ld.textContent = JSON.stringify({
+          "@context": "https://schema.org/", "@type": "Product",
+          "name": product.title || "", "image": product.image || "", "url": product.link || "",
+          "offers": { "@type": "Offer", "price": priceClean, "priceCurrency": "EUR",
+                      "availability": "https://schema.org/InStock", "url": product.link || "" }
+        });
+
+        // 𝕏 Share this item — text + price, link to this page (its og: tags now show this product as the preview)
+        const shareText = `${product.title || "Check this out"} — 💰 ${priceClean} €`;
+        const shareUrl = location.origin + location.pathname + "?" + params.toString();
+        const xIntent = "https://twitter.com/intent/tweet?" + new URLSearchParams({
+          text: shareText,
+          url: shareUrl
+        }).toString();
+        document.getElementById("modal-share-x").href = xIntent;
+
+        document.getElementById("modal-throne").onclick = () => {
+          const status = document.getElementById("throne-status");
+          const INJECT_URL = "https://throne.com/bookmarklet/inject.js";
+
+          // Remove any previous Throne iframe
+          document.querySelectorAll('iframe[data-throne]').forEach(el => el.remove());
+
+          status.textContent = "⏳ Opening Throne...";
+
+          // Build the product URL — this page already handles ?title=...&price=... params
+          // and injects the right OG/schema meta tags on load, which is what Throne needs
+          const currentURL = window.location.href; // already has ?title=...&price=... pushed
+
+          // Create a hidden iframe pointing to the real GitHub Pages URL with product params
+          // Throne will run inside it and see the correct window.location + meta tags
+          const iframe = document.createElement("iframe");
+          iframe.setAttribute("data-throne", "1");
+          iframe.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;background:transparent;";
+          iframe.allow = "clipboard-write";
+
+          // Pass a flag so the iframe page auto-triggers Throne on load
+          const throneURL = currentURL + (currentURL.includes("?") ? "&" : "?") + "_throne=1";
+
+          // Save scroll position and current product link to sessionStorage
+          sessionStorage.setItem("throneScroll", String(window.scrollY));
+          sessionStorage.setItem("throneLastLink", product.link);
+
+          // Listen for Throne's close message from the iframe
+          const onMsg = (t) => {
+            const val = t.data || t.message;
+            if (val === "closeBookmarklet") {
+              iframe.remove();
+              window.removeEventListener("message", onMsg);
+              // Mark as added to Throne using sessionStorage link (closure may be stale)
+              const addedLink = sessionStorage.getItem("throneLastLink");
+              if (addedLink) {
+                throneAdded.add(addedLink);
+                localStorage.setItem("temuThroneAdded", JSON.stringify([...throneAdded]));
+                sessionStorage.removeItem("throneLastLink");
+              }
+              // Reload to restore layout cleanly, scroll will be restored on load
+              window.location.replace(location.pathname);
+            }
+          };
+          window.addEventListener("message", onMsg);
+
+          iframe.src = throneURL;
+          document.body.appendChild(iframe);
+          status.textContent = "";
+        };
+
+        renderSimilarItems(product);
+        document.getElementById("product-modal").classList.add("open");
+      }
+
+      // ✨ "You might also like" — a few other items from the same category
+      function renderSimilarItems(product) {
+        const container = document.getElementById("modal-similar");
+        if (!container) return;
+        const cat = (product.category || "").trim();
+        if (!cat || typeof rawProducts === "undefined") { container.innerHTML = ""; return; }
+
+        const pool = rawProducts.filter(
+          (p) => p && p.image && p.link !== product.link && (p.category || "").trim() === cat
+        );
+        if (!pool.length) { container.innerHTML = ""; return; }
+
+        const picks = [...pool].sort(() => Math.random() - 0.5).slice(0, 4);
+        container.innerHTML = `
+          <div class="modal-similar-title">✨ You might also like</div>
+          <div class="modal-similar-row">
+            ${picks
+              .map(
+                (p) => `
+              <div class="modal-similar-item" data-link="${(p.link || "").replace(/"/g, "&quot;")}">
+                <img src="${p.image}" alt="" loading="lazy">
+                <div class="modal-similar-name">${(p.title || "").replace(/</g, "&lt;")}</div>
+                ${p.price ? `<div class="modal-similar-price">💰 ${p.price} €</div>` : ""}
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        `;
+
+        container.querySelectorAll(".modal-similar-item").forEach((el) => {
+          el.addEventListener("click", () => {
+            const target = rawProducts.find((p) => p.link === el.dataset.link);
+            if (target) openProductModal(target);
+          });
+        });
+      }
 
       // Load saved favorites once
       // ⬆️ Cute Reddit-style upvote badge used by the vote button (kept as one
@@ -3345,97 +3531,7 @@
           // Open modal on image/card click (but not heart)
           wrapper.addEventListener("click", (e) => {
             if (e.target.closest(".heartFav") || e.target.closest(".voteStar")) return;
-            document.getElementById("modal-img").src = product.image;
-            document.getElementById("modal-img").alt = product.title;
-            document.getElementById("modal-title").textContent = product.title || "";
-            document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
-            document.getElementById("modal-link").href = product.link;
-
-            // 🔑 Push URL with product data so Throne can fetch it server-side
-            const priceClean = (product.price || "0").replace(",", ".");
-            const params = new URLSearchParams({
-              title: product.title || "",
-              price: priceClean,
-              image: product.image || "",
-              link:  product.link  || ""
-            });
-            history.pushState(null, product.title || "", "?" + params.toString());
-            document.title = product.title || "My Temu Basket";
-
-            // Update live meta tags too (for local bookmarklet fallback)
-            const setMeta = (id, val) => { const el = document.getElementById(id); if (el) el.setAttribute("content", val); };
-            setMeta("og-title",  product.title || "");
-            setMeta("og-image",  product.image || "");
-            setMeta("og-url",    product.link  || "");
-            setMeta("og-price",  priceClean);
-            const ld = document.getElementById("throne-ld");
-            if (ld) ld.textContent = JSON.stringify({
-              "@context": "https://schema.org/", "@type": "Product",
-              "name": product.title || "", "image": product.image || "", "url": product.link || "",
-              "offers": { "@type": "Offer", "price": priceClean, "priceCurrency": "EUR",
-                          "availability": "https://schema.org/InStock", "url": product.link || "" }
-            });
-
-            // 𝕏 Share this item — text + price, link to this page (its og: tags now show this product as the preview)
-            const shareText = `${product.title || "Check this out"} — 💰 ${priceClean} €`;
-            const shareUrl = location.origin + location.pathname + "?" + params.toString();
-            const xIntent = "https://twitter.com/intent/tweet?" + new URLSearchParams({
-              text: shareText,
-              url: shareUrl
-            }).toString();
-            document.getElementById("modal-share-x").href = xIntent;
-
-            document.getElementById("modal-throne").onclick = () => {
-              const status = document.getElementById("throne-status");
-              const INJECT_URL = "https://throne.com/bookmarklet/inject.js";
-
-              // Remove any previous Throne iframe
-              document.querySelectorAll('iframe[data-throne]').forEach(el => el.remove());
-
-              status.textContent = "⏳ Opening Throne...";
-
-              // Build the product URL — this page already handles ?title=...&price=... params
-              // and injects the right OG/schema meta tags on load, which is what Throne needs
-              const currentURL = window.location.href; // already has ?title=...&price=... pushed
-
-              // Create a hidden iframe pointing to the real GitHub Pages URL with product params
-              // Throne will run inside it and see the correct window.location + meta tags
-              const iframe = document.createElement("iframe");
-              iframe.setAttribute("data-throne", "1");
-              iframe.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;background:transparent;";
-              iframe.allow = "clipboard-write";
-
-              // Pass a flag so the iframe page auto-triggers Throne on load
-              const throneURL = currentURL + (currentURL.includes("?") ? "&" : "?") + "_throne=1";
-
-              // Save scroll position and current product link to sessionStorage
-              sessionStorage.setItem("throneScroll", String(window.scrollY));
-              sessionStorage.setItem("throneLastLink", product.link);
-
-              // Listen for Throne's close message from the iframe
-              const onMsg = (t) => {
-                const val = t.data || t.message;
-                if (val === "closeBookmarklet") {
-                  iframe.remove();
-                  window.removeEventListener("message", onMsg);
-                  // Mark as added to Throne using sessionStorage link (closure may be stale)
-                  const addedLink = sessionStorage.getItem("throneLastLink");
-                  if (addedLink) {
-                    throneAdded.add(addedLink);
-                    localStorage.setItem("temuThroneAdded", JSON.stringify([...throneAdded]));
-                    sessionStorage.removeItem("throneLastLink");
-                  }
-                  // Reload to restore layout cleanly, scroll will be restored on load
-                  window.location.replace(location.pathname);
-                }
-              };
-              window.addEventListener("message", onMsg);
-
-              iframe.src = throneURL;
-              document.body.appendChild(iframe);
-              status.textContent = "";
-            };
-            document.getElementById("product-modal").classList.add("open");
+            openProductModal(product);
           });
 
           const heart = wrapper.querySelector(".heartFav");
