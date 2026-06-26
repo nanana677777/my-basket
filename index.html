@@ -1189,6 +1189,28 @@
         display: inline-flex;
         align-items: center;
       }
+      #pick-budget {
+        display: block;
+        width: 100%;
+        margin: 10px 0 4px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(125, 249, 255, 0.35);
+        background: #14141c;
+        color: #fff;
+        outline: none;
+        font-size: 13px;
+        text-align: center;
+        font-family: inherit;
+        box-sizing: border-box;
+      }
+      #pick-budget-note {
+        font-size: 11px;
+        color: #b8b2c4;
+        text-align: center;
+        margin-bottom: 8px;
+        min-height: 14px;
+      }
       #pick-spin-btn {
         background: linear-gradient(135deg, #7df9ff, #c9a6ff);
         color: #1b1b26;
@@ -3794,6 +3816,8 @@
         </div>
         <div id="pick-result-title"></div>
         <div id="pick-result-price"></div>
+        <input id="pick-budget" type="number" min="0" step="0.5" placeholder="💸 Surprise me under... € (optional)" />
+        <div id="pick-budget-note"></div>
         <div class="pick-actions">
           <button id="pick-spin-btn">🎲 Spin</button>
           <a id="pick-view-btn" class="hidden" href="#" target="_blank">🛒 View item</a>
@@ -3977,11 +4001,14 @@
       const pickViewBtn = document.getElementById("pick-view-btn");
       const pickResultTitle = document.getElementById("pick-result-title");
       const pickResultPrice = document.getElementById("pick-result-price");
+      const pickBudget = document.getElementById("pick-budget");
+      const pickBudgetNote = document.getElementById("pick-budget-note");
 
       let spinTimer = null;
       let stageImg = null;
 
       function openPick() {
+        pickBudgetNote.textContent = "";
         pickOverlay.classList.add("open");
       }
       function closePick() {
@@ -4008,7 +4035,23 @@
       }
 
       function spin() {
-        const pool = (typeof rawProducts !== "undefined" ? rawProducts : []).filter(p => p && p.image);
+        pickBudgetNote.textContent = "";
+        let pool = (typeof rawProducts !== "undefined" ? rawProducts : []).filter(p => p && p.image);
+
+        const budget = parseFloat(pickBudget.value);
+        if (!isNaN(budget) && budget > 0) {
+          pool = pool.filter(p => {
+            const price = parseFloat((p.price || "0").toString().replace(",", "."));
+            return !isNaN(price) && price <= budget;
+          });
+          if (!pool.length) {
+            pickResultTitle.textContent = "";
+            pickResultPrice.textContent = "";
+            pickBudgetNote.textContent = `😢 Nothing under ${budget.toFixed(2)} € — try raising your budget!`;
+            return;
+          }
+        }
+
         if (!pool.length) {
           pickResultTitle.textContent = "No items available to pick from yet.";
           pickResultPrice.textContent = "";
