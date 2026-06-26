@@ -11,6 +11,7 @@
     --pink: #ff9ecb;
     --violet: #c9a6ff;
     --cyan: #7df9ff;
+    --gold: #ffd24c;
     --text: #f3f3f7;
     --muted: #b8b2c4;
     --border: rgba(255,158,203,0.15);
@@ -85,6 +86,18 @@
     border: 1px solid rgba(125,249,255,0.2);
     padding: 5px 14px;
     border-radius: 999px;
+  }
+  .outfit-proposed-by {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--gold);
+    background: rgba(255,210,76,0.08);
+    border: 1px solid rgba(255,210,76,0.25);
+    padding: 4px 12px;
+    border-radius: 999px;
+    width: 100%;
+    margin-top: -10px;
+    margin-bottom: 6px;
   }
 
   /* ─── Flat lay grid ─── */
@@ -235,6 +248,7 @@
           const header = document.createElement("div");
           header.className = "outfit-header";
           header.innerHTML = `
+            ${outfit.proposedBy ? `<div class="outfit-proposed-by">💡 Proposed by ${outfit.proposedBy.replace(/</g,"&lt;")}</div>` : ""}
             <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
             ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
           `;
