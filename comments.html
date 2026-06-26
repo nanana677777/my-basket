@@ -159,6 +159,40 @@
     word-break: break-word;
   }
 
+  .comment-reactions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .reaction-btn:hover {
+    border-color: rgba(255,158,203,0.5);
+    background: rgba(255,158,203,0.1);
+    transform: translateY(-1px);
+  }
+  .reaction-btn.reacted {
+    border-color: transparent;
+    background: linear-gradient(135deg, #ff9ecb, #c9a6ff);
+    color: #1b1b26;
+    cursor: default;
+    transform: none;
+  }
+  .reaction-btn .r-count { font-variant-numeric: tabular-nums; }
+
   .empty-state {
     text-align: center;
     color: var(--muted);
@@ -242,6 +276,34 @@
       thanksEl.style.display = "block";
     });
 
+    const GOATCOUNTER_BASE = "https://nana677.goatcounter.com";
+    const REACTIONS = [
+      { type: "heart", emoji: "🩷" },
+      { type: "love", emoji: "😍" },
+    ];
+
+    function getMyReactions() {
+      try { return JSON.parse(localStorage.getItem("myCommentReactions")) || []; } catch (e) { return []; }
+    }
+    function rememberReaction(key) {
+      const mine = getMyReactions();
+      if (!mine.includes(key)) {
+        mine.push(key);
+        localStorage.setItem("myCommentReactions", JSON.stringify(mine));
+      }
+    }
+
+    async function fetchReactionCount(path) {
+      try {
+        const res = await fetch(GOATCOUNTER_BASE + "/counter/" + encodeURIComponent(path) + ".json");
+        if (!res.ok) return 0;
+        const data = await res.json();
+        return data.count_unique || data.count || 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
     async function loadComments() {
       const container = document.getElementById("comments-container");
       try {
@@ -258,9 +320,15 @@
           return;
         }
 
+        const mine = getMyReactions();
         const sorted = [...comments].sort((a, b) => new Date(b.date) - new Date(a.date));
         container.innerHTML = sorted.map(c => {
           const date = c.date ? new Date(c.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+          const reactionsHtml = REACTIONS.map(r => {
+            const key = c.id + ":" + r.type;
+            const reacted = mine.includes(key);
+            return `<button class="reaction-btn${reacted ? " reacted" : ""}" data-comment-id="${c.id}" data-reaction="${r.type}" ${reacted ? "disabled" : ""}>${r.emoji} <span class="r-count">${reacted ? "" : ""}</span></button>`;
+          }).join("");
           return `
             <div class="comment-card">
               <div class="comment-head">
@@ -268,9 +336,37 @@
                 <span class="comment-date">${date}</span>
               </div>
               <div class="comment-text">${(c.text || "").replace(/</g, "&lt;")}</div>
+              <div class="comment-reactions">${reactionsHtml}</div>
             </div>
           `;
         }).join("");
+
+        // Fetch and fill in real counts (don't block the initial render)
+        container.querySelectorAll(".reaction-btn").forEach(async (btn) => {
+          const path = "/comment-reaction/" + btn.dataset.commentId + "/" + btn.dataset.reaction;
+          const count = await fetchReactionCount(path);
+          const countEl = btn.querySelector(".r-count");
+          if (countEl) countEl.textContent = count > 0 ? count : "";
+        });
+
+        container.querySelectorAll(".reaction-btn:not([disabled])").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const commentId = btn.dataset.commentId;
+            const type = btn.dataset.reaction;
+            const key = commentId + ":" + type;
+            const path = "/comment-reaction/" + commentId + "/" + type;
+
+            if (window.goatcounter && window.goatcounter.count) {
+              window.goatcounter.count({ path: path, title: "Comment reaction", event: true });
+            }
+
+            rememberReaction(key);
+            btn.disabled = true;
+            btn.classList.add("reacted");
+            const countEl = btn.querySelector(".r-count");
+            if (countEl) countEl.textContent = (parseInt(countEl.textContent) || 0) + 1;
+          });
+        });
       } catch (err) {
         console.error("Comments load error:", err);
         container.innerHTML = `
