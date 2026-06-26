@@ -860,6 +860,7 @@
     let commentsSha = null;
     let pendingComments = [];
     let currentOutfitSlots = {};
+    let currentProposedBy = null;
     let activePickerSlot = null;
 
     const $ = (id) => document.getElementById(id);
@@ -1912,6 +1913,7 @@
       editingOutfitId = id;
       document.getElementById("outfit-name").value = o.name || "";
       currentOutfitSlots = JSON.parse(JSON.stringify(o.slots || {}));
+      currentProposedBy = o.proposedBy || null;
       renderOutfitSlots();
       document.getElementById("outfit-save-btn").textContent = "Save changes";
       document.getElementById("outfit-cancel-btn").style.display = "inline-block";
@@ -1922,6 +1924,7 @@
       editingOutfitId = null;
       document.getElementById("outfit-name").value = "";
       currentOutfitSlots = {};
+      currentProposedBy = null;
       renderOutfitSlots();
       document.getElementById("outfit-save-btn").textContent = "Save outfit";
       document.getElementById("outfit-cancel-btn").style.display = "none";
@@ -1942,9 +1945,14 @@
 
       if (editingOutfitId) {
         const idx = outfits.findIndex(o => o.id === editingOutfitId);
-        if (idx !== -1) outfits[idx] = { ...outfits[idx], name, slots };
+        if (idx !== -1) {
+          outfits[idx] = { ...outfits[idx], name, slots };
+          if (currentProposedBy) outfits[idx].proposedBy = currentProposedBy;
+        }
       } else {
-        outfits.push({ id: "outfit_" + Date.now(), name, slots });
+        const entry = { id: "outfit_" + Date.now(), name, slots };
+        if (currentProposedBy) entry.proposedBy = currentProposedBy;
+        outfits.push(entry);
       }
 
       await pushOutfits(editingOutfitId ? "Update outfit via admin" : "Add outfit via admin");
@@ -2044,7 +2052,10 @@
 
       proposalsListEl.innerHTML = loadedProposals.map((p, i) => {
         const matches = matchProposalProducts(p.path);
-        const name = (p.title || "Untitled proposal").replace(/</g, "&lt;");
+        const rawTitle = (p.title || "Untitled proposal").replace(/^Outfit proposal:\s*/i, "");
+        const sep = rawTitle.indexOf(" ||| ");
+        const lookName = (sep === -1 ? rawTitle : rawTitle.slice(0, sep)).replace(/</g, "&lt;") || "Untitled proposal";
+        const proposerName = (sep === -1 ? "" : rawTitle.slice(sep + 5).trim()).replace(/</g, "&lt;");
         const thumbs = matches.length
           ? matches.slice(0, 5).map(m => `<img src="${m.product.image}" alt="">`).join("")
           : `<span style="font-size:11px;color:var(--muted);">No matching items found</span>`;
@@ -2052,8 +2063,8 @@
           <div class="product-row">
             <div class="proposal-thumbs">${thumbs}</div>
             <div class="info">
-              <div class="title">${name}</div>
-              <div class="price">${matches.length} item${matches.length === 1 ? "" : "s"} matched</div>
+              <div class="title">${lookName}</div>
+              <div class="price">${matches.length} item${matches.length === 1 ? "" : "s"} matched${proposerName ? " · by " + proposerName : ""}</div>
             </div>
             <div class="actions">
               <button class="btn-primary" data-build-proposal="${i}">✅ Build</button>
@@ -2097,11 +2108,18 @@
       });
 
       renderOutfitSlots();
-      document.getElementById("outfit-name").value = (p.title || "").replace(/^Outfit proposal:\s*/i, "");
+      const rawTitle = (p.title || "").replace(/^Outfit proposal:\s*/i, "");
+      const sep = rawTitle.indexOf(" ||| ");
+      const lookName = sep === -1 ? rawTitle : rawTitle.slice(0, sep);
+      const proposerName = sep === -1 ? "" : rawTitle.slice(sep + 5).trim();
+      document.getElementById("outfit-name").value = lookName.trim();
+      currentProposedBy = proposerName || null;
       document.getElementById("outfit-save-btn").textContent = "Save outfit";
       document.getElementById("outfit-cancel-btn").style.display = "none";
       document.getElementById("outfit-form").scrollIntoView({ behavior: "smooth", block: "center" });
-      showToast("💡 Proposal loaded into the outfit builder — adjust slots, then Save.");
+      showToast(proposerName
+        ? `💡 Proposal from ${proposerName} loaded — adjust slots, then Save.`
+        : "💡 Proposal loaded into the outfit builder — adjust slots, then Save.");
     }
 
     gcConnectBtn.addEventListener("click", () => {
