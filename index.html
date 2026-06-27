@@ -565,7 +565,7 @@
         align-items: center;
         justify-content: center;
         z-index: 10;
-        pointer-events: none;
+        cursor: default;
         box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,255,255,0.12);
       }
       .source-pin.source-temu { background: linear-gradient(135deg, #ff6b35, #ff9ecb); }
@@ -2842,6 +2842,7 @@
       </button>
     </div>
     <div id="category-filters"></div>
+    <div id="source-filters"></div>
     <div id="filters-divider"></div>
     <div id="bought-filters"></div>
     <div id="price-filter-divider"></div>
@@ -3067,6 +3068,7 @@
               localStorage.setItem("temuBasketData", e.target.result);
 
               renderCategoryFilters();
+                            renderSourceFilters();
               renderBoughtFilters();
               renderPriceFilter();
               displayProducts(rawProducts);
@@ -3271,6 +3273,48 @@
         });
       }
 
+      let activeSource = sessionStorage.getItem("activeSource") || null; // null, "source-temu", "source-amazon", "source-other"
+      const SOURCE_LABELS = { "source-temu": "🛍️ Temu", "source-amazon": "📦 Amazon", "source-other": "🔗 Other" };
+
+      function renderSourceFilters() {
+        const container = document.getElementById("source-filters");
+        const counts = {};
+        rawProducts.forEach(p => {
+          const key = getProductSource(p.link).cls;
+          counts[key] = (counts[key] || 0) + 1;
+        });
+        const keys = Object.keys(counts).sort();
+
+        // Only worth showing once there's more than one store in the list
+        if (keys.length < 2) {
+          container.innerHTML = "";
+          return;
+        }
+
+        if (activeSource && !keys.includes(activeSource)) {
+          activeSource = null;
+          sessionStorage.removeItem("activeSource");
+        }
+
+        let html = `<div class="category-chip${activeSource === null ? " active" : ""}" data-src="">All <span class="chip-count">${rawProducts.length}</span></div>`;
+        html += keys.map(key => `<div class="category-chip${activeSource === key ? " active" : ""}" data-src="${key}">${SOURCE_LABELS[key] || key} <span class="chip-count">${counts[key]}</span></div>`).join("");
+        container.innerHTML = html;
+
+        container.querySelectorAll(".category-chip").forEach(chip => {
+          chip.addEventListener("click", () => {
+            const src = chip.getAttribute("data-src");
+            activeSource = src === "" ? null : src;
+            if (activeSource) {
+              sessionStorage.setItem("activeSource", activeSource);
+            } else {
+              sessionStorage.removeItem("activeSource");
+            }
+            renderSourceFilters();
+            applyAllFilters();
+          });
+        });
+      }
+
       // ✅ Build the "Already bought" filter bar
       function renderBoughtFilters() {
         const container = document.getElementById("bought-filters");
@@ -3441,6 +3485,10 @@
           base = activeCategory === "__none__"
             ? base.filter(p => !(p.category || "").trim())
             : base.filter(p => (p.category || "").trim() === activeCategory);
+        }
+
+        if (activeSource) {
+          base = base.filter(p => getProductSource(p.link).cls === activeSource);
         }
 
         if (activeBoughtFilter === "bought") {
@@ -3725,6 +3773,7 @@
         .then(function (data) {
           rawProducts = data;
           renderCategoryFilters();
+                    renderSourceFilters();
           renderBoughtFilters();
           renderPriceFilter();
           applyAllFilters();
@@ -3736,6 +3785,7 @@
             try {
               rawProducts = JSON.parse(savedBasket);
               renderCategoryFilters();
+                            renderSourceFilters();
               renderBoughtFilters();
               renderPriceFilter();
               applyAllFilters();
