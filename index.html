@@ -552,6 +552,26 @@
       }
       .card.is-bought img { opacity: 0.55; }
 
+      /* 📍 Store source badge (Temu / Amazon / other) */
+      .source-pin {
+        position: absolute;
+        bottom: 10px;
+        left: 8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        pointer-events: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,255,255,0.12);
+      }
+      .source-pin.source-temu { background: linear-gradient(135deg, #ff6b35, #ff9ecb); }
+      .source-pin.source-amazon { background: linear-gradient(135deg, #232f3e, #ff9900); }
+      .source-pin.source-other { background: rgba(255,255,255,0.14); }
+
       /* ➖ Divider between category filters and bought-status filters */
       #filters-divider {
         width: 92%;
@@ -1072,6 +1092,15 @@
         top: auto !important;
         right: auto !important;
         align-self: flex-start;
+      }
+      .gallery.list-view .card .source-pin {
+        position: static !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        align-self: center;
       }
 
       /* 🎀 Linktree launcher tab */
@@ -3126,6 +3155,19 @@
         return m ? m[1] : null;
       }
 
+      // 📍 Which store a product link points to, for the small source badge
+      function getProductSource(link) {
+        if (!link) return { label: "Unknown", emoji: "🔗", cls: "source-other" };
+        if (link.includes("temu.com")) return { label: "Temu", emoji: "🛍️", cls: "source-temu" };
+        if (link.includes("amazon.")) return { label: "Amazon", emoji: "📦", cls: "source-amazon" };
+        try {
+          const host = new URL(link).hostname.replace(/^www\./, "");
+          return { label: host, emoji: "🔗", cls: "source-other" };
+        } catch (e) {
+          return { label: "Other", emoji: "🔗", cls: "source-other" };
+        }
+      }
+
       function castVote(pid, starEl) {
         if (!pid || votedProducts.includes(pid)) return;
 
@@ -3588,12 +3630,14 @@
           wrapper.className = "card card-wrapper" + (product.bought ? " is-bought" : "");
           const votePid = getVoteId(product.link);
           const alreadyVoted = votePid && votedProducts.includes(votePid);
+          const source = getProductSource(product.link);
           wrapper.innerHTML = `
             <img src="${product.image}" alt="${product.title}" style="width:100%;border-radius:14px;margin-bottom:8px;cursor:pointer;">
             <div class="card-info">
               <a href="${product.link}" target="_blank" onclick="event.stopPropagation()">${product.title || ""}</a>
               <div class="price-badge">💰 ${product.price || "?"} €</div>
             </div>
+            <div class="source-pin ${source.cls}" title="From ${source.label}">${source.emoji}</div>
             <div class="heartFav ${favorites.includes(product.link) ? "favorited" : ""}">♥</div>
             ${votePid ? `<div class="voteStar ${alreadyVoted ? "voted disabled" : ""}" data-pid="${votePid}" title="${alreadyVoted ? "You already voted for this item" : "Vote for this item"}">${VOTE_THUMB_SVG}</div>` : ''}
             ${throneAdded.has(product.link) ? '<div class="throne-pin">👑 <span>Wishlisted</span></div>' : ''}
