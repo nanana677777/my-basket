@@ -597,7 +597,8 @@
 
       /* ➖ Divider between category filters and bought-status filters */
       #filters-divider,
-      #source-filters-divider {
+      #source-filters-divider,
+      #color-filters-divider {
         width: 92%;
         max-width: 480px;
         height: 1px;
@@ -984,12 +985,22 @@
 
       /* 🏷️ Category filter chips */
       #category-filters,
-      #source-filters {
+      #source-filters,
+      #color-filters {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
         margin: 10px 0 4px;
+      }
+      .color-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+        vertical-align: middle;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.25) inset;
       }
       .category-chip {
         padding: 6px 16px;
@@ -2869,6 +2880,8 @@
     <div id="category-filters"></div>
     <div id="source-filters-divider"></div>
     <div id="source-filters"></div>
+    <div id="color-filters-divider"></div>
+    <div id="color-filters"></div>
     <div id="filters-divider"></div>
     <div id="bought-filters"></div>
     <div id="price-filter-divider"></div>
@@ -3098,6 +3111,7 @@
 
               renderCategoryFilters();
                             renderSourceFilters();
+                            renderColorFilters();
               renderBoughtFilters();
               renderPriceFilter();
               displayProducts(rawProducts);
@@ -3381,6 +3395,60 @@
         });
       }
 
+      let activeColor = sessionStorage.getItem("activeColor") || null;
+      const COLOR_LABELS = {
+        pink: "Pink", red: "Red", orange: "Orange", yellow: "Yellow", beige: "Beige",
+        brown: "Brown", green: "Green", teal: "Teal", blue: "Blue", purple: "Purple",
+        black: "Black", white: "White", gray: "Gray"
+      };
+      const COLOR_SWATCH = {
+        pink: "#ff8fc4", red: "#e04848", orange: "#ff9c3f", yellow: "#f0d83a", beige: "#d8c2a0",
+        brown: "#7a5230", green: "#4caf6e", teal: "#3fb6ad", blue: "#4a7fe0", purple: "#9d5fd6",
+        black: "#1a1a1a", white: "#f4f4f4", gray: "#9a9a9a"
+      };
+      const COLOR_ORDER = ["pink", "red", "orange", "yellow", "beige", "brown", "green", "teal", "blue", "purple", "black", "white", "gray"];
+
+      function renderColorFilters() {
+        const container = document.getElementById("color-filters");
+        const divider = document.getElementById("color-filters-divider");
+        const counts = {};
+        rawProducts.forEach(p => {
+          if (p.color) counts[p.color] = (counts[p.color] || 0) + 1;
+        });
+        const keys = COLOR_ORDER.filter(c => counts[c]);
+
+        if (!keys.length) {
+          container.innerHTML = "";
+          if (divider) divider.style.display = "none";
+          return;
+        }
+        if (divider) divider.style.display = "block";
+
+        if (activeColor && !keys.includes(activeColor)) {
+          activeColor = null;
+          sessionStorage.removeItem("activeColor");
+        }
+
+        const taggedTotal = rawProducts.filter(p => p.color).length;
+        let html = `<div class="category-chip${activeColor === null ? " active" : ""}" data-color="">All <span class="chip-count">${taggedTotal}</span></div>`;
+        html += keys.map(key => `<div class="category-chip${activeColor === key ? " active" : ""}" data-color="${key}"><span class="color-dot" style="background:${COLOR_SWATCH[key]}"></span>${COLOR_LABELS[key]} <span class="chip-count">${counts[key]}</span></div>`).join("");
+        container.innerHTML = html;
+
+        container.querySelectorAll(".category-chip").forEach(chip => {
+          chip.addEventListener("click", () => {
+            const c = chip.getAttribute("data-color");
+            activeColor = c === "" ? null : c;
+            if (activeColor) {
+              sessionStorage.setItem("activeColor", activeColor);
+            } else {
+              sessionStorage.removeItem("activeColor");
+            }
+            renderColorFilters();
+            applyAllFilters();
+          });
+        });
+      }
+
       // ✅ Build the "Already bought" filter bar
       function renderBoughtFilters() {
         const container = document.getElementById("bought-filters");
@@ -3555,6 +3623,10 @@
 
         if (activeSource) {
           base = base.filter(p => getProductSource(p.link).cls === activeSource);
+        }
+
+        if (activeColor) {
+          base = base.filter(p => p.color === activeColor);
         }
 
         if (activeBoughtFilter === "bought") {
@@ -3840,6 +3912,7 @@
           rawProducts = data;
           renderCategoryFilters();
                     renderSourceFilters();
+                    renderColorFilters();
           renderBoughtFilters();
           renderPriceFilter();
           applyAllFilters();
@@ -3852,6 +3925,7 @@
               rawProducts = JSON.parse(savedBasket);
               renderCategoryFilters();
                             renderSourceFilters();
+                            renderColorFilters();
               renderBoughtFilters();
               renderPriceFilter();
               applyAllFilters();
