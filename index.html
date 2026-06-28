@@ -573,7 +573,8 @@
       .source-pin.source-other { background: rgba(255,255,255,0.14); }
 
       /* ➖ Divider between category filters and bought-status filters */
-      #filters-divider {
+      #filters-divider,
+      #source-filters-divider {
         width: 92%;
         max-width: 480px;
         height: 1px;
@@ -2843,6 +2844,7 @@
       </button>
     </div>
     <div id="category-filters"></div>
+    <div id="source-filters-divider"></div>
     <div id="source-filters"></div>
     <div id="filters-divider"></div>
     <div id="bought-filters"></div>
@@ -3279,6 +3281,7 @@
 
       function renderSourceFilters() {
         const container = document.getElementById("source-filters");
+        const divider = document.getElementById("source-filters-divider");
         const counts = {};
         rawProducts.forEach(p => {
           const key = getProductSource(p.link).cls;
@@ -3289,8 +3292,10 @@
         // Only worth showing once there's more than one store in the list
         if (keys.length < 2) {
           container.innerHTML = "";
+          if (divider) divider.style.display = "none";
           return;
         }
+        if (divider) divider.style.display = "block";
 
         if (activeSource && !keys.includes(activeSource)) {
           activeSource = null;
