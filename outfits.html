@@ -261,6 +261,18 @@
     const SLOT_ORDER = ["top", "bottom", "shoes", "accessory", "misc"];
     const GOATCOUNTER_BASE = "https://nana677.goatcounter.com";
 
+    // 🔔 Fire-and-forget Discord notification via the Cloudflare Worker relay
+    const DISCORD_RELAY_URL = "https://my-basket-notify.nanana677777.workers.dev/";
+    function notifyDiscord(type, detail) {
+      try {
+        fetch(DISCORD_RELAY_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150) }),
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
     function getVotedOutfits() {
       try { return JSON.parse(localStorage.getItem("votedOutfits")) || []; } catch (e) { return []; }
     }
@@ -332,7 +344,7 @@
             ${isTop ? `<div class="outfit-top-badge">🏆 Most loved look</div>` : ""}
             <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
             <div class="outfit-header-right">
-              <button class="outfit-vote-btn${alreadyVoted ? " voted" : ""}" data-outfit-id="${outfit.id}" ${alreadyVoted ? "disabled" : ""}>🩷 <span class="ov-count">${outfit._votes > 0 ? outfit._votes : ""}</span></button>
+              <button class="outfit-vote-btn${alreadyVoted ? " voted" : ""}" data-outfit-id="${outfit.id}" data-outfit-name="${(outfit.name || "Untitled Look").replace(/"/g, "&quot;")}" ${alreadyVoted ? "disabled" : ""}>🩷 <span class="ov-count">${outfit._votes > 0 ? outfit._votes : ""}</span></button>
               ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
             </div>
           `;
@@ -367,6 +379,7 @@
             if (window.goatcounter && window.goatcounter.count) {
               window.goatcounter.count({ path: "/outfit-vote/" + id, title: "Outfit vote", event: true });
             }
+            notifyDiscord("outfit_vote", btn.dataset.outfitName || id);
             rememberVotedOutfit(id);
             btn.disabled = true;
             btn.classList.add("voted");
