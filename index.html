@@ -3198,6 +3198,20 @@
         pin._tipTimer = setTimeout(() => tip.classList.remove("show"), 1800);
       });
 
+      // 🔔 Fire-and-forget Discord notification via the Cloudflare Worker relay
+      // (never blocks the UI, never throws — a failed notification should
+      // never break the actual feature it's attached to)
+      const DISCORD_RELAY_URL = "https://my-basket-notify.nanana677777.workers.dev/";
+      function notifyDiscord(type, detail) {
+        try {
+          fetch(DISCORD_RELAY_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150) }),
+          }).catch(() => {});
+        } catch (e) {}
+      }
+
       function getVoteId(link) {
         const m = (link || "").match(/goods_id=(\d+)/);
         return m ? m[1] : null;
@@ -3224,6 +3238,9 @@
 
         starEl.classList.add("voted", "disabled");
         mascotSay("vote");
+
+        const votedProduct = (typeof rawProducts !== "undefined" ? rawProducts : []).find((p) => getVoteId(p.link) === pid);
+        notifyDiscord("vote", votedProduct ? votedProduct.title : pid);
 
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({
@@ -4590,6 +4607,8 @@
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({ path: path, title: title, event: true });
         }
+
+        notifyDiscord("proposal", (name || "Untitled") + (by ? " (by " + by + ")" : ""));
 
         showThanks();
       }
