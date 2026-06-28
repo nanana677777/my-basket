@@ -675,6 +675,17 @@
     </div>
 
     <div class="card">
+      <h2>🎨 Color Analysis</h2>
+      <p class="sub" style="margin:0 0 14px;">Detects the dominant color of each product photo (analyzed in your browser, nothing uploaded anywhere) and saves it to <code>products.json</code> — powers the color filter on the public site. Some photos with white/busy backgrounds may get misclassified; it's a fun approximation, not pixel-perfect.</p>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;margin-bottom:12px;">
+        <input type="checkbox" id="color-reanalyze-all" style="width:auto;margin:0;" />
+        Re-analyze items that already have a color
+      </label>
+      <button class="btn-primary" id="color-analyze-btn">🎨 Analyze colors</button>
+      <div id="color-analysis-status" style="margin-top:10px;font-size:12.5px;color:var(--muted);"></div>
+    </div>
+
+    <div class="card">
       <h2 id="form-title">➕ Add an item manually</h2>
       <label for="f-title">Title</label>
       <input id="f-title" type="text" placeholder="Waisted A-Line Mini Skirt..." />
@@ -1171,6 +1182,113 @@
         saveBtn.disabled = false;
       }
     }
+
+    // ─── 🎨 Color Analysis ───
+    // Classifies a pixel's RGB into a small named-color palette using HSL.
+    function rgbToColorBucket(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const l = (max + min) / 2;
+      const d = max - min;
+      let h = 0, s = 0;
+      if (d !== 0) {
+        s = d / (1 - Math.abs(2 * l - 1));
+        switch (max) {
+          case r: h = ((g - b) / d) % 6; break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h *= 60;
+        if (h < 0) h += 360;
+      }
+
+      if (l > 0.92 && s < 0.25) return "white";
+      if (l < 0.12) return "black";
+      if (s < 0.15) return "gray";
+      if (h >= 15 && h < 50 && l < 0.55 && s < 0.65) return "brown";
+      if (h >= 15 && h < 50 && l >= 0.55 && s < 0.6) return "beige";
+      if (h < 15 || h >= 345) return "red";
+      if (h < 45) return "orange";
+      if (h < 70) return "yellow";
+      if (h < 170) return "green";
+      if (h < 200) return "teal";
+      if (h < 255) return "blue";
+      if (h < 300) return "purple";
+      return "pink";
+    }
+
+    // Loads an image, samples a cropped center region (to reduce bias from
+    // plain white/light backgrounds, which dominate a lot of product photos),
+    // and returns the most frequent color bucket. Resolves null on any
+    // failure (broken image, or CORS-tainted canvas — some CDNs don't allow
+    // cross-origin pixel reads, in which case that item is just skipped).
+    function detectDominantColor(imageUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        const timeout = setTimeout(() => resolve(null), 8000);
+        img.onload = () => {
+          clearTimeout(timeout);
+          try {
+            const size = 40;
+            const canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext("2d");
+            const cropX = img.naturalWidth * 0.2;
+            const cropY = img.naturalHeight * 0.2;
+            const cropW = img.naturalWidth * 0.6;
+            const cropH = img.naturalHeight * 0.6;
+            ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, size, size);
+            const data = ctx.getImageData(0, 0, size, size).data;
+            const counts = {};
+            for (let i = 0; i < data.length; i += 4) {
+              if (data[i + 3] < 100) continue; // skip transparent pixels
+              const bucket = rgbToColorBucket(data[i], data[i + 1], data[i + 2]);
+              counts[bucket] = (counts[bucket] || 0) + 1;
+            }
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            resolve(sorted.length ? sorted[0][0] : null);
+          } catch (e) {
+            resolve(null); // tainted canvas (no CORS) or other failure
+          }
+        };
+        img.onerror = () => { clearTimeout(timeout); resolve(null); };
+        img.src = imageUrl;
+      });
+    }
+
+    document.getElementById("color-analyze-btn").addEventListener("click", async () => {
+      if (!token) { showToast("Connect your token first.", true); return; }
+      const btn = document.getElementById("color-analyze-btn");
+      const status = document.getElementById("color-analysis-status");
+      const reanalyzeAll = document.getElementById("color-reanalyze-all").checked;
+
+      const targets = products.filter(p => p.image && (reanalyzeAll || !p.color));
+      if (!targets.length) {
+        status.textContent = "Nothing to analyze — every item already has a color.";
+        return;
+      }
+
+      btn.disabled = true;
+      let done = 0, skipped = 0;
+
+      for (const p of targets) {
+        status.textContent = `Analyzing ${done + 1}/${targets.length}...`;
+        const color = await detectDominantColor(p.image);
+        if (color) {
+          p.color = color;
+        } else {
+          skipped++;
+        }
+        done++;
+      }
+
+      status.textContent = `Done — ${done - skipped} analyzed, ${skipped} skipped (image couldn't be read). Saving...`;
+      await pushProducts("Run color analysis on product photos");
+      status.textContent = `✅ ${done - skipped} item(s) color-tagged, ${skipped} skipped. Saved to GitHub.`;
+      btn.disabled = false;
+    });
 
     let tokenDebounce;
     tokenInput.addEventListener("input", () => {
