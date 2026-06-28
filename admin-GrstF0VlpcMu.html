@@ -691,6 +691,7 @@
         <div id="bulk-color-bar" style="display:none;margin-top:12px;align-items:center;gap:10px;flex-wrap:wrap;">
           <span id="bulk-color-count" style="font-size:12.5px;color:var(--muted);">0 selected</span>
           <button class="btn-ghost" id="bulk-color-select-all" style="padding:5px 12px;font-size:12px;">Select all visible</button>
+          <button class="btn-ghost" id="bulk-color-select-matching" style="padding:5px 12px;font-size:12px;">Select all already this color</button>
           <button class="btn-ghost" id="bulk-color-clear" style="padding:5px 12px;font-size:12px;">Clear</button>
           <select id="bulk-color-value" style="width:auto;margin:0;">
             <option value="">— No color —</option>
@@ -771,6 +772,28 @@
 
     <div class="card">
       <h2>🧺 Current items (<span id="count">0</span>)</h2>
+      <div id="bulk-color-bar-2" style="display:none;margin-bottom:12px;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span id="bulk-color-count-2" style="font-size:12.5px;color:var(--muted);">0 selected</span>
+        <button class="btn-ghost" id="bulk-color-select-all-2" style="padding:5px 12px;font-size:12px;">Select all visible</button>
+        <button class="btn-ghost" id="bulk-color-clear-2" style="padding:5px 12px;font-size:12px;">Clear</button>
+        <select id="bulk-color-value-2" style="width:auto;margin:0;">
+          <option value="">— No color —</option>
+          <option value="pink">🩷 Pink</option>
+          <option value="red">❤️ Red</option>
+          <option value="orange">🧡 Orange</option>
+          <option value="yellow">💛 Yellow</option>
+          <option value="beige">🟤 Beige</option>
+          <option value="brown">🟫 Brown</option>
+          <option value="green">💚 Green</option>
+          <option value="teal">🩵 Teal</option>
+          <option value="blue">💙 Blue</option>
+          <option value="purple">💜 Purple</option>
+          <option value="black">🖤 Black</option>
+          <option value="white">🤍 White</option>
+          <option value="gray">⬜ Gray</option>
+        </select>
+        <button class="btn-primary" id="bulk-color-apply-btn-2" style="padding:8px 16px;font-size:13px;">Apply to selected</button>
+      </div>
       <div id="admin-category-filters" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;"></div>
       <div id="product-list"><div class="empty-state">Connect your token to load the list.</div></div>
     </div>
@@ -1361,13 +1384,16 @@
 
     // ─── ☑️ Bulk-edit colors ───
     function updateBulkColorBar() {
-      document.getElementById("bulk-color-count").textContent = bulkColorSelected.size + " selected";
+      const txt = bulkColorSelected.size + " selected";
+      document.getElementById("bulk-color-count").textContent = txt;
+      document.getElementById("bulk-color-count-2").textContent = txt;
     }
 
     document.getElementById("bulk-color-toggle-btn").addEventListener("click", () => {
       bulkColorMode = !bulkColorMode;
       bulkColorSelected.clear();
       document.getElementById("bulk-color-bar").style.display = bulkColorMode ? "flex" : "none";
+      document.getElementById("bulk-color-bar-2").style.display = bulkColorMode ? "flex" : "none";
       document.getElementById("bulk-color-toggle-btn").textContent = bulkColorMode
         ? "✕ Exit bulk-edit mode"
         : "☑️ Bulk-edit colors in the list below";
@@ -1375,35 +1401,58 @@
       renderProducts();
     });
 
-    document.getElementById("bulk-color-select-all").addEventListener("click", () => {
+    function selectAllVisibleBulk() {
       productList.querySelectorAll(".bulk-color-checkbox").forEach(cb => {
         cb.checked = true;
         bulkColorSelected.add(cb.dataset.link);
       });
       updateBulkColorBar();
-    });
+    }
+    document.getElementById("bulk-color-select-all").addEventListener("click", selectAllVisibleBulk);
+    document.getElementById("bulk-color-select-all-2").addEventListener("click", selectAllVisibleBulk);
 
-    document.getElementById("bulk-color-clear").addEventListener("click", () => {
+    function clearBulkSelection() {
       bulkColorSelected.clear();
       productList.querySelectorAll(".bulk-color-checkbox").forEach(cb => { cb.checked = false; });
       updateBulkColorBar();
+    }
+    document.getElementById("bulk-color-clear").addEventListener("click", clearBulkSelection);
+    document.getElementById("bulk-color-clear-2").addEventListener("click", clearBulkSelection);
+
+    // Pulls in every product already tagged with the color currently chosen
+    // in the Color Analysis dropdown — handy to review/fix a whole color group.
+    document.getElementById("bulk-color-select-matching").addEventListener("click", () => {
+      const color = document.getElementById("bulk-color-value").value;
+      products.forEach(p => {
+        if ((p.color || "") === color) bulkColorSelected.add(p.link);
+      });
+      productList.querySelectorAll(".bulk-color-checkbox").forEach(cb => {
+        if (bulkColorSelected.has(cb.dataset.link)) cb.checked = true;
+      });
+      updateBulkColorBar();
+      showToast(`Selected every item already tagged "${color || "no color"}" (including ones not shown below).`);
     });
 
-    document.getElementById("bulk-color-apply-btn").addEventListener("click", async () => {
+    async function applyBulkColor(colorValue) {
       if (!token) { showToast("Connect your token first.", true); return; }
       if (!bulkColorSelected.size) { showToast("Select at least one item first.", true); return; }
-      const color = document.getElementById("bulk-color-value").value;
       let count = 0;
       products.forEach(p => {
         if (bulkColorSelected.has(p.link)) {
-          p.color = color;
+          p.color = colorValue;
           count++;
         }
       });
       bulkColorSelected.clear();
       updateBulkColorBar();
-      await pushProducts(`Bulk-set color to "${color || "none"}" for ${count} item(s) via admin`);
+      await pushProducts(`Bulk-set color to "${colorValue || "none"}" for ${count} item(s) via admin`);
       showToast(`✅ Updated color for ${count} item(s)`);
+    }
+    document.getElementById("bulk-color-apply-btn").addEventListener("click", () => {
+      applyBulkColor(document.getElementById("bulk-color-value").value);
+    });
+    document.getElementById("bulk-color-apply-btn-2").addEventListener("click", () => {
+      applyBulkColor(document.getElementById("bulk-color-value-2").value);
     });
 
     let tokenDebounce;
