@@ -601,7 +601,7 @@
       <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off" />
       <label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;margin-top:-6px;margin-bottom:14px;">
         <input type="checkbox" id="remember-token" style="width:auto;margin:0;" />
-        Remember for this browser session (cleared when you close the browser — anyone with access to this device while the tab stays open could use it)
+        Remember this token on this device (stays saved even after closing the browser — anyone with access to this device could use it)
       </label>
       <div id="token-status">
         <span class="dot" id="token-dot"></span><span id="token-text">Not connected</span>
@@ -892,7 +892,7 @@
     function disconnect() {
       token = "";
       tokenInput.value = "";
-      sessionStorage.removeItem("ghToken");
+      localStorage.removeItem("ghToken");
       rememberCheckbox.checked = false;
       products = [];
       currentSha = null;
@@ -917,7 +917,7 @@
         const res = await ghFetch();
         if (res.status === 401) {
           setConnected(false);
-          sessionStorage.removeItem("ghToken");
+          localStorage.removeItem("ghToken");
           showToast("Invalid or expired token.", true);
           return;
         }
@@ -1178,22 +1178,22 @@
       token = tokenInput.value.trim();
       if (!token) { setConnected(false); return; }
       if (rememberCheckbox.checked) {
-        sessionStorage.setItem("ghToken", token);
+        localStorage.setItem("ghToken", token);
       }
       tokenDebounce = setTimeout(loadProducts, 500);
     });
 
     rememberCheckbox.addEventListener("change", () => {
       if (rememberCheckbox.checked && token) {
-        sessionStorage.setItem("ghToken", token);
+        localStorage.setItem("ghToken", token);
       } else {
-        sessionStorage.removeItem("ghToken");
+        localStorage.removeItem("ghToken");
       }
     });
 
-    // 🔁 Restore token from sessionStorage if a previous tab in this session remembered it
+    // 🔁 Restore token from localStorage if it was remembered on this device
     (function restoreToken() {
-      const saved = sessionStorage.getItem("ghToken");
+      const saved = localStorage.getItem("ghToken");
       if (saved) {
         token = saved;
         tokenInput.value = saved;
@@ -1973,7 +1973,7 @@
     // paths requires authentication.
     const GC_BASE = "https://nana677.goatcounter.com";
     const DISMISSED_KEY = "dismissedOutfitProposals";
-    let gcToken = sessionStorage.getItem("gcApiToken") || "";
+    let gcToken = localStorage.getItem("gcApiToken") || "";
 
     const gcTokenInput = document.getElementById("gc-api-token");
     const gcConnectBtn = document.getElementById("gc-token-connect-btn");
@@ -2132,14 +2132,14 @@
       const val = gcTokenInput.value.trim();
       if (!val) { showToast("Paste your GoatCounter API token first.", true); return; }
       gcToken = val;
-      sessionStorage.setItem("gcApiToken", gcToken);
+      localStorage.setItem("gcApiToken", gcToken);
       setGcConnectedUI(true);
       loadProposals();
     });
 
     gcDisconnectBtn.addEventListener("click", () => {
       gcToken = "";
-      sessionStorage.removeItem("gcApiToken");
+      localStorage.removeItem("gcApiToken");
       gcTokenInput.value = "";
       setGcConnectedUI(false);
       proposalsListEl.innerHTML = `<div class="empty-state">Connect your GoatCounter API token to load proposals.</div>`;
