@@ -772,6 +772,7 @@
 
     <div class="card">
       <h2>🧺 Current items (<span id="count">0</span>)</h2>
+      <input id="admin-search" type="text" placeholder="🔎 Search by title..." style="margin-bottom:12px;" />
       <div id="bulk-color-bar-2" style="display:none;margin-bottom:12px;align-items:center;gap:10px;flex-wrap:wrap;">
         <span id="bulk-color-count-2" style="font-size:12.5px;color:var(--muted);">0 selected</span>
         <button class="btn-ghost" id="bulk-color-select-all-2" style="padding:5px 12px;font-size:12px;">Select all visible</button>
@@ -930,6 +931,7 @@
     const PRODUCTS_PAGE_SIZE = 12;
     let productsShown = PRODUCTS_PAGE_SIZE;
     let adminCategoryFilter = null; // null = all categories
+    let adminSearchTerm = "";
     let outfits = [];
     let outfitsSha = null;
     let editingOutfitId = null;
@@ -1067,19 +1069,27 @@
       const filtered = products
         .map((p, idx) => ({ p, idx }))
         .filter(({ p }) => {
-          if (!adminCategoryFilter) return true;
-          if (adminCategoryFilter === "__none__") return !(p.category || "").trim();
-          return (p.category || "").trim() === adminCategoryFilter;
+          if (adminCategoryFilter) {
+            if (adminCategoryFilter === "__none__") {
+              if ((p.category || "").trim()) return false;
+            } else if ((p.category || "").trim() !== adminCategoryFilter) {
+              return false;
+            }
+          }
+          if (adminSearchTerm && !(p.title || "").toLowerCase().includes(adminSearchTerm)) {
+            return false;
+          }
+          return true;
         });
 
-      countEl.textContent = adminCategoryFilter ? `${filtered.length} / ${products.length}` : products.length;
+      countEl.textContent = (adminCategoryFilter || adminSearchTerm) ? `${filtered.length} / ${products.length}` : products.length;
 
       if (!products.length) {
         productList.innerHTML = '<div class="empty-state">No items yet. Add the first one above.</div>';
         return;
       }
       if (!filtered.length) {
-        productList.innerHTML = '<div class="empty-state">No items in this category.</div>';
+        productList.innerHTML = '<div class="empty-state">No items match your filters.</div>';
         return;
       }
       const COLOR_SWATCH_ADMIN = {
@@ -1159,6 +1169,12 @@
       const cats = Array.from(new Set(products.map(p => (p.category || "").trim()).filter(Boolean))).sort();
       $("category-suggestions").innerHTML = cats.map(c => `<option value="${c.replace(/"/g, "&quot;")}"></option>`).join("");
     }
+
+    document.getElementById("admin-search").addEventListener("input", (e) => {
+      adminSearchTerm = e.target.value.trim().toLowerCase();
+      productsShown = PRODUCTS_PAGE_SIZE;
+      renderProducts();
+    });
 
     productList.addEventListener("click", (e) => {
       const editIdx = e.target.getAttribute("data-edit");
