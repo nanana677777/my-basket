@@ -259,6 +259,18 @@
       submitBtn.disabled = textInput.value.trim().length === 0;
     });
 
+    // 🔔 Fire-and-forget Discord notification via the Cloudflare Worker relay
+    const DISCORD_RELAY_URL = "https://my-basket-notify.nanana677777.workers.dev/";
+    function notifyDiscord(type, detail) {
+      try {
+        fetch(DISCORD_RELAY_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150) }),
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
     submitBtn.addEventListener("click", () => {
       const text = textInput.value.trim();
       if (!text) return;
@@ -270,6 +282,8 @@
       if (window.goatcounter && window.goatcounter.count) {
         window.goatcounter.count({ path: path, title: title, event: true });
       }
+
+      notifyDiscord("comment", name + ": " + text);
 
       [nameInput, textInput, submitBtn, document.querySelector(".char-count")].forEach(el => el.style.display = "none");
       document.querySelectorAll(".comment-form label").forEach(el => el.style.display = "none");
