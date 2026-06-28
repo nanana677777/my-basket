@@ -202,5 +202,36 @@
         "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601103651707945&sku_id=17620434765955&_oak_page_source=501"
       }
     }
+  },
+  {
+    "id": "outfit_1782655120391",
+    "name": "Chillin outfit",
+    "slots": {
+      "top": {
+        "title": "European And American Casual Home Halter Neck Slim Two-Piece Backless Sexy Pajamas Set Women",
+        "image": "https://img.kwcdn.com/product/fancy/1946a5bb-d54f-47c2-b805-cb9f5e7f6470.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "6,02",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100090957125&sku_id=17594678067866&_oak_page_source=501"
+      },
+      "bottom": {
+        "title": "1/2-Pair Sexy -Style Women's Over-the-Knee Socks - Sexy and Fashionable - Comfortable and Stretchy - Anti-Slip Design - Wear-Resistant and Pilling-Resistant - Leg-Shaping - Black and White Striped Knee-High Socks - Socks",
+        "image": "https://img.kwcdn.com/product/fancy/9bfd60ab-1202-4ad5-bbec-fce91645c5dc.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "1,98",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601101479875809&sku_id=17600043463910&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "Mid-Length Straight Wigs in Black And Brown with Bangs, Featuring a Wolf Tail Hairstyle. These High-Layered Fashion Wigs Are Perfect for Daily Wear, Parties, And Halloween, And Are Made from Heat-Resistant Synthetic Materials, Measuring 50.8 cm",
+        "image": "https://img.kwcdn.com/product/fancy/93b38784-393f-4957-ae73-7b06a76b9cc8.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "11,96",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601103651707945&sku_id=17620434765955&_oak_page_source=501"
+      },
+      "misc": {
+        "title": "High-End Elastic Leg Bands in a Punk Heart Shape, Easy Punk Street Dance Leg Rings And Garters",
+        "image": "https://img.kwcdn.com/product/fancy/a08354c1-72fd-422b-94a4-900fd7f132a8.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "2,39",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=605879843835001&sku_id=99594386077717&_oak_page_source=501"
+      }
+    },
+    "proposedBy": "Nana677"
   }
 ]
