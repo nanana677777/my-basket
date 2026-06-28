@@ -58,7 +58,7 @@
     margin: 0 0 6px;
     font-weight: 600;
   }
-  input, textarea {
+  input, textarea, select {
     width: 100%;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.1);
@@ -69,11 +69,13 @@
     margin-bottom: 14px;
     font-family: inherit;
   }
-  input:focus, textarea:focus {
+  input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--pink);
     background: rgba(255,158,203,0.06);
   }
+  select { cursor: pointer; }
+  select option { background: #1b1b26; color: #f3f3f7; }
   textarea { resize: vertical; min-height: 60px; }
   input[type="checkbox"] {
     width: auto;
@@ -706,6 +708,23 @@
       <label for="f-category">Category (free text — type an existing or new name)</label>
       <input id="f-category" type="text" list="category-suggestions" placeholder="Clothing, Accessories, Decor..." />
       <datalist id="category-suggestions"></datalist>
+      <label for="f-color">Color</label>
+      <select id="f-color">
+        <option value="">— No color —</option>
+        <option value="pink">🩷 Pink</option>
+        <option value="red">❤️ Red</option>
+        <option value="orange">🧡 Orange</option>
+        <option value="yellow">💛 Yellow</option>
+        <option value="beige">🟤 Beige</option>
+        <option value="brown">🟫 Brown</option>
+        <option value="green">💚 Green</option>
+        <option value="teal">🩵 Teal</option>
+        <option value="blue">💙 Blue</option>
+        <option value="purple">💜 Purple</option>
+        <option value="black">🖤 Black</option>
+        <option value="white">🤍 White</option>
+        <option value="gray">⬜ Gray</option>
+      </select>
       <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;">
         <input id="f-bought" type="checkbox" style="width:auto;margin:0;" />
         <span>✅ Already bought</span>
@@ -1012,17 +1031,25 @@
         productList.innerHTML = '<div class="empty-state">No items in this category.</div>';
         return;
       }
+      const COLOR_SWATCH_ADMIN = {
+        pink: "#ff8fc4", red: "#e04848", orange: "#ff9c3f", yellow: "#f0d83a", beige: "#d8c2a0",
+        brown: "#7a5230", green: "#4caf6e", teal: "#3fb6ad", blue: "#4a7fe0", purple: "#9d5fd6",
+        black: "#1a1a1a", white: "#f4f4f4", gray: "#9a9a9a"
+      };
       productList.innerHTML = "";
       const visible = filtered.slice(0, productsShown);
       visible.forEach(({ p, idx }) => {
         const i = idx;
         const row = document.createElement("div");
         row.className = "product-row";
+        const colorDot = p.color
+          ? `<span title="${p.color}" style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle;box-shadow:0 0 0 1px rgba(255,255,255,0.25) inset;background:${COLOR_SWATCH_ADMIN[p.color] || "#888"}"></span>`
+          : "";
         row.innerHTML = `
           <img src="${p.image || ""}" alt="" onerror="this.style.opacity=0">
           <div class="info">
             <div class="title">${(p.title || "Untitled").replace(/</g, "&lt;")}${p.bought ? ' <span class="bought-tag">✅ Bought</span>' : ""}</div>
-            <div class="price">💰 ${p.price || "?"} €${p.quantity ? " · x" + p.quantity : ""}${p.category ? " · 🏷️ " + p.category.replace(/</g, "&lt;") : ""}</div>
+            <div class="price">${colorDot}💰 ${p.price || "?"} €${p.quantity ? " · x" + p.quantity : ""}${p.category ? " · 🏷️ " + p.category.replace(/</g, "&lt;") : ""}</div>
           </div>
           <div class="actions">
             <button class="btn-ghost btn-bought-toggle" data-bought-toggle="${i}">${p.bought ? "↩️ Unmark" : "✅ Bought"}</button>
@@ -1092,6 +1119,7 @@
       $("f-image").value = p.image || "";
       $("f-link").value = p.link || "";
       $("f-category").value = p.category || "";
+      $("f-color").value = p.color || "";
       $("f-bought").checked = !!p.bought;
       formTitle.textContent = "✏️ Edit item";
       saveBtn.textContent = "Save changes";
@@ -1101,7 +1129,7 @@
 
     function resetForm() {
       editingIndex = null;
-      ["f-title", "f-price", "f-quantity", "f-image", "f-link", "f-category"].forEach(id => $(id).value = "");
+      ["f-title", "f-price", "f-quantity", "f-image", "f-link", "f-category", "f-color"].forEach(id => $(id).value = "");
       $("f-bought").checked = false;
       formTitle.textContent = "➕ Add an item manually";
       saveBtn.textContent = "Add item";
@@ -1131,6 +1159,7 @@
         image: $("f-image").value.trim(),
         link,
         category: $("f-category").value.trim(),
+        color: $("f-color").value,
         bought: $("f-bought").checked
       };
 
