@@ -685,6 +685,32 @@
       </label>
       <button class="btn-primary" id="color-analyze-btn">🎨 Analyze colors</button>
       <div id="color-analysis-status" style="margin-top:10px;font-size:12.5px;color:var(--muted);"></div>
+
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
+        <button class="btn-ghost" id="bulk-color-toggle-btn">☑️ Bulk-edit colors in the list below</button>
+        <div id="bulk-color-bar" style="display:none;margin-top:12px;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span id="bulk-color-count" style="font-size:12.5px;color:var(--muted);">0 selected</span>
+          <button class="btn-ghost" id="bulk-color-select-all" style="padding:5px 12px;font-size:12px;">Select all visible</button>
+          <button class="btn-ghost" id="bulk-color-clear" style="padding:5px 12px;font-size:12px;">Clear</button>
+          <select id="bulk-color-value" style="width:auto;margin:0;">
+            <option value="">— No color —</option>
+            <option value="pink">🩷 Pink</option>
+            <option value="red">❤️ Red</option>
+            <option value="orange">🧡 Orange</option>
+            <option value="yellow">💛 Yellow</option>
+            <option value="beige">🟤 Beige</option>
+            <option value="brown">🟫 Brown</option>
+            <option value="green">💚 Green</option>
+            <option value="teal">🩵 Teal</option>
+            <option value="blue">💙 Blue</option>
+            <option value="purple">💜 Purple</option>
+            <option value="black">🖤 Black</option>
+            <option value="white">🤍 White</option>
+            <option value="gray">⬜ Gray</option>
+          </select>
+          <button class="btn-primary" id="bulk-color-apply-btn" style="padding:8px 16px;font-size:13px;">Apply to selected</button>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -876,6 +902,8 @@
     let products = [];
     let currentSha = null;
     let editingIndex = null;
+    let bulkColorMode = false;
+    let bulkColorSelected = new Set(); // product links
     const PRODUCTS_PAGE_SIZE = 12;
     let productsShown = PRODUCTS_PAGE_SIZE;
     let adminCategoryFilter = null; // null = all categories
@@ -1045,7 +1073,11 @@
         const colorDot = p.color
           ? `<span title="${p.color}" style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle;box-shadow:0 0 0 1px rgba(255,255,255,0.25) inset;background:${COLOR_SWATCH_ADMIN[p.color] || "#888"}"></span>`
           : "";
+        const bulkCheckbox = bulkColorMode
+          ? `<input type="checkbox" class="bulk-color-checkbox" data-link="${(p.link || "").replace(/"/g, "&quot;")}" style="width:auto;margin:0 10px 0 0;flex-shrink:0;align-self:center;" ${bulkColorSelected.has(p.link) ? "checked" : ""}>`
+          : "";
         row.innerHTML = `
+          ${bulkCheckbox}
           <img src="${p.image || ""}" alt="" onerror="this.style.opacity=0">
           <div class="info">
             <div class="title">${(p.title || "Untitled").replace(/</g, "&lt;")}${p.bought ? ' <span class="bought-tag">✅ Bought</span>' : ""}</div>
@@ -1102,6 +1134,14 @@
       if (editIdx !== null) startEdit(parseInt(editIdx));
       if (delIdx !== null) deleteProduct(parseInt(delIdx));
       if (boughtIdx !== null) toggleBought(parseInt(boughtIdx));
+    });
+
+    productList.addEventListener("change", (e) => {
+      if (!e.target.classList.contains("bulk-color-checkbox")) return;
+      const link = e.target.dataset.link;
+      if (e.target.checked) bulkColorSelected.add(link);
+      else bulkColorSelected.delete(link);
+      updateBulkColorBar();
     });
 
     async function toggleBought(i) {
@@ -1317,6 +1357,53 @@
       await pushProducts("Run color analysis on product photos");
       status.textContent = `✅ ${done - skipped} item(s) color-tagged, ${skipped} skipped. Saved to GitHub.`;
       btn.disabled = false;
+    });
+
+    // ─── ☑️ Bulk-edit colors ───
+    function updateBulkColorBar() {
+      document.getElementById("bulk-color-count").textContent = bulkColorSelected.size + " selected";
+    }
+
+    document.getElementById("bulk-color-toggle-btn").addEventListener("click", () => {
+      bulkColorMode = !bulkColorMode;
+      bulkColorSelected.clear();
+      document.getElementById("bulk-color-bar").style.display = bulkColorMode ? "flex" : "none";
+      document.getElementById("bulk-color-toggle-btn").textContent = bulkColorMode
+        ? "✕ Exit bulk-edit mode"
+        : "☑️ Bulk-edit colors in the list below";
+      updateBulkColorBar();
+      renderProducts();
+    });
+
+    document.getElementById("bulk-color-select-all").addEventListener("click", () => {
+      productList.querySelectorAll(".bulk-color-checkbox").forEach(cb => {
+        cb.checked = true;
+        bulkColorSelected.add(cb.dataset.link);
+      });
+      updateBulkColorBar();
+    });
+
+    document.getElementById("bulk-color-clear").addEventListener("click", () => {
+      bulkColorSelected.clear();
+      productList.querySelectorAll(".bulk-color-checkbox").forEach(cb => { cb.checked = false; });
+      updateBulkColorBar();
+    });
+
+    document.getElementById("bulk-color-apply-btn").addEventListener("click", async () => {
+      if (!token) { showToast("Connect your token first.", true); return; }
+      if (!bulkColorSelected.size) { showToast("Select at least one item first.", true); return; }
+      const color = document.getElementById("bulk-color-value").value;
+      let count = 0;
+      products.forEach(p => {
+        if (bulkColorSelected.has(p.link)) {
+          p.color = color;
+          count++;
+        }
+      });
+      bulkColorSelected.clear();
+      updateBulkColorBar();
+      await pushProducts(`Bulk-set color to "${color || "none"}" for ${count} item(s) via admin`);
+      showToast(`✅ Updated color for ${count} item(s)`);
     });
 
     let tokenDebounce;
