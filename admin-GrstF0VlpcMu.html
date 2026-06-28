@@ -1120,10 +1120,20 @@
         const moreWrap = document.createElement("div");
         moreWrap.style.textAlign = "center";
         moreWrap.style.marginTop = "10px";
-        moreWrap.innerHTML = `<button class="btn-ghost" id="show-more-btn">Voir la suite (${remaining})</button>`;
+        moreWrap.style.display = "flex";
+        moreWrap.style.justifyContent = "center";
+        moreWrap.style.gap = "8px";
+        moreWrap.innerHTML = `
+          <button class="btn-ghost" id="show-more-btn">Voir la suite (${remaining})</button>
+          <button class="btn-ghost" id="show-all-btn">Tout afficher</button>
+        `;
         productList.appendChild(moreWrap);
         moreWrap.querySelector("#show-more-btn").addEventListener("click", () => {
           productsShown += PRODUCTS_PAGE_SIZE;
+          renderProducts();
+        });
+        moreWrap.querySelector("#show-all-btn").addEventListener("click", () => {
+          productsShown = filtered.length;
           renderProducts();
         });
       } else if (filtered.length > PRODUCTS_PAGE_SIZE) {
