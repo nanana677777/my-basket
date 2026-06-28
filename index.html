@@ -571,6 +571,29 @@
       .source-pin.source-temu { background: linear-gradient(135deg, #ff6b35, #ff9ecb); }
       .source-pin.source-amazon { background: linear-gradient(135deg, #232f3e, #ff9900); }
       .source-pin.source-other { background: rgba(255,255,255,0.14); }
+      .source-pin-tip {
+        position: absolute;
+        bottom: 28px;
+        left: 0;
+        background: #1b1b26;
+        border: 1px solid rgba(255,255,255,0.18);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: 8px;
+        white-space: nowrap;
+        opacity: 0;
+        transform: translateY(4px) scale(0.92);
+        transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+        z-index: 20;
+      }
+      .source-pin-tip.show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
 
       /* ➖ Divider between category filters and bought-status filters */
       #filters-divider,
@@ -2903,6 +2926,9 @@
         document.getElementById("modal-title").textContent = product.title || "";
         document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
         document.getElementById("modal-link").href = product.link;
+        const modalSource = getProductSource(product.link);
+        document.getElementById("modal-link").textContent =
+          modalSource.cls === "source-other" ? "🛒 View item" : `🛒 View on ${modalSource.label}`;
 
         // 🔑 Push URL with product data so Throne can fetch it server-side
         const priceClean = (product.price || "0").replace(",", ".");
@@ -3155,6 +3181,23 @@
       // /vote/<goods_id> that we hit once per browser; the public Stats page
       // reads those counts back via GoatCounter's public counter.json endpoint
       // to build the "Top requested" ranking.
+      // 📍 Custom tap/click tooltip for the source badge (native `title` doesn't
+      // show on touch devices, which is most visitors on mobile)
+      document.addEventListener("click", (e) => {
+        const pin = e.target.closest(".source-pin");
+        if (!pin) return;
+        let tip = pin.querySelector(".source-pin-tip");
+        if (!tip) {
+          tip = document.createElement("div");
+          tip.className = "source-pin-tip";
+          pin.appendChild(tip);
+        }
+        tip.textContent = pin.title || "";
+        tip.classList.add("show");
+        clearTimeout(pin._tipTimer);
+        pin._tipTimer = setTimeout(() => tip.classList.remove("show"), 1800);
+      });
+
       function getVoteId(link) {
         const m = (link || "").match(/goods_id=(\d+)/);
         return m ? m[1] : null;
@@ -3718,7 +3761,7 @@
 
           // Open modal on image/card click (but not heart)
           wrapper.addEventListener("click", (e) => {
-            if (e.target.closest(".heartFav") || e.target.closest(".voteStar")) return;
+            if (e.target.closest(".heartFav") || e.target.closest(".voteStar") || e.target.closest(".source-pin")) return;
             openProductModal(product);
           });
 
