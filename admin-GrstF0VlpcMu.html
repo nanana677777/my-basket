@@ -922,12 +922,12 @@
 
     // 🔔 Fire-and-forget Discord notification via the Cloudflare Worker relay
     const DISCORD_RELAY_URL = "https://my-basket-notify.nanana677777.workers.dev/";
-    function notifyDiscord(type, detail) {
+    function notifyDiscord(type, detail, image) {
       try {
         fetch(DISCORD_RELAY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150) }),
+          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150), image: image || undefined }),
         }).catch(() => {});
       } catch (e) {}
     }
@@ -1209,7 +1209,7 @@
       if (!token) { showToast("Connect your token first.", true); return; }
       products[i].bought = !products[i].bought;
       if (products[i].bought) {
-        notifyDiscord("bought", products[i].title || "an item");
+        notifyDiscord("bought", products[i].title || "an item", products[i].image);
       }
       await pushProducts(products[i].bought ? "Mark item as bought via admin" : "Unmark item as bought via admin");
     }
@@ -1271,12 +1271,12 @@
         const wasBought = !!products[editingIndex].bought;
         entry.dateAdded = products[editingIndex].dateAdded || new Date().toISOString();
         products[editingIndex] = entry;
-        if (entry.bought && !wasBought) notifyDiscord("bought", entry.title || "an item");
+        if (entry.bought && !wasBought) notifyDiscord("bought", entry.title || "an item", entry.image);
         await pushProducts("Edit product via admin");
       } else {
         entry.dateAdded = new Date().toISOString();
         products.push(entry);
-        if (entry.bought) notifyDiscord("bought", entry.title || "an item");
+        if (entry.bought) notifyDiscord("bought", entry.title || "an item", entry.image);
         await pushProducts("Add product via admin");
       }
       resetForm();
