@@ -341,7 +341,7 @@
           const reactionsHtml = REACTIONS.map(r => {
             const key = c.id + ":" + r.type;
             const reacted = mine.includes(key);
-            return `<button class="reaction-btn${reacted ? " reacted" : ""}" data-comment-id="${c.id}" data-reaction="${r.type}" ${reacted ? "disabled" : ""}>${r.emoji} <span class="r-count">${reacted ? "" : ""}</span></button>`;
+            return `<button class="reaction-btn${reacted ? " reacted" : ""}" data-comment-id="${c.id}" data-reaction="${r.type}" data-comment-name="${(c.name || "Anonymous").replace(/"/g, "&quot;")}" data-comment-text="${(c.text || "").replace(/"/g, "&quot;")}" ${reacted ? "disabled" : ""}>${r.emoji} <span class="r-count">${reacted ? "" : ""}</span></button>`;
           }).join("");
           return `
             <div class="comment-card">
@@ -379,6 +379,9 @@
             btn.classList.add("reacted");
             const countEl = btn.querySelector(".r-count");
             if (countEl) countEl.textContent = (parseInt(countEl.textContent) || 0) + 1;
+
+            const r = REACTIONS.find(r => r.type === type);
+            notifyDiscord("reaction", `${r ? r.emoji : "✨"} on ${btn.dataset.commentName}'s comment: "${btn.dataset.commentText}"`);
           });
         });
       } catch (err) {
