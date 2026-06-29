@@ -1277,6 +1277,7 @@
         entry.dateAdded = new Date().toISOString();
         products.push(entry);
         if (entry.bought) notifyDiscord("bought", entry.title || "an item", entry.image);
+        notifyDiscord("product_added", entry.title || "an item", entry.image);
         await pushProducts("Add product via admin");
       }
       resetForm();
@@ -1584,6 +1585,10 @@
       const toAdd = importedProducts.filter(p => !existingLinks.has(p.link));
       toAdd.forEach(p => { if (!p.dateAdded) p.dateAdded = now; });
       products = products.concat(toAdd);
+      if (toAdd.length) {
+        const repImage = toAdd.map(p => p.image).find(Boolean);
+        notifyDiscord("product_added", `${toAdd.length} new item(s) imported`, repImage);
+      }
       await pushProducts("Merge imported products via admin");
       showToast("✅ " + toAdd.length + " new item(s) added");
       resetImport();
