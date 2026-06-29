@@ -3216,12 +3216,12 @@
       // (never blocks the UI, never throws — a failed notification should
       // never break the actual feature it's attached to)
       const DISCORD_RELAY_URL = "https://my-basket-notify.nanana677777.workers.dev/";
-      function notifyDiscord(type, detail) {
+      function notifyDiscord(type, detail, image) {
         try {
           fetch(DISCORD_RELAY_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150) }),
+            body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150), image: image || undefined }),
           }).catch(() => {});
         } catch (e) {}
       }
@@ -3254,7 +3254,7 @@
         mascotSay("vote");
 
         const votedProduct = (typeof rawProducts !== "undefined" ? rawProducts : []).find((p) => getVoteId(p.link) === pid);
-        notifyDiscord("vote", votedProduct ? votedProduct.title : pid);
+        notifyDiscord("vote", votedProduct ? votedProduct.title : pid, votedProduct ? votedProduct.image : null);
 
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({
@@ -4682,7 +4682,8 @@
           window.goatcounter.count({ path: path, title: title, event: true });
         }
 
-        notifyDiscord("proposal", (name || "Untitled") + (by ? " (by " + by + ")" : ""));
+        const firstSlotImage = filled.length ? currentSlots[filled[0]].image : null;
+        notifyDiscord("proposal", (name || "Untitled") + (by ? " (by " + by + ")" : ""), firstSlotImage);
 
         showThanks();
       }
