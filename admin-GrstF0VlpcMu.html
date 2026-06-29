@@ -2290,6 +2290,8 @@
         const entry = { id: "outfit_" + Date.now(), name, slots };
         if (currentProposedBy) entry.proposedBy = currentProposedBy;
         outfits.push(entry);
+        const repImage = Object.values(slots).map(it => it && it.image).find(Boolean);
+        notifyDiscord("outfit_saved", name, repImage);
       }
 
       await pushOutfits(editingOutfitId ? "Update outfit via admin" : "Add outfit via admin");
