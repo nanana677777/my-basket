@@ -263,12 +263,12 @@
 
     // 🔔 Fire-and-forget Discord notification via the Cloudflare Worker relay
     const DISCORD_RELAY_URL = "https://my-basket-notify.nanana677777.workers.dev/";
-    function notifyDiscord(type, detail) {
+    function notifyDiscord(type, detail, image) {
       try {
         fetch(DISCORD_RELAY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150) }),
+          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150), image: image || undefined }),
         }).catch(() => {});
       } catch (e) {}
     }
@@ -336,6 +336,7 @@
 
           const isTop = idx === 0 && topVotes > 0;
           const alreadyVoted = voted.includes(outfit.id);
+          const repImage = SLOT_ORDER.map(k => slots[k]).find(it => it && it.image);
 
           const header = document.createElement("div");
           header.className = "outfit-header";
@@ -344,7 +345,7 @@
             ${isTop ? `<div class="outfit-top-badge">🏆 Most loved look</div>` : ""}
             <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
             <div class="outfit-header-right">
-              <button class="outfit-vote-btn${alreadyVoted ? " voted" : ""}" data-outfit-id="${outfit.id}" data-outfit-name="${(outfit.name || "Untitled Look").replace(/"/g, "&quot;")}" ${alreadyVoted ? "disabled" : ""}>🩷 <span class="ov-count">${outfit._votes > 0 ? outfit._votes : ""}</span></button>
+              <button class="outfit-vote-btn${alreadyVoted ? " voted" : ""}" data-outfit-id="${outfit.id}" data-outfit-name="${(outfit.name || "Untitled Look").replace(/"/g, "&quot;")}" data-outfit-image="${(repImage ? repImage.image : "").replace(/"/g, "&quot;")}" ${alreadyVoted ? "disabled" : ""}>🩷 <span class="ov-count">${outfit._votes > 0 ? outfit._votes : ""}</span></button>
               ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
             </div>
           `;
@@ -379,7 +380,7 @@
             if (window.goatcounter && window.goatcounter.count) {
               window.goatcounter.count({ path: "/outfit-vote/" + id, title: "Outfit vote", event: true });
             }
-            notifyDiscord("outfit_vote", btn.dataset.outfitName || id);
+            notifyDiscord("outfit_vote", btn.dataset.outfitName || id, btn.dataset.outfitImage);
             rememberVotedOutfit(id);
             btn.disabled = true;
             btn.classList.add("voted");
