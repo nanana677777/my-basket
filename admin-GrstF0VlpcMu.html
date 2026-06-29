@@ -2014,7 +2014,11 @@
         }
         pushLeaderboard("Update leaderboard entry: " + name);
       } else {
-        leaderboard.push({ id: "p" + Date.now(), name, products: [...currentPersonProducts] });
+        const newPerson = { id: "p" + Date.now(), name, products: [...currentPersonProducts] };
+        leaderboard.push(newPerson);
+        const total = personTotal(newPerson).toFixed(2);
+        const repProduct = newPerson.products.map(link => products.find(p => p.link === link)).find(Boolean);
+        notifyDiscord("leaderboard", `${name} — ${total} €`, repProduct ? repProduct.image : null);
         pushLeaderboard("Add leaderboard entry: " + name);
       }
       resetPersonForm();
