@@ -213,6 +213,66 @@
     text-decoration: none;
     border-bottom: 1px dashed rgba(255,158,203,0.3);
   }
+
+  /* 🐱 Interactive mascot */
+  #mascot {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 1500;
+    font-size: 38px;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    animation: mascotBob 2.8s ease-in-out infinite;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.45));
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  #mascot:hover { transform: scale(1.18) rotate(-6deg); }
+  #mascot:active { transform: scale(0.92); }
+  @keyframes mascotBob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-7px) rotate(3deg); }
+  }
+  #mascot-bubble {
+    position: fixed;
+    bottom: 72px;
+    right: 14px;
+    max-width: 190px;
+    background: #1b1b26;
+    border: 1px solid rgba(255,158,203,0.4);
+    border-radius: 16px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 1500;
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+  #mascot-bubble.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  #mascot-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -7px;
+    right: 20px;
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #1b1b26;
+  }
+  @media (max-width: 640px) {
+    #mascot { font-size: 32px; bottom: 14px; right: 14px; }
+    #mascot-bubble { bottom: 62px; right: 10px; max-width: 160px; font-size: 11.5px; }
+  }
 </style>
 </head>
 <body>
@@ -245,6 +305,10 @@
     </footer>
   </div>
 
+  <!-- 🐱 Interactive mascot -->
+  <div id="mascot-bubble"></div>
+  <div id="mascot" title="Pspsps~">🐱</div>
+
   <script data-goatcounter="https://nana677.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   <script>
     const nameInput = document.getElementById("comment-name");
@@ -271,6 +335,29 @@
       } catch (e) {}
     }
 
+    // 🐱 Interactive mascot
+    const MASCOT_MESSAGES = {
+      comment: ["Thanks for the note! 💌", "Sent for review~ ✨", "Aww, that's sweet!", "Nana will love reading this!"],
+      reaction: ["Spreading the love! 🩷", "Aww, sweet reaction!", "Noted~ ✨"],
+      idle: ["Hi there! 👋", "Leave a comment if you'd like!", "Meow! 🐱", "I'm just vibing here~ 🐾"],
+    };
+    let mascotTimer = null;
+    function showMascotBubble(text) {
+      const bubble = document.getElementById("mascot-bubble");
+      if (!bubble) return;
+      bubble.textContent = text;
+      bubble.classList.add("show");
+      clearTimeout(mascotTimer);
+      mascotTimer = setTimeout(() => bubble.classList.remove("show"), 3200);
+    }
+    function mascotSay(category) {
+      const list = MASCOT_MESSAGES[category] || MASCOT_MESSAGES.idle;
+      showMascotBubble(list[Math.floor(Math.random() * list.length)]);
+    }
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.closest && e.target.closest("#mascot")) mascotSay("idle");
+    });
+
     submitBtn.addEventListener("click", () => {
       const text = textInput.value.trim();
       if (!text) return;
@@ -284,6 +371,7 @@
       }
 
       notifyDiscord("comment", name + ": " + text);
+      mascotSay("comment");
 
       [nameInput, textInput, submitBtn, document.querySelector(".char-count")].forEach(el => el.style.display = "none");
       document.querySelectorAll(".comment-form label").forEach(el => el.style.display = "none");
@@ -382,6 +470,7 @@
 
             const r = REACTIONS.find(r => r.type === type);
             notifyDiscord("reaction", `${r ? r.emoji : "✨"} on ${btn.dataset.commentName}'s comment: "${btn.dataset.commentText}"`);
+            mascotSay("reaction");
           });
         });
       } catch (err) {
