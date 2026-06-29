@@ -57,5 +57,15 @@
       "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601101115861429&sku_id=17598316678852&_oak_page_source=501",
       "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100548932232&sku_id=17596317830527&_oak_page_source=501"
     ]
+  },
+  {
+    "id": "p1782767776313",
+    "name": "test",
+    "products": [
+      "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099513888102&sku_id=17592199706748&_oak_page_source=501",
+      "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100734031889&sku_id=17596986780489&_oak_page_source=501",
+      "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601100956053633&sku_id=17597739268436&_oak_page_source=501",
+      "https://www.amazon.fr/Coiffes-doreilles-danimaux-accessoires-dHalloween/dp/B0DMLQLV4Z"
+    ]
   }
 ]
