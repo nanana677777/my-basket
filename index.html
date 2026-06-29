@@ -3135,6 +3135,7 @@
         unfavorite: ["Aww, okay~ 💭", "Maybe next time!", "No worries, plenty more to see!"],
         vote: ["Thanks for voting! 👍", "Your vote counts~ ✨", "Ooh I like this one too!", "Noted! 📝"],
         pick: ["Let's see what fate picks... 🎲", "Ta-da! ✨", "Ooh, surprise! 🎁"],
+        proposal: ["Ooh what a cute look! 💡", "Sent for review~ Nana will love this!", "Great combo! ✨", "I hope she picks this one!"],
         idle: ["Hi there! 👋", "Looking for something cute? 🌸", "Psst... check out the Stats page!", "I'm just vibing here~ 🐾", "Try the swipe mode, it's fun!", "Meow! 🐱"],
       };
       let mascotTimer = null;
@@ -4684,6 +4685,7 @@
 
         const firstSlotImage = filled.length ? currentSlots[filled[0]].image : null;
         notifyDiscord("proposal", (name || "Untitled") + (by ? " (by " + by + ")" : ""), firstSlotImage);
+        if (typeof mascotSay === "function") mascotSay("proposal");
 
         showThanks();
       }
