@@ -116,7 +116,7 @@
     "price": "5,83",
     "quantity": "1",
     "category": "Pajamas & Loungewear",
-    "bought": true,
+    "bought": false,
     "dateAdded": "2026-04-14T21:36:48.000Z",
     "color": "pink"
   },
