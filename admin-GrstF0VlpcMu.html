@@ -220,6 +220,20 @@
     margin-bottom: 10px;
   }
   .comment-admin-actions { display: flex; gap: 8px; }
+  .ama-answer-input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 12.5px;
+    font-family: inherit;
+    margin-bottom: 8px;
+    resize: vertical;
+    min-height: 50px;
+  }
+  .ama-answer-input:focus { outline: none; border-color: var(--pink); }
   .admin-cat-chip {
     padding: 6px 14px;
     border-radius: 999px;
@@ -868,6 +882,17 @@
     </div>
 
     <div class="card">
+      <h2>🎙️ Ask Me Anything</h2>
+      <p class="sub" style="margin:0 0 14px;">Visitors can ask a question on <a href="./ama.html" target="_blank" style="color:var(--accent);">the AMA page</a> (same GoatCounter token as above). Write an answer and publish to make the Q&A go live.</p>
+
+      <h3 style="font-size:13px;color:var(--muted);margin:0 0 8px;">Pending questions</h3>
+      <div id="pending-ama-list"><div class="empty-state">Connect your GoatCounter API token above to load pending questions.</div></div>
+
+      <h3 style="font-size:13px;color:var(--muted);margin:18px 0 8px;">Published Q&A</h3>
+      <div id="published-ama-list"><div class="empty-state">No questions answered yet.</div></div>
+    </div>
+
+    <div class="card">
       <h2>🏆 Leaderboard</h2>
       <p class="sub" style="margin:0 0 14px;">People who bought you stuff — link them to the products they got and they'll show up on <a href="./leaderboard.html" target="_blank" style="color:var(--accent);">the leaderboard page</a>, ranked by total spent.</p>
 
@@ -954,6 +979,9 @@
     let approvedComments = [];
     let commentsSha = null;
     let pendingComments = [];
+    let publishedAMA = [];
+    let amaSha = null;
+    let pendingAMA = [];
     let currentOutfitSlots = {};
     let currentProposedBy = null;
     let activePickerSlot = null;
@@ -1175,6 +1203,7 @@
       if (outfitsSha === null && token) loadOutfits();
       if (leaderboardSha === null && token) loadLeaderboard();
       if (commentsSha === null && token) loadComments();
+      if (amaSha === null && token) loadAMA();
     }
 
     function updateCategorySuggestions() {
@@ -1691,6 +1720,7 @@
     const OUTFIT_API = "https://api.github.com/repos/" + REPO + "/contents/outfits.json";
     const LEADERBOARD_API = "https://api.github.com/repos/" + REPO + "/contents/leaderboard.json";
     const COMMENTS_API = "https://api.github.com/repos/" + REPO + "/contents/comments.json";
+    const AMA_API = "https://api.github.com/repos/" + REPO + "/contents/ama.json";
     const SLOT_KEYS = ["top", "bottom", "shoes", "accessory", "misc"];
     const SLOT_LABELS = { top: "Top", bottom: "Bottom", shoes: "Shoes", accessory: "Accessory", misc: "Extra" };
 
@@ -1905,6 +1935,144 @@
           dismissCommentPath(p.path);
           pendingComments = pendingComments.filter(c => c.path !== p.path);
           renderPendingComments();
+        });
+      });
+    }
+
+    // ─── 🎙️ Ask Me Anything ───
+    async function loadAMA() {
+      try {
+        const res = await fetch(AMA_API, {
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json" }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        amaSha = data.sha;
+        publishedAMA = JSON.parse(decodeURIComponent(
+          atob(data.content.replace(/\n/g, ""))
+            .split("").map(c => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")
+        ) || "[]");
+        renderPublishedAMA();
+      } catch (e) { console.error("AMA load error", e); }
+    }
+
+    async function pushAMA(msg) {
+      try {
+        const body = JSON.stringify(publishedAMA, null, 2);
+        const encoded = btoa(unescape(encodeURIComponent(body)));
+        const payload = { message: msg, content: encoded, sha: amaSha, branch: "main" };
+        const res = await fetch(AMA_API, {
+          method: "PUT",
+          headers: { "Authorization": "token " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.content) {
+          amaSha = data.content.sha;
+          renderPublishedAMA();
+          showToast("✅ AMA saved to GitHub");
+        } else {
+          showToast("❌ Save failed: " + (data.message || "Unknown error — reload and retry"), true);
+          await loadAMA();
+        }
+      } catch (e) {
+        showToast("❌ Network error — question not saved", true);
+        console.error("pushAMA error:", e);
+      }
+    }
+
+    function renderPublishedAMA() {
+      const el = document.getElementById("published-ama-list");
+      if (!publishedAMA.length) {
+        el.innerHTML = `<div class="empty-state">No questions answered yet.</div>`;
+        return;
+      }
+      const sorted = [...publishedAMA].sort((a, b) => new Date(b.date) - new Date(a.date));
+      el.innerHTML = sorted.map(item => `
+        <div class="comment-admin-row">
+          <div class="comment-admin-head">
+            <span class="comment-admin-name">Q: ${(item.question || "").replace(/</g, "&lt;")}</span>
+            <span class="comment-admin-date">${item.date ? new Date(item.date).toLocaleDateString() : ""}</span>
+          </div>
+          <div class="comment-admin-text">A: ${(item.answer || "").replace(/</g, "&lt;")}</div>
+          <div class="comment-admin-actions">
+            <button class="btn-ghost" data-unpublish-ama="${item.id}">Remove from site</button>
+          </div>
+        </div>
+      `).join("");
+
+      el.querySelectorAll("[data-unpublish-ama]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.unpublishAma;
+          if (!confirm("Remove this Q&A from the public page?")) return;
+          publishedAMA = publishedAMA.filter(item => item.id !== id);
+          pushAMA("Remove a published AMA entry via admin");
+        });
+      });
+    }
+
+    function getDismissedAMA() {
+      try { return JSON.parse(localStorage.getItem("dismissedAMA")) || []; } catch (e) { return []; }
+    }
+    function dismissAMAPath(path) {
+      const d = getDismissedAMA();
+      if (!d.includes(path)) d.push(path);
+      localStorage.setItem("dismissedAMA", JSON.stringify(d));
+    }
+
+    function renderPendingAMA() {
+      const el = document.getElementById("pending-ama-list");
+      if (!pendingAMA.length) {
+        el.innerHTML = `<div class="empty-state">No pending questions.</div>`;
+        return;
+      }
+
+      el.innerHTML = pendingAMA.map((p, i) => {
+        const raw = p.title || "";
+        const sep = raw.indexOf(" ||| ");
+        const name = sep === -1 ? "Anonymous" : raw.slice(0, sep);
+        const question = sep === -1 ? raw : raw.slice(sep + 5);
+        return `
+          <div class="comment-admin-row">
+            <div class="comment-admin-head">
+              <span class="comment-admin-name">${name.replace(/</g, "&lt;")}</span>
+            </div>
+            <div class="comment-admin-text">${question.replace(/</g, "&lt;")}</div>
+            <textarea class="ama-answer-input" data-answer-for="${i}" placeholder="Write your answer here..."></textarea>
+            <div class="comment-admin-actions">
+              <button class="btn-primary" data-publish-ama="${i}">✅ Publish with answer</button>
+              <button class="btn-ghost" data-dismiss-ama="${i}">Dismiss</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      el.querySelectorAll("[data-publish-ama]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.dataset.publishAma);
+          const p = pendingAMA[idx];
+          const raw = p.title || "";
+          const sep = raw.indexOf(" ||| ");
+          const name = (sep === -1 ? "Anonymous" : raw.slice(0, sep)).trim() || "Anonymous";
+          const question = (sep === -1 ? raw : raw.slice(sep + 5)).trim();
+          const answerInput = el.querySelector(`[data-answer-for="${idx}"]`);
+          const answer = (answerInput ? answerInput.value : "").trim();
+          if (!question) { showToast("Empty question — dismissing instead.", true); return; }
+          if (!answer) { showToast("Write an answer before publishing.", true); return; }
+
+          publishedAMA.push({ id: "ama" + Date.now(), name, question, answer, date: new Date().toISOString() });
+          dismissAMAPath(p.path);
+          pendingAMA = pendingAMA.filter(item => item.path !== p.path);
+          renderPendingAMA();
+          pushAMA("Publish AMA answer for " + name);
+        });
+      });
+      el.querySelectorAll("[data-dismiss-ama]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const p = pendingAMA[parseInt(btn.dataset.dismissAma)];
+          dismissAMAPath(p.path);
+          pendingAMA = pendingAMA.filter(item => item.path !== p.path);
+          renderPendingAMA();
         });
       });
     }
@@ -2340,6 +2508,7 @@
       if (!gcToken) return;
       proposalsListEl.innerHTML = `<div class="empty-state">Loading…</div>`;
       document.getElementById("pending-comments-list").innerHTML = `<div class="empty-state">Loading…</div>`;
+      document.getElementById("pending-ama-list").innerHTML = `<div class="empty-state">Loading…</div>`;
       try {
         let all = [];
         let after = null;
@@ -2366,6 +2535,10 @@
         const dismissedC = getDismissedComments();
         pendingComments = all.filter(p => p.path && /^\/?comment-proposal\//.test(p.path) && !dismissedC.includes(p.path));
         renderPendingComments();
+
+        const dismissedA = getDismissedAMA();
+        pendingAMA = all.filter(p => p.path && /^\/?ama-proposal\//.test(p.path) && !dismissedA.includes(p.path));
+        renderPendingAMA();
       } catch (e) {
         console.error("loadProposals error:", e);
         proposalsListEl.innerHTML = `<div class="empty-state">Couldn't load proposals — check your token and connection.</div>`;
