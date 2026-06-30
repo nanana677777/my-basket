@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Style DNA · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --gold: #ffd24c;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+    --border: rgba(255,158,203,0.15);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--pink); }
+
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 32px;
+  }
+
+  /* ─── ID card ─── */
+  .id-card {
+    background: linear-gradient(160deg, #1f1f2c, #16161f);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px 24px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+  .id-card::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,158,203,0.18), transparent 70%);
+  }
+  .id-eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .id-archetype {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .id-tagline {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+
+  /* ─── Color strand ─── */
+  .strand-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 8px;
+  }
+  .color-strand {
+    display: flex;
+    height: 28px;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 6px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+  }
+  .color-strand-seg { height: 100%; }
+  .color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .color-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .color-legend .dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  /* ─── Category bars ─── */
+  .cat-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 36px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+    font-size: 12.5px;
+  }
+  .cat-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cat-bar-wrap {
+    height: 10px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .cat-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--violet), var(--pink));
+  }
+  .cat-pct { color: var(--muted); text-align: right; }
+
+  /* ─── Stat chips ─── */
+  .dna-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .dna-stat-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+  }
+  .dna-stat-value { font-size: 16px; font-weight: 800; color: var(--cyan); margin-bottom: 2px; }
+  .dna-stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+
+  footer {
+    text-align: center;
+    padding: 36px 0 10px;
+    color: #7a7588;
+    font-size: 12.5px;
+  }
+  footer a {
+    color: #7a7588;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,158,203,0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="./index.html">← Back to the basket</a>
+    <h1>🧬 Style DNA</h1>
+    <p class="subtitle">A profile built automatically from the wishlist's real categories and colors.</p>
+
+    <div id="dna-container">
+      <div class="empty-state">
+        <div class="big">🧬</div>
+        Analyzing the wishlist…
+      </div>
+    </div>
+
+    <footer>
+      <a href="./index.html">← Full wishlist</a> &nbsp;·&nbsp;
+      <a href="./about.html">About this page</a>
+    </footer>
+  </div>
+
+  <script>
+    const COLOR_SWATCH = {
+      pink: "#ff8fc4", red: "#e04848", orange: "#ff9c3f", yellow: "#f0d83a", beige: "#d8c2a0",
+      brown: "#7a5230", green: "#4caf6e", teal: "#3fb6ad", blue: "#4a7fe0", purple: "#9d5fd6",
+      black: "#1a1a1a", white: "#f4f4f4", gray: "#9a9a9a"
+    };
+    const COLOR_LABELS = {
+      pink: "Pink", red: "Red", orange: "Orange", yellow: "Yellow", beige: "Beige",
+      brown: "Brown", green: "Green", teal: "Teal", blue: "Blue", purple: "Purple",
+      black: "Black", white: "White", gray: "Gray"
+    };
+
+    // Maps a leading color + leading category into a fun, deterministic archetype.
+    // Order matters: more specific combos are checked first, falling back to
+    // color-only or category-only reads so every combination lands somewhere.
+    function pickArchetype(topColor, topCat, allCats) {
+      const catSet = new Set(allCats.map(c => c.toLowerCase()));
+      const hasAny = (...keys) => keys.some(k => [...catSet].some(c => c.includes(k)));
+
+      if (topColor === "black" && hasAny("cosplay", "costume")) {
+        return { title: "Midnight Performer", tagline: "Dark, dramatic, and always ready for the next character." };
+      }
+      if (topColor === "pink" && hasAny("dress", "skirt")) {
+        return { title: "Sweetheart Romantic", tagline: "Soft pinks and flowing silhouettes — coquette at heart." };
+      }
+      if (topColor === "black") {
+        return { title: "Gothic Minimalist", tagline: "A wardrobe built on shadows, structure, and quiet drama." };
+      }
+      if (topColor === "pink") {
+        return { title: "Pastel Dreamer", tagline: "Soft, sweet, and unapologetically cute." };
+      }
+      if (hasAny("wig", "hair")) {
+        return { title: "Shape-Shifter", tagline: "Always one wig away from a brand new identity." };
+      }
+      if (hasAny("cosplay", "costume")) {
+        return { title: "Character Collector", tagline: "Every outfit tells a story — usually someone else's." };
+      }
+      if (hasAny("lingerie", "underwear")) {
+        return { title: "Quiet Luxury", tagline: "The best pieces are the ones only you know about." };
+      }
+      if (topColor === "white" || topColor === "beige") {
+        return { title: "Soft Minimalist", tagline: "Clean lines, gentle tones, effortless elegance." };
+      }
+      if (topColor === "red") {
+        return { title: "Bold Statement", tagline: "Subtlety was never really the goal." };
+      }
+      return { title: "Eclectic Curator", tagline: "A little bit of everything — and that's exactly the point." };
+    }
+
+    async function loadDNA() {
+      const container = document.getElementById("dna-container");
+      try {
+        const res = await fetch("./products.json?t=" + Date.now());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const products = await res.json();
+
+        if (!products.length) {
+          container.innerHTML = `<div class="empty-state"><div class="big">🧬</div>Nothing to analyze yet — add some items first!</div>`;
+          return;
+        }
+
+        // ─── Colors ───
+        const colorCounts = {};
+        products.forEach(p => { if (p.color) colorCounts[p.color] = (colorCounts[p.color] || 0) + 1; });
+        const coloredTotal = Object.values(colorCounts).reduce((a, b) => a + b, 0);
+        const colorEntries = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
+
+        // ─── Categories ───
+        const catCounts = {};
+        products.forEach(p => {
+          const c = (p.category || "").trim();
+          if (c) catCounts[c] = (catCounts[c] || 0) + 1;
+        });
+        const catEntries = Object.entries(catCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+        const catMax = catEntries.length ? catEntries[0][1] : 1;
+
+        // ─── Stats ───
+        const prices = products.map(p => parseFloat((p.price || "0").toString().replace(",", "."))).filter(n => !isNaN(n));
+        const avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+        const totalCats = Object.keys(catCounts).length;
+
+        // ─── Archetype ───
+        const topColor = colorEntries.length ? colorEntries[0][0] : null;
+        const topCat = catEntries.length ? catEntries[0][0] : null;
+        const archetype = pickArchetype(topColor, topCat, Object.keys(catCounts));
+
+        const strandHtml = colorEntries.length
+          ? colorEntries.map(([key, count]) => {
+              const pct = (count / coloredTotal) * 100;
+              return `<div class="color-strand-seg" style="width:${pct}%;background:${COLOR_SWATCH[key] || "#888"}"></div>`;
+            }).join("")
+          : "";
+
+        const legendHtml = colorEntries.length
+          ? colorEntries.map(([key, count]) => `
+              <span><span class="dot" style="background:${COLOR_SWATCH[key] || "#888"}"></span>${COLOR_LABELS[key] || key} ${Math.round((count / coloredTotal) * 100)}%</span>
+            `).join("")
+          : `<span>No colors tagged yet</span>`;
+
+        const catRowsHtml = catEntries.map(([cat, count]) => `
+          <div class="cat-row">
+            <div class="cat-name">${cat.replace(/</g, "&lt;")}</div>
+            <div class="cat-bar-wrap"><div class="cat-bar" style="width:${(count / catMax) * 100}%"></div></div>
+            <div class="cat-pct">${count}</div>
+          </div>
+        `).join("");
+
+        container.innerHTML = `
+          <div class="id-card">
+            <div class="id-eyebrow">Style Archetype</div>
+            <div class="id-archetype">${archetype.title}</div>
+            <div class="id-tagline">${archetype.tagline}</div>
+
+            <div class="strand-label">🎨 Color signature</div>
+            <div class="color-strand">${strandHtml || '<div class="color-strand-seg" style="width:100%;background:#444"></div>'}</div>
+            <div class="color-legend">${legendHtml}</div>
+
+            <div class="strand-label">🏷️ Top categories</div>
+            ${catRowsHtml || '<div class="empty-state" style="padding:10px 0;">No categories tagged yet</div>'}
+
+            <div class="dna-stats">
+              <div class="dna-stat-box">
+                <div class="dna-stat-value">${products.length}</div>
+                <div class="dna-stat-label">Items analyzed</div>
+              </div>
+              <div class="dna-stat-box">
+                <div class="dna-stat-value">${totalCats}</div>
+                <div class="dna-stat-label">Categories</div>
+              </div>
+              <div class="dna-stat-box">
+                <div class="dna-stat-value">${avgPrice.toFixed(2)} €</div>
+                <div class="dna-stat-label">Average price</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        console.error("Style DNA load error:", err);
+        container.innerHTML = `<div class="empty-state"><div class="big">😢</div>Couldn't load the wishlist right now. Try again later!</div>`;
+      }
+    }
+
+    loadDNA();
+  </script>
+</body>
+</html>
