@@ -13,6 +13,12 @@
     { id: "stylist",    icon: "🎨", title: "Styliste",     desc: "Une tenue proposée" },
     { id: "explorer",   icon: "👀", title: "Explorateur",  desc: "Toutes les pages du site visitées" },
     { id: "loyal",      icon: "💫", title: "Fidèle",       desc: "3ème visite sur le site" },
+    { id: "player",     icon: "🎮", title: "Joueur",       desc: "5 bonnes réponses d'affilée au Higher/Lower" },
+    { id: "memory",     icon: "🧠", title: "Mémoire d'éléphant", desc: "Un niveau du jeu Memory réussi" },
+    { id: "swiper",     icon: "📱", title: "Swipeur",      desc: "Le mode swipe essayé" },
+    { id: "lucky",      icon: "🎲", title: "Petit veinard", desc: "Un résultat Pick-for-me révélé" },
+    { id: "outfit-fan", icon: "🩷", title: "Supporter de looks", desc: "Un vote pour une tenue" },
+    { id: "sociable",   icon: "😊", title: "Sociable",     desc: "Une réaction laissée sur un commentaire" },
   ];
 
   const STORAGE_KEY = "nanaBadgesUnlocked";
