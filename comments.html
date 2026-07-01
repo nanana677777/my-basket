@@ -372,6 +372,7 @@
 
       notifyDiscord("comment", name + ": " + text);
       mascotSay("comment");
+      if (typeof unlockBadge === "function") unlockBadge("commenter");
 
       [nameInput, textInput, submitBtn, document.querySelector(".char-count")].forEach(el => el.style.display = "none");
       document.querySelectorAll(".comment-form label").forEach(el => el.style.display = "none");
@@ -485,5 +486,6 @@
 
     loadComments();
   </script>
+  <script src="./badges.js"></script>
 </body>
 </html>
