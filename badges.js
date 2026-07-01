@@ -6,19 +6,32 @@
   "use strict";
 
   const BADGES = [
-    { id: "first-vote", icon: "🗳️", title: "First vote", desc: "Voted for an item" },
-    { id: "first-fav",  icon: "❤️", title: "Crush",       desc: "First favorite added" },
-    { id: "commenter",  icon: "✍️", title: "Commentator", desc: "Left a comment" },
-    { id: "curious",    icon: "🙋", title: "Curious",     desc: "Asked a question on the AMA" },
-    { id: "stylist",    icon: "🎨", title: "Stylist",     desc: "Proposed an outfit" },
-    { id: "explorer",   icon: "👀", title: "Explorer",    desc: "Visited every page on the site" },
-    { id: "loyal",      icon: "💫", title: "Loyal",       desc: "3rd visit to the site" },
-    { id: "player",     icon: "🎮", title: "Gamer",       desc: "5 correct answers in a row on Higher/Lower" },
-    { id: "memory",     icon: "🧠", title: "Elephant memory", desc: "Cleared a level in the Memory game" },
-    { id: "swiper",     icon: "📱", title: "Swiper",      desc: "Tried swipe mode" },
-    { id: "lucky",      icon: "🎲", title: "Lucky",       desc: "Revealed a Pick-for-me result" },
-    { id: "outfit-fan", icon: "🩷", title: "Outfit supporter", desc: "Voted for an outfit" },
-    { id: "sociable",   icon: "😊", title: "Sociable",    desc: "Left a reaction on a comment" },
+    { id: "first-vote", icon: "🗳️", title: "First vote", desc: "Voted for an item",
+      reward: { type: "image", src: "./rewards/first-vote.jpg" } },
+    { id: "first-fav",  icon: "❤️", title: "Crush",       desc: "First favorite added",
+      reward: { type: "image", src: "./rewards/first-fav.jpg" } },
+    { id: "commenter",  icon: "✍️", title: "Commentator", desc: "Left a comment",
+      reward: { type: "audio", src: "./rewards/commenter.mp3" } },
+    { id: "curious",    icon: "🙋", title: "Curious",     desc: "Asked a question on the AMA",
+      reward: { type: "link", url: "https://www.erome.com/nana677" } },
+    { id: "stylist",    icon: "🎨", title: "Stylist",     desc: "Proposed an outfit",
+      reward: { type: "image", src: "./rewards/stylist.jpg" } },
+    { id: "explorer",   icon: "👀", title: "Explorer",    desc: "Visited every page on the site",
+      reward: { type: "image", src: "./rewards/explorer.jpg" } },
+    { id: "loyal",      icon: "💫", title: "Loyal",       desc: "3rd visit to the site",
+      reward: { type: "image", src: "./rewards/loyal.jpg" } },
+    { id: "player",     icon: "🎮", title: "Gamer",       desc: "5 correct answers in a row on Higher/Lower",
+      reward: { type: "link", url: "https://mym.fans/nana677" } },
+    { id: "memory",     icon: "🧠", title: "Elephant memory", desc: "Cleared a level in the Memory game",
+      reward: { type: "link", url: "https://www.erome.com/nana677" } },
+    { id: "swiper",     icon: "📱", title: "Swiper",      desc: "Tried swipe mode",
+      reward: { type: "link", url: "https://mym.fans/nana677" } },
+    { id: "lucky",      icon: "🎲", title: "Lucky",       desc: "Revealed a Pick-for-me result",
+      reward: { type: "link", url: "https://www.erome.com/nana677" } },
+    { id: "outfit-fan", icon: "🩷", title: "Outfit supporter", desc: "Voted for an outfit",
+      reward: { type: "link", url: "https://mym.fans/nana677" } },
+    { id: "sociable",   icon: "😊", title: "Sociable",    desc: "Left a reaction on a comment",
+      reward: { type: "link", url: "https://www.erome.com/nana677" } },
   ];
 
   const STORAGE_KEY = "nanaBadgesUnlocked";
@@ -117,6 +130,50 @@
         #nb-badge-tab { bottom: 14px; left: 14px; padding: 8px 12px; font-size: 12px; }
         #nb-toast-container { top: 12px; right: 12px; max-width: 220px; }
       }
+
+      .nb-toast { cursor: pointer; pointer-events: auto; }
+
+      #nb-reward-overlay {
+        display: none; position: fixed; inset: 0; z-index: 3200;
+        background: rgba(8,8,14,0.8); backdrop-filter: blur(12px);
+        align-items: center; justify-content: center; padding: 24px;
+      }
+      #nb-reward-overlay.open { display: flex; animation: nbFade 0.25s ease; }
+      #nb-reward-panel {
+        width: 100%; max-width: 360px; max-height: 86vh; overflow-y: auto;
+        background: #1b1b26; border: 1px solid rgba(255,158,203,0.35);
+        border-radius: 24px; padding: 22px 20px;
+        box-shadow: 0 0 70px rgba(255,158,203,0.2), 0 20px 50px rgba(0,0,0,0.65);
+        font-family: "Segoe UI", Arial, sans-serif; color: #fff; text-align: center;
+        transform: scale(0.9) translateY(10px); opacity: 0;
+        transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      #nb-reward-overlay.open #nb-reward-panel { transform: scale(1) translateY(0); opacity: 1; }
+      #nb-reward-close {
+        position: absolute; top: 14px; right: 14px; z-index: 10;
+        background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+        color: #cfc9d8; width: 30px; height: 30px; border-radius: 50%;
+        cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s ease;
+      }
+      #nb-reward-close:hover { background: rgba(255,158,203,0.2); color: #fff; transform: rotate(90deg); }
+      .nb-reward-icon { font-size: 40px; margin-bottom: 6px; filter: drop-shadow(0 0 10px rgba(255,158,203,0.5)); pointer-events: none; }
+      .nb-reward-title { font-size: 18px; font-weight: 700; color: #ff9ecb; text-shadow: 0 0 12px rgba(255,158,203,0.4); pointer-events: none; }
+      .nb-reward-desc { font-size: 12.5px; color: #9c96a8; margin-top: 2px; margin-bottom: 16px; pointer-events: none; }
+      .nb-reward-media img { width: 100%; border-radius: 16px; display: block; margin-bottom: 4px; }
+      .nb-reward-media audio { width: 100%; margin-top: 4px; }
+      .nb-reward-lockcard {
+        background: rgba(255,158,203,0.08); border: 1px dashed rgba(255,158,203,0.4);
+        border-radius: 16px; padding: 22px 16px; margin-top: 4px;
+      }
+      .nb-reward-lockcard .lock-emoji { font-size: 30px; margin-bottom: 8px; }
+      .nb-reward-lockcard p { font-size: 12.5px; color: #cfc9d8; margin: 0 0 14px; }
+      .nb-reward-cta {
+        display: inline-block; background: linear-gradient(135deg,#ff9ecb,#c9a6ff);
+        color: #121218; font-weight: 700; font-size: 13px; text-decoration: none;
+        padding: 10px 20px; border-radius: 999px; transition: transform 0.2s ease;
+      }
+      .nb-reward-cta:hover { transform: translateY(-2px) scale(1.03); }
     `;
     document.head.appendChild(style);
   }
@@ -139,6 +196,7 @@
       '<div class="nb-toast-icon">' + badge.icon + "</div>" +
       '<div><div class="nb-toast-title">Badge unlocked!</div>' +
       '<div class="nb-toast-name">' + badge.title + "</div></div>";
+    el.addEventListener("click", () => showReward(badge));
     container.appendChild(el);
     requestAnimationFrame(() => el.classList.add("show"));
     setTimeout(() => {
@@ -146,6 +204,56 @@
       setTimeout(() => el.remove(), 400);
     }, 4000);
     updateBadgeTabCount();
+  }
+
+  function buildRewardContent(badge) {
+    const r = badge.reward;
+    let mediaHtml = "";
+    if (r && r.type === "image") {
+      mediaHtml = '<div class="nb-reward-media"><img src="' + r.src + '" alt="' + badge.title + '"></div>';
+    } else if (r && r.type === "audio") {
+      mediaHtml =
+        '<div class="nb-reward-media">' +
+        '<div style="font-size:34px;">🎧</div>' +
+        '<audio controls src="' + r.src + '"></audio></div>';
+    } else if (r && r.type === "link") {
+      mediaHtml =
+        '<div class="nb-reward-lockcard">' +
+        '<div class="lock-emoji">🔒</div>' +
+        "<p>Exclusive content unlocked for this badge</p>" +
+        '<a class="nb-reward-cta" href="' + r.url + '" target="_blank" rel="noopener">View exclusive content</a>' +
+        "</div>";
+    }
+    return (
+      '<button id="nb-reward-close" title="Close">✕</button>' +
+      '<div class="nb-reward-icon">' + badge.icon + "</div>" +
+      '<div class="nb-reward-title">' + badge.title + "</div>" +
+      '<div class="nb-reward-desc">' + badge.desc + "</div>" +
+      mediaHtml
+    );
+  }
+
+  function showReward(badge) {
+    let overlay = document.getElementById("nb-reward-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "nb-reward-overlay";
+      overlay.innerHTML = '<div id="nb-reward-panel"></div>';
+      document.body.appendChild(overlay);
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeReward();
+      });
+    }
+    const panel = document.getElementById("nb-reward-panel");
+    panel.style.position = "relative";
+    panel.innerHTML = buildRewardContent(badge);
+    document.getElementById("nb-reward-close").addEventListener("click", closeReward);
+    overlay.classList.add("open");
+  }
+
+  function closeReward() {
+    const ov = document.getElementById("nb-reward-overlay");
+    if (ov) ov.classList.remove("open");
   }
 
   window.unlockBadge = function (id) {
@@ -198,7 +306,7 @@
     BADGES.forEach((b) => {
       const isUnlocked = unlocked.includes(b.id);
       html +=
-        '<div class="nb-row ' + (isUnlocked ? "" : "locked") + '">' +
+        '<div class="nb-row ' + (isUnlocked ? "" : "locked") + '" data-badge-id="' + b.id + '" style="' + (isUnlocked ? "cursor:pointer;" : "") + '">' +
         '<div class="nb-row-icon">' + (isUnlocked ? b.icon : "🔒") + "</div>" +
         '<div><div class="nb-row-title">' + b.title + "</div>" +
         '<div class="nb-row-desc">' + (isUnlocked ? b.desc : "???") + "</div></div>" +
@@ -206,6 +314,13 @@
     });
     panel.innerHTML = html;
     document.getElementById("nb-close").addEventListener("click", closePanel);
+    panel.querySelectorAll(".nb-row").forEach((row) => {
+      const id = row.getAttribute("data-badge-id");
+      const badge = BADGES.find((b) => b.id === id);
+      if (badge && unlocked.includes(id)) {
+        row.addEventListener("click", () => showReward(badge));
+      }
+    });
   }
 
   function openPanel() {
@@ -232,7 +347,12 @@
 
     tab.addEventListener("click", openPanel);
     overlay.addEventListener("click", (e) => { if (e.target === overlay) closePanel(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closePanel();
+        closeReward();
+      }
+    });
 
     updateBadgeTabCount();
   }
