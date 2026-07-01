@@ -3167,6 +3167,7 @@
           favorites.push(link);
           heartEl.classList.add("favorited");
           mascotSay("favorite");
+          if (typeof unlockBadge === "function") unlockBadge("first-fav");
 
           // 💖 Floating mini heart animation
           const miniHeart = document.createElement("div");
@@ -3255,6 +3256,7 @@
 
         starEl.classList.add("voted", "disabled");
         mascotSay("vote");
+        if (typeof unlockBadge === "function") unlockBadge("first-vote");
 
         const votedProduct = (typeof rawProducts !== "undefined" ? rawProducts : []).find((p) => getVoteId(p.link) === pid);
         notifyDiscord("vote", votedProduct ? votedProduct.title : pid, votedProduct ? votedProduct.image : null);
@@ -4688,6 +4690,7 @@
         const firstSlotImage = filled.length ? currentSlots[filled[0]].image : null;
         notifyDiscord("proposal", (name || "Untitled") + (by ? " (by " + by + ")" : ""), firstSlotImage);
         if (typeof mascotSay === "function") mascotSay("proposal");
+        if (typeof unlockBadge === "function") unlockBadge("stylist");
 
         showThanks();
       }
@@ -5348,5 +5351,6 @@
       });
     })();
   </script>
-  </body>
+    <script src="./badges.js"></script>
+</body>
 </html>
