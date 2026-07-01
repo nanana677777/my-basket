@@ -472,6 +472,7 @@
             const r = REACTIONS.find(r => r.type === type);
             notifyDiscord("reaction", `${r ? r.emoji : "✨"} on ${btn.dataset.commentName}'s comment: "${btn.dataset.commentText}"`);
             mascotSay("reaction");
+            if (typeof unlockBadge === "function") unlockBadge("sociable");
           });
         });
       } catch (err) {
