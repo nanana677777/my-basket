@@ -6,19 +6,19 @@
   "use strict";
 
   const BADGES = [
-    { id: "first-vote", icon: "🗳️", title: "Premier vote", desc: "Tu as voté pour un item" },
-    { id: "first-fav",  icon: "❤️", title: "Coup de cœur", desc: "Premier favori ajouté" },
-    { id: "commenter",  icon: "✍️", title: "Commentateur", desc: "Un commentaire laissé" },
-    { id: "curious",    icon: "🙋", title: "Curieux",      desc: "Une question posée sur l'AMA" },
-    { id: "stylist",    icon: "🎨", title: "Styliste",     desc: "Une tenue proposée" },
-    { id: "explorer",   icon: "👀", title: "Explorateur",  desc: "Toutes les pages du site visitées" },
-    { id: "loyal",      icon: "💫", title: "Fidèle",       desc: "3ème visite sur le site" },
-    { id: "player",     icon: "🎮", title: "Joueur",       desc: "5 bonnes réponses d'affilée au Higher/Lower" },
-    { id: "memory",     icon: "🧠", title: "Mémoire d'éléphant", desc: "Un niveau du jeu Memory réussi" },
-    { id: "swiper",     icon: "📱", title: "Swipeur",      desc: "Le mode swipe essayé" },
-    { id: "lucky",      icon: "🎲", title: "Petit veinard", desc: "Un résultat Pick-for-me révélé" },
-    { id: "outfit-fan", icon: "🩷", title: "Supporter de looks", desc: "Un vote pour une tenue" },
-    { id: "sociable",   icon: "😊", title: "Sociable",     desc: "Une réaction laissée sur un commentaire" },
+    { id: "first-vote", icon: "🗳️", title: "First vote", desc: "Voted for an item" },
+    { id: "first-fav",  icon: "❤️", title: "Crush",       desc: "First favorite added" },
+    { id: "commenter",  icon: "✍️", title: "Commentator", desc: "Left a comment" },
+    { id: "curious",    icon: "🙋", title: "Curious",     desc: "Asked a question on the AMA" },
+    { id: "stylist",    icon: "🎨", title: "Stylist",     desc: "Proposed an outfit" },
+    { id: "explorer",   icon: "👀", title: "Explorer",    desc: "Visited every page on the site" },
+    { id: "loyal",      icon: "💫", title: "Loyal",       desc: "3rd visit to the site" },
+    { id: "player",     icon: "🎮", title: "Gamer",       desc: "5 correct answers in a row on Higher/Lower" },
+    { id: "memory",     icon: "🧠", title: "Elephant memory", desc: "Cleared a level in the Memory game" },
+    { id: "swiper",     icon: "📱", title: "Swiper",      desc: "Tried swipe mode" },
+    { id: "lucky",      icon: "🎲", title: "Lucky",       desc: "Revealed a Pick-for-me result" },
+    { id: "outfit-fan", icon: "🩷", title: "Outfit supporter", desc: "Voted for an outfit" },
+    { id: "sociable",   icon: "😊", title: "Sociable",    desc: "Left a reaction on a comment" },
   ];
 
   const STORAGE_KEY = "nanaBadgesUnlocked";
@@ -137,7 +137,7 @@
     el.className = "nb-toast";
     el.innerHTML =
       '<div class="nb-toast-icon">' + badge.icon + "</div>" +
-      '<div><div class="nb-toast-title">Badge débloqué !</div>' +
+      '<div><div class="nb-toast-title">Badge unlocked!</div>' +
       '<div class="nb-toast-name">' + badge.title + "</div></div>";
     container.appendChild(el);
     requestAnimationFrame(() => el.classList.add("show"));
@@ -192,9 +192,9 @@
     if (!panel) return;
     const unlocked = getUnlocked();
     let html =
-      '<div id="nb-panel-head"><h3>🏅 Mes badges</h3>' +
+      '<div id="nb-panel-head"><h3>🏅 My badges</h3>' +
       '<button id="nb-close" title="Close">✕</button></div>' +
-      '<div id="nb-progress">' + unlocked.length + " / " + BADGES.length + " débloqués</div>";
+      '<div id="nb-progress">' + unlocked.length + " / " + BADGES.length + " unlocked</div>";
     BADGES.forEach((b) => {
       const isUnlocked = unlocked.includes(b.id);
       html +=
