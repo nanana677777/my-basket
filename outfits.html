@@ -382,6 +382,7 @@
             }
             notifyDiscord("outfit_vote", btn.dataset.outfitName || id, btn.dataset.outfitImage);
             rememberVotedOutfit(id);
+            if (typeof unlockBadge === "function") unlockBadge("outfit-fan");
             btn.disabled = true;
             btn.classList.add("voted");
             const c = btn.querySelector(".ov-count");
