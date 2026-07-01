@@ -4522,6 +4522,7 @@
             pickSpinBtn.disabled = false;
             spinTimer = null;
             if (typeof mascotSay === "function") mascotSay("pick");
+            if (typeof unlockBadge === "function") unlockBadge("lucky");
             return;
           }
           spinTimer = setTimeout(step, delay);
@@ -4866,6 +4867,7 @@
         swipeOverlay.classList.add("open");
         swipeTrack.scrollTop = 0;
         document.body.style.overflow = "hidden";
+        if (typeof unlockBadge === "function") unlockBadge("swiper");
       }
 
       function closeSwipe() {
@@ -5042,6 +5044,7 @@
             hlBestEl.textContent = String(best);
             localStorage.setItem(HL_BEST_KEY, String(best));
           }
+          if (score >= 5 && typeof unlockBadge === "function") unlockBadge("player");
           setTimeout(() => newRound(true), 850);
         } else {
           setTimeout(() => {
@@ -5321,6 +5324,7 @@
           bestLevel = level;
           localStorage.setItem(MEM_BEST_KEY, String(bestLevel));
         }
+        if (typeof unlockBadge === "function") unlockBadge("memory");
         memBestLevelEl.textContent = String(bestLevel);
         memLuTitle.textContent = `Level ${level} cleared! 🎉`;
         memLuText.textContent = `${moves} moves in ${formatTime(seconds)}. Next level has more pairs!`;
