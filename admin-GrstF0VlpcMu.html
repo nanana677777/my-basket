@@ -902,6 +902,10 @@
         <label for="lb-name">Name</label>
         <input id="lb-name" type="text" placeholder="Sarah, Mom, Best friend..." />
 
+        <label for="lb-discord-id" style="margin-top:8px;">Discord user ID (optional — pings them when items are added)</label>
+        <input id="lb-discord-id" type="text" placeholder="e.g. 123456789012345678" inputmode="numeric" />
+        <p class="sub" style="margin:2px 0 0;font-size:11px;">Numeric ID only — right-click their name in Discord (Developer Mode on) → Copy User ID. A username won't work.</p>
+
         <label style="margin-top:8px;">Products they bought</label>
         <div class="lb-chip-row" id="lb-chip-row"></div>
         <button class="btn-ghost" id="lb-pick-btn">📦 Add products</button>
@@ -947,12 +951,12 @@
 
     // 🔔 Fire-and-forget Discord notification via the Cloudflare Worker relay
     const DISCORD_RELAY_URL = "https://my-basket-notify.nanana677777.workers.dev/";
-    function notifyDiscord(type, detail, image) {
+    function notifyDiscord(type, detail, image, mention) {
       try {
         fetch(DISCORD_RELAY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150), image: image || undefined }),
+          body: JSON.stringify({ type, detail: (detail || "").toString().slice(0, 150), image: image || undefined, mention: mention || undefined }),
         }).catch(() => {});
       } catch (e) {}
     }
@@ -2160,6 +2164,7 @@
       editingPersonId = id;
       currentPersonProducts = [...(person.products || [])];
       document.getElementById("lb-name").value = person.name || "";
+      document.getElementById("lb-discord-id").value = person.discordId || "";
       renderPersonChips();
       document.getElementById("lb-save-btn").textContent = "Update person";
       document.getElementById("lb-cancel-btn").style.display = "inline-block";
@@ -2170,6 +2175,7 @@
       editingPersonId = null;
       currentPersonProducts = [];
       document.getElementById("lb-name").value = "";
+      document.getElementById("lb-discord-id").value = "";
       renderPersonChips();
       document.getElementById("lb-save-btn").textContent = "Add person";
       document.getElementById("lb-cancel-btn").style.display = "none";
@@ -2180,6 +2186,14 @@
       if (!name) { showToast("Give this person a name first.", true); return; }
       if (!currentPersonProducts.length) { showToast("Add at least one product.", true); return; }
 
+      const discordIdRaw = document.getElementById("lb-discord-id").value.trim();
+      if (discordIdRaw && !/^\d{15,25}$/.test(discordIdRaw)) {
+        showToast("Discord user ID should be numbers only (right-click their name → Copy User ID).", true);
+        return;
+      }
+      const discordId = discordIdRaw || null;
+      const mention = discordId ? `<@${discordId}>` : null;
+
       if (editingPersonId) {
         const person = leaderboard.find(p => p.id === editingPersonId);
         if (person) {
@@ -2187,6 +2201,7 @@
           const newlyAdded = currentPersonProducts.filter(link => !oldProducts.includes(link));
           person.name = name;
           person.products = [...currentPersonProducts];
+          if (discordId) person.discordId = discordId; else delete person.discordId;
 
           if (newlyAdded.length) {
             const addedItems = newlyAdded.map(link => products.find(p => p.link === link)).filter(Boolean);
@@ -2194,16 +2209,17 @@
             const detail = addedItems.length === 1
               ? `+ ${addedItems[0].title} for ${name} — total ${total} €`
               : `+ ${addedItems.length} items for ${name} — total ${total} €`;
-            notifyDiscord("leaderboard", detail, addedItems[0] ? addedItems[0].image : null);
+            notifyDiscord("leaderboard", detail, addedItems[0] ? addedItems[0].image : null, mention);
           }
         }
         pushLeaderboard("Update leaderboard entry: " + name);
       } else {
         const newPerson = { id: "p" + Date.now(), name, products: [...currentPersonProducts] };
+        if (discordId) newPerson.discordId = discordId;
         leaderboard.push(newPerson);
         const total = personTotal(newPerson).toFixed(2);
         const repProduct = newPerson.products.map(link => products.find(p => p.link === link)).find(Boolean);
-        notifyDiscord("leaderboard", `${name} — ${total} €`, repProduct ? repProduct.image : null);
+        notifyDiscord("leaderboard", `${name} — ${total} €`, repProduct ? repProduct.image : null, mention);
         pushLeaderboard("Add leaderboard entry: " + name);
       }
       resetPersonForm();
