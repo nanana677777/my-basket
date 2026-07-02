@@ -143,6 +143,107 @@
     cursor: default;
     transform: none;
   }
+  .outfit-arrange-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,158,203,0.3);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .outfit-arrange-btn:hover {
+    border-color: rgba(255,158,203,0.6);
+    background: rgba(255,158,203,0.1);
+    transform: translateY(-1px) scale(1.05);
+  }
+  #arrange-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 4200;
+    background: rgba(8,8,14,0.82);
+    backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #arrange-overlay.open { display: flex; }
+  #arrange-panel {
+    width: 100%;
+    max-width: 420px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    background: #1b1b26;
+    border: 1px solid rgba(255,158,203,0.3);
+    border-radius: 24px;
+    padding: 18px;
+    box-shadow: 0 0 60px rgba(255,158,203,0.15), 0 20px 50px rgba(0,0,0,0.6);
+  }
+  #arrange-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  #arrange-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #ff9ecb;
+    text-shadow: 0 0 12px rgba(255,158,203,0.4);
+  }
+  #arrange-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #arrange-close:hover { background: rgba(255,158,203,0.2); }
+  #arrange-board {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.15;
+    border-radius: 18px;
+    border: 2px dashed rgba(255,158,203,0.25);
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,158,203,0.05), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(201,166,255,0.05), transparent 50%),
+      #14141c;
+    overflow: hidden;
+  }
+  .arrange-item {
+    position: absolute;
+    transform: translate(-50%, -50%);
+  }
+  .arrange-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: block;
+  }
+  #arrange-hint {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 11.5px;
+    color: #9c96a8;
+  }
   .ov-count { font-variant-numeric: tabular-nums; }
 
   /* ─── Flat lay grid ─── */
@@ -249,6 +350,17 @@
     </footer>
   </div>
 
+  <div id="arrange-overlay">
+    <div id="arrange-panel">
+      <div id="arrange-head">
+        <div id="arrange-title">🧵 How it was styled</div>
+        <button id="arrange-close" title="Close">✕</button>
+      </div>
+      <div id="arrange-board"></div>
+      <div id="arrange-hint">This is the exact arrangement the visitor created in the dressing room ✨</div>
+    </div>
+  </div>
+
   <script data-goatcounter="https://nana677.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   <script>
     const SLOT_LABELS = {
@@ -346,6 +458,7 @@
             <div class="outfit-name">${(outfit.name || "Untitled Look").replace(/</g,"&lt;")}</div>
             <div class="outfit-header-right">
               <button class="outfit-vote-btn${alreadyVoted ? " voted" : ""}" data-outfit-id="${outfit.id}" data-outfit-name="${(outfit.name || "Untitled Look").replace(/"/g, "&quot;")}" data-outfit-image="${(repImage ? repImage.image : "").replace(/"/g, "&quot;")}" ${alreadyVoted ? "disabled" : ""}>🩷 <span class="ov-count">${outfit._votes > 0 ? outfit._votes : ""}</span></button>
+              ${outfit.layout && outfit.layout.length ? `<button class="outfit-arrange-btn" data-arrange-idx="${idx}" title="See how it was styled">🧵</button>` : ""}
               ${totalPrice > 0 ? `<div class="outfit-total">💰 Total: ${totalPrice.toFixed(2)} €</div>` : ""}
             </div>
           `;
@@ -374,6 +487,10 @@
           });
         });
 
+        container.querySelectorAll(".outfit-arrange-btn").forEach(btn => {
+          btn.addEventListener("click", () => openArrangement(outfits[parseInt(btn.dataset.arrangeIdx)]));
+        });
+
         container.querySelectorAll(".outfit-vote-btn:not([disabled])").forEach(btn => {
           btn.addEventListener("click", () => {
             const id = btn.dataset.outfitId;
@@ -398,6 +515,32 @@
           </div>`;
       }
     }
+
+    function openArrangement(outfit) {
+      const board = document.getElementById("arrange-board");
+      board.innerHTML = "";
+      (outfit.layout || []).forEach(it => {
+        const el = document.createElement("div");
+        el.className = "arrange-item";
+        el.style.left = it.x + "%";
+        el.style.top = it.y + "%";
+        el.style.width = (92 * (it.scale || 1)) + "px";
+        el.style.height = (92 * (it.scale || 1)) + "px";
+        el.innerHTML = `<img src="${it.image}" alt="">`;
+        board.appendChild(el);
+      });
+      document.getElementById("arrange-overlay").classList.add("open");
+    }
+    function closeArrangement() {
+      document.getElementById("arrange-overlay").classList.remove("open");
+    }
+    document.getElementById("arrange-close").addEventListener("click", closeArrangement);
+    document.getElementById("arrange-overlay").addEventListener("click", (e) => {
+      if (e.target.id === "arrange-overlay") closeArrangement();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeArrangement();
+    });
 
     loadOutfits();
   </script>
