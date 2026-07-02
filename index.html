@@ -2539,6 +2539,25 @@
       #dressing-thanks.show { display: flex; }
       #dressing-thanks .big { font-size: 40px; margin-bottom: 10px; }
       #dressing-thanks p { color: #cfc9d8; font-size: 13px; }
+      #dressing-names {
+        display: flex;
+        gap: 8px;
+        padding: 0 18px 10px;
+        flex-shrink: 0;
+      }
+      #dressing-name, #dressing-by {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,158,203,0.35);
+        background: #14141c;
+        color: #fff;
+        outline: none;
+        font-size: 12.5px;
+        text-align: center;
+        font-family: inherit;
+      }
 
       /* 🎮 Higher/Lower game overlay */
       #hl-overlay {
@@ -4522,6 +4541,10 @@
           </div>
         </div>
       </div>
+      <div id="dressing-names">
+        <input id="dressing-name" type="text" placeholder="Name your look (optional)" maxlength="60" />
+        <input id="dressing-by" type="text" placeholder="Your name (optional)" maxlength="40" />
+      </div>
       <div id="dressing-actions">
         <button id="dressing-clear">🗑️ Clear</button>
         <button id="dressing-submit" disabled>✨ Submit as proposal</button>
@@ -5856,15 +5879,17 @@
 
       function submitLook() {
         if (placedItems.length < 2) return;
-        const pairs = placedItems.map((it, i) => "item" + i + ":" + (typeof getVoteId === "function" ? getVoteId(it.link) : ""));
-        const path = "/dressing-proposal/" + pairs.join(",");
-        const title = "Dressing room look — " + placedItems.length + " items";
+        const lookName = document.getElementById("dressing-name").value.trim();
+        const proposerName = document.getElementById("dressing-by").value.trim();
+        const ids = placedItems.map((it) => (typeof getVoteId === "function" ? getVoteId(it.link) : null)).filter(Boolean);
+        const path = "/outfit-proposal/" + ids.join(",");
+        const title = "Outfit proposal: " + (lookName || "Untitled") + " ||| " + proposerName;
 
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({ path: path, title: title, event: true });
         }
         if (typeof notifyDiscord === "function") {
-          notifyDiscord("dressing_proposal", placedItems.length + "-item look from the dressing room", placedItems[0].image);
+          notifyDiscord("proposal", (lookName || "Untitled") + (proposerName ? " (by " + proposerName + ")" : "") + " — from the dressing room", placedItems[0].image);
         }
         if (typeof unlockBadge === "function") unlockBadge("stylist");
         if (typeof mascotSay === "function") mascotSay("proposal");
@@ -5872,6 +5897,8 @@
         thanksEl.classList.add("show");
         setTimeout(() => {
           thanksEl.classList.remove("show");
+          document.getElementById("dressing-name").value = "";
+          document.getElementById("dressing-by").value = "";
           clearBoard();
         }, 2200);
       }
