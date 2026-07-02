@@ -1837,6 +1837,7 @@
       #hl-tab { background: linear-gradient(135deg, #c9a6ff, #ff9ecb); }
       #mem-tab { background: linear-gradient(135deg, #ff9ecb, #7df9ff); }
       #propose-tab { background: linear-gradient(135deg, #ffd24c, #ff9ecb); }
+      #dress-tab { background: linear-gradient(135deg, #baffc9, #ff9ecb); }
       @media (max-width: 640px) {
         .tool-tab { font-size: 12px; padding: 7px 13px; }
       }
@@ -2301,6 +2302,243 @@
       @media (max-width: 640px) {
         #swipe-arrows { display: none; }
       }
+
+      /* 🧵 Interactive dressing room */
+      #dressing-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 4200;
+        background: #0a0a0e;
+        flex-direction: column;
+      }
+      #dressing-overlay.open { display: flex; }
+      #dressing-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 18px 10px;
+        flex-shrink: 0;
+      }
+      #dressing-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #ff9ecb;
+        text-shadow: 0 0 12px rgba(255,158,203,0.4);
+      }
+      #dressing-close {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #dressing-close:hover { background: rgba(255,158,203,0.2); }
+      #dressing-filters {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 0 18px 12px;
+        flex-shrink: 0;
+        scrollbar-width: none;
+      }
+      #dressing-filters::-webkit-scrollbar { display: none; }
+      .dressing-chip {
+        flex-shrink: 0;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #cfc9d8;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+      }
+      .dressing-chip.active {
+        background: linear-gradient(135deg, #baffc9, #ff9ecb);
+        color: #1b1b26;
+        border-color: transparent;
+      }
+      #dressing-palette {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 4px 18px 16px;
+        flex-shrink: 0;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,158,203,0.4) transparent;
+      }
+      .dressing-thumb {
+        flex-shrink: 0;
+        width: 62px;
+        height: 62px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #1b1b26;
+        border: 1px solid rgba(255,255,255,0.12);
+        cursor: grab;
+        touch-action: none;
+        position: relative;
+      }
+      .dressing-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        pointer-events: none;
+      }
+      .dressing-thumb:active { cursor: grabbing; }
+      #dressing-board-wrap {
+        flex: 1;
+        padding: 0 18px 12px;
+        min-height: 0;
+      }
+      #dressing-board {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        border: 2px dashed rgba(255,158,203,0.3);
+        background:
+          radial-gradient(circle at 20% 20%, rgba(255,158,203,0.05), transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(201,166,255,0.05), transparent 50%),
+          #14141c;
+        overflow: hidden;
+        touch-action: none;
+      }
+      #dressing-board-hint {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #6b6578;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 0 40px;
+        pointer-events: none;
+      }
+      #dressing-board-hint.hidden { display: none; }
+      .dressing-placed {
+        position: absolute;
+        width: 92px;
+        height: 92px;
+        transform: translate(-50%, -50%);
+        touch-action: none;
+        cursor: grab;
+      }
+      .dressing-placed:active { cursor: grabbing; }
+      .dressing-placed img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.15);
+        pointer-events: none;
+        display: block;
+      }
+      .dressing-placed-remove {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ff6b81;
+        color: #1b1b26;
+        border: 2px solid #0a0a0e;
+        font-size: 11px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .dressing-placed-resize {
+        position: absolute;
+        bottom: -8px;
+        right: -8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.9);
+        color: #1b1b26;
+        border: 2px solid #0a0a0e;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: nwse-resize;
+        touch-action: none;
+      }
+      #dressing-ghost {
+        position: fixed;
+        width: 70px;
+        height: 70px;
+        border-radius: 14px;
+        object-fit: cover;
+        pointer-events: none;
+        z-index: 4300;
+        opacity: 0.85;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+        transform: translate(-50%, -50%);
+        display: none;
+      }
+      #dressing-actions {
+        display: flex;
+        gap: 10px;
+        padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+        flex-shrink: 0;
+      }
+      #dressing-clear, #dressing-submit {
+        flex: 1;
+        padding: 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      #dressing-clear {
+        background: rgba(255,255,255,0.08);
+        color: #cfc9d8;
+        border: 1px solid rgba(255,255,255,0.15);
+      }
+      #dressing-submit {
+        background: linear-gradient(135deg, #baffc9, #ff9ecb);
+        color: #1b1b26;
+      }
+      #dressing-submit:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      #dressing-thanks {
+        display: none;
+        position: absolute;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(10,10,14,0.9);
+        border-radius: 20px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 30px;
+      }
+      #dressing-thanks.show { display: flex; }
+      #dressing-thanks .big { font-size: 40px; margin-bottom: 10px; }
+      #dressing-thanks p { color: #cfc9d8; font-size: 13px; }
 
       /* 🎮 Higher/Lower game overlay */
       #hl-overlay {
@@ -2810,6 +3048,7 @@
       <button id="hl-tab" class="tool-tab"><span class="tab-icon">🎮</span>game</button>
       <button id="swipe-tab" class="tool-tab"><span class="tab-icon">📱</span>swipe</button>
       <button id="pick-tab" class="tool-tab"><span class="tab-icon">🎲</span>pick</button>
+      <button id="dress-tab" class="tool-tab"><span class="tab-icon">🧵</span>dress up</button>
     </nav>
     <div class="counter" id="counter"></div>
     <div id="pie-chart-wrapper">
@@ -4265,6 +4504,31 @@
       <div id="swipe-track"></div>
     </div>
 
+    <!-- 🧵 Interactive dressing room -->
+    <div id="dressing-overlay">
+      <div id="dressing-header">
+        <div id="dressing-title">🧵 Dress up</div>
+        <button id="dressing-close" title="Close">✕</button>
+      </div>
+      <div id="dressing-filters"></div>
+      <div id="dressing-palette"></div>
+      <div id="dressing-board-wrap">
+        <div id="dressing-board">
+          <div id="dressing-board-hint">Drag items here to build your dream look ✨</div>
+          <div id="dressing-thanks">
+            <div class="big">🎉</div>
+            <div class="modal-title" style="color:#ff9ecb;font-weight:800;">Look sent!</div>
+            <p>Nana will take a look at your creation soon 💌</p>
+          </div>
+        </div>
+      </div>
+      <div id="dressing-actions">
+        <button id="dressing-clear">🗑️ Clear</button>
+        <button id="dressing-submit" disabled>✨ Submit as proposal</button>
+      </div>
+      <img id="dressing-ghost" src="" alt="">
+    </div>
+
     <!-- 🎮 Higher/Lower game overlay -->
     <div id="hl-overlay">
       <div id="hl-header">
@@ -5353,6 +5617,284 @@
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && memOverlay.classList.contains("open")) closeMemory();
       });
+    })();
+  </script>
+
+  <script>
+    // 🧵 Interactive dressing room — freeform drag-and-drop outfit board
+    (function () {
+      const overlay = document.getElementById("dressing-overlay");
+      const board = document.getElementById("dressing-board");
+      const boardHint = document.getElementById("dressing-board-hint");
+      const thanksEl = document.getElementById("dressing-thanks");
+      const filtersEl = document.getElementById("dressing-filters");
+      const paletteEl = document.getElementById("dressing-palette");
+      const ghost = document.getElementById("dressing-ghost");
+      const clearBtn = document.getElementById("dressing-clear");
+      const submitBtn = document.getElementById("dressing-submit");
+      const dressTab = document.getElementById("dress-tab");
+
+      if (!overlay || !board || !dressTab) return;
+
+      const STORAGE_KEY = "nanaDressingBoard";
+      const ITEM_PX = 92;
+      let placedItems = []; // { uid, link, image, x, y, scale, z }
+      let zCounter = 1;
+      let activeFilter = "All";
+
+      function loadBoard() {
+        try {
+          placedItems = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch (e) {
+          placedItems = [];
+        }
+        zCounter = placedItems.reduce((m, it) => Math.max(m, it.z || 1), 1) + 1;
+      }
+      function saveBoard() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(placedItems));
+        } catch (e) {}
+      }
+
+      function getProductList() {
+        return typeof rawProducts !== "undefined" && Array.isArray(rawProducts) ? rawProducts : [];
+      }
+
+      function getCategories() {
+        const cats = Array.from(new Set(getProductList().map((p) => p.category).filter(Boolean)));
+        return ["All"].concat(cats);
+      }
+
+      function renderFilters() {
+        filtersEl.innerHTML = getCategories()
+          .map((c) => '<div class="dressing-chip' + (c === activeFilter ? " active" : "") + '" data-cat="' + c + '">' + c + "</div>")
+          .join("");
+        filtersEl.querySelectorAll(".dressing-chip").forEach((chip) => {
+          chip.addEventListener("click", () => {
+            activeFilter = chip.getAttribute("data-cat");
+            renderFilters();
+            renderPalette();
+          });
+        });
+      }
+
+      function renderPalette() {
+        const list = getProductList();
+        const filtered = activeFilter === "All" ? list : list.filter((p) => p.category === activeFilter);
+        paletteEl.innerHTML = "";
+        filtered.forEach((p) => {
+          const thumb = document.createElement("div");
+          thumb.className = "dressing-thumb";
+          const img = document.createElement("img");
+          img.src = p.image;
+          img.loading = "lazy";
+          thumb.appendChild(img);
+          thumb.addEventListener("pointerdown", (e) => startPaletteDrag(e, p));
+          paletteEl.appendChild(thumb);
+        });
+      }
+
+      function updateHintAndSubmit() {
+        boardHint.classList.toggle("hidden", placedItems.length > 0);
+        submitBtn.disabled = placedItems.length < 2;
+      }
+
+      function boardRect() {
+        return board.getBoundingClientRect();
+      }
+      function clampPercent(v) {
+        return Math.max(4, Math.min(96, v));
+      }
+
+      function addPlacedItem(product, clientX, clientY) {
+        const rect = boardRect();
+        const x = clampPercent(((clientX - rect.left) / rect.width) * 100);
+        const y = clampPercent(((clientY - rect.top) / rect.height) * 100);
+        const item = {
+          uid: "d" + Date.now() + Math.random().toString(36).slice(2, 6),
+          link: product.link,
+          image: product.image,
+          x: x, y: y,
+          scale: 1,
+          z: zCounter++,
+        };
+        placedItems.push(item);
+        renderPlacedItem(item);
+        updateHintAndSubmit();
+        saveBoard();
+      }
+
+      function renderPlacedItem(item) {
+        const el = document.createElement("div");
+        el.className = "dressing-placed";
+        el.dataset.uid = item.uid;
+        el.style.left = item.x + "%";
+        el.style.top = item.y + "%";
+        el.style.width = ITEM_PX * item.scale + "px";
+        el.style.height = ITEM_PX * item.scale + "px";
+        el.style.zIndex = item.z;
+        el.innerHTML =
+          '<img src="' + item.image + '" alt="">' +
+          '<div class="dressing-placed-remove">✕</div>' +
+          '<div class="dressing-placed-resize">⤡</div>';
+        board.appendChild(el);
+
+        el.querySelector(".dressing-placed-remove").addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeItem(item.uid);
+        });
+        el.querySelector(".dressing-placed-resize").addEventListener("pointerdown", (e) => {
+          e.stopPropagation();
+          startItemResize(e, item, el);
+        });
+        el.addEventListener("pointerdown", (e) => {
+          if (e.target.closest(".dressing-placed-remove") || e.target.closest(".dressing-placed-resize")) return;
+          startItemMove(e, item, el);
+        });
+      }
+
+      function removeItem(uid) {
+        placedItems = placedItems.filter((it) => it.uid !== uid);
+        const el = board.querySelector('.dressing-placed[data-uid="' + uid + '"]');
+        if (el) el.remove();
+        updateHintAndSubmit();
+        saveBoard();
+      }
+
+      function bringToFront(item, el) {
+        item.z = zCounter++;
+        el.style.zIndex = item.z;
+      }
+
+      function startItemMove(e, item, el) {
+        e.preventDefault();
+        bringToFront(item, el);
+        const startX = e.clientX, startY = e.clientY;
+        let liveX = item.x, liveY = item.y, moved = false;
+
+        function onMove(ev) {
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+          const rect = boardRect();
+          liveX = clampPercent(item.x + (dx / rect.width) * 100);
+          liveY = clampPercent(item.y + (dy / rect.height) * 100);
+          el.style.left = liveX + "%";
+          el.style.top = liveY + "%";
+        }
+        function onUp() {
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          if (moved) {
+            item.x = liveX;
+            item.y = liveY;
+            saveBoard();
+          }
+        }
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+      }
+
+      function startItemResize(e, item, el) {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startScale = item.scale;
+        let liveScale = startScale;
+
+        function onMove(ev) {
+          const dx = ev.clientX - startX;
+          liveScale = Math.max(0.5, Math.min(2.2, startScale + dx / ITEM_PX));
+          el.style.width = ITEM_PX * liveScale + "px";
+          el.style.height = ITEM_PX * liveScale + "px";
+        }
+        function onUp() {
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          item.scale = liveScale;
+          saveBoard();
+        }
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+      }
+
+      function startPaletteDrag(e, product) {
+        e.preventDefault();
+        ghost.src = product.image;
+        ghost.style.display = "block";
+        ghost.style.left = e.clientX + "px";
+        ghost.style.top = e.clientY + "px";
+
+        function onMove(ev) {
+          ghost.style.left = ev.clientX + "px";
+          ghost.style.top = ev.clientY + "px";
+        }
+        function onUp(ev) {
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          ghost.style.display = "none";
+          const rect = boardRect();
+          if (ev.clientX >= rect.left && ev.clientX <= rect.right && ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
+            addPlacedItem(product, ev.clientX, ev.clientY);
+          }
+        }
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+      }
+
+      function renderBoard() {
+        board.querySelectorAll(".dressing-placed").forEach((el) => el.remove());
+        placedItems.forEach(renderPlacedItem);
+        updateHintAndSubmit();
+      }
+
+      function clearBoard() {
+        placedItems = [];
+        zCounter = 1;
+        renderBoard();
+        saveBoard();
+      }
+
+      function submitLook() {
+        if (placedItems.length < 2) return;
+        const pairs = placedItems.map((it, i) => "item" + i + ":" + (typeof getVoteId === "function" ? getVoteId(it.link) : ""));
+        const path = "/dressing-proposal/" + pairs.join(",");
+        const title = "Dressing room look — " + placedItems.length + " items";
+
+        if (window.goatcounter && window.goatcounter.count) {
+          window.goatcounter.count({ path: path, title: title, event: true });
+        }
+        if (typeof notifyDiscord === "function") {
+          notifyDiscord("dressing_proposal", placedItems.length + "-item look from the dressing room", placedItems[0].image);
+        }
+        if (typeof unlockBadge === "function") unlockBadge("stylist");
+        if (typeof mascotSay === "function") mascotSay("proposal");
+
+        thanksEl.classList.add("show");
+        setTimeout(() => {
+          thanksEl.classList.remove("show");
+          clearBoard();
+        }, 2200);
+      }
+
+      function openDressing() {
+        renderFilters();
+        renderPalette();
+        renderBoard();
+        overlay.classList.add("open");
+      }
+      function closeDressing() {
+        overlay.classList.remove("open");
+      }
+
+      dressTab.addEventListener("click", openDressing);
+      document.getElementById("dressing-close").addEventListener("click", closeDressing);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && overlay.classList.contains("open")) closeDressing();
+      });
+      clearBtn.addEventListener("click", clearBoard);
+      submitBtn.addEventListener("click", submitLook);
+
+      loadBoard();
     })();
   </script>
     <script src="./badges.js"></script>
