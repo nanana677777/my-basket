@@ -5881,7 +5881,13 @@
         if (placedItems.length < 2) return;
         const lookName = document.getElementById("dressing-name").value.trim();
         const proposerName = document.getElementById("dressing-by").value.trim();
-        const ids = placedItems.map((it) => (typeof getVoteId === "function" ? getVoteId(it.link) : null)).filter(Boolean);
+        const ids = placedItems
+          .map((it) => {
+            const gid = typeof getVoteId === "function" ? getVoteId(it.link) : null;
+            if (!gid) return null;
+            return gid + ":" + Math.round(it.x) + ":" + Math.round(it.y) + ":" + it.scale.toFixed(2);
+          })
+          .filter(Boolean);
         const path = "/outfit-proposal/" + ids.join(",");
         const title = "Outfit proposal: " + (lookName || "Untitled") + " ||| " + proposerName;
 
