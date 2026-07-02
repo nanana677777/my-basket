@@ -2430,8 +2430,8 @@
       #dressing-board-hint.hidden { display: none; }
       .dressing-placed {
         position: absolute;
-        width: 92px;
-        height: 92px;
+        width: 23%;
+        aspect-ratio: 1 / 1;
         transform: translate(-50%, -50%);
         touch-action: none;
         cursor: grab;
@@ -5660,7 +5660,7 @@
       if (!overlay || !board || !dressTab) return;
 
       const STORAGE_KEY = "nanaDressingBoard";
-      const ITEM_PX = 92;
+      const ITEM_PCT = 23; // base item width, as % of board width, at scale 1
       let placedItems = []; // { uid, link, image, x, y, scale, z }
       let zCounter = 1;
       let activeFilter = "All";
@@ -5753,8 +5753,7 @@
         el.dataset.uid = item.uid;
         el.style.left = item.x + "%";
         el.style.top = item.y + "%";
-        el.style.width = ITEM_PX * item.scale + "px";
-        el.style.height = ITEM_PX * item.scale + "px";
+        el.style.width = ITEM_PCT * item.scale + "%";
         el.style.zIndex = item.z;
         el.innerHTML =
           '<img src="' + item.image + '" alt="">' +
@@ -5822,13 +5821,13 @@
         e.preventDefault();
         const startX = e.clientX;
         const startScale = item.scale;
+        const baseItemPx = boardRect().width * (ITEM_PCT / 100);
         let liveScale = startScale;
 
         function onMove(ev) {
           const dx = ev.clientX - startX;
-          liveScale = Math.max(0.5, Math.min(2.2, startScale + dx / ITEM_PX));
-          el.style.width = ITEM_PX * liveScale + "px";
-          el.style.height = ITEM_PX * liveScale + "px";
+          liveScale = Math.max(0.5, Math.min(2.2, startScale + dx / baseItemPx));
+          el.style.width = ITEM_PCT * liveScale + "%";
         }
         function onUp() {
           document.removeEventListener("pointermove", onMove);
