@@ -983,6 +983,7 @@
     let amaSha = null;
     let pendingAMA = [];
     let currentOutfitSlots = {};
+    let currentOutfitLayout = null;
     let currentProposedBy = null;
     let activePickerSlot = null;
 
@@ -2423,6 +2424,7 @@
       editingOutfitId = id;
       document.getElementById("outfit-name").value = o.name || "";
       currentOutfitSlots = JSON.parse(JSON.stringify(o.slots || {}));
+      currentOutfitLayout = o.layout ? JSON.parse(JSON.stringify(o.layout)) : null;
       currentProposedBy = o.proposedBy || null;
       renderOutfitSlots();
       document.getElementById("outfit-save-btn").textContent = "Save changes";
@@ -2434,6 +2436,7 @@
       editingOutfitId = null;
       document.getElementById("outfit-name").value = "";
       currentOutfitSlots = {};
+      currentOutfitLayout = null;
       currentProposedBy = null;
       renderOutfitSlots();
       document.getElementById("outfit-save-btn").textContent = "Save outfit";
@@ -2458,10 +2461,12 @@
         if (idx !== -1) {
           outfits[idx] = { ...outfits[idx], name, slots };
           if (currentProposedBy) outfits[idx].proposedBy = currentProposedBy;
+          if (currentOutfitLayout) outfits[idx].layout = currentOutfitLayout;
         }
       } else {
         const entry = { id: "outfit_" + Date.now(), name, slots };
         if (currentProposedBy) entry.proposedBy = currentProposedBy;
+        if (currentOutfitLayout) entry.layout = currentOutfitLayout;
         outfits.push(entry);
         const repImage = Object.values(slots).map(it => it && it.image).find(Boolean);
         notifyDiscord("outfit_saved", name, repImage);
@@ -2546,17 +2551,27 @@
     }
 
     function matchProposalProducts(path) {
-      // New format: "/outfit-proposal/top:123,shoes:456" — each part is "slotKey:goodsId".
-      // Legacy fallback: "/outfit-proposal/123,456" — plain ids, no slot info.
-      // Note: GoatCounter sometimes stores the path without the leading slash.
+      // Slot format:   "/outfit-proposal/top:123,shoes:456" — "slotKey:goodsId".
+      // Layout format: "/outfit-proposal/123:32:45:1.20,456:60:40:0.90" — "goodsId:x:y:scale"
+      //                (comes from the freeform dressing room — 4 segments, carries position data).
+      // Legacy format: "/outfit-proposal/123,456" — plain ids, no extra info.
       const parts = path.replace(/^\/?outfit-proposal\//, "").split(",").filter(Boolean);
       return parts
         .map(part => {
-          const hasSlot = part.includes(":");
-          const slot = hasSlot ? part.split(":")[0] : null;
-          const id = hasSlot ? part.split(":")[1] : part;
+          const segs = part.split(":");
+          let slot = null, id, layout = null;
+          if (segs.length >= 4) {
+            id = segs[0];
+            const x = parseFloat(segs[1]), y = parseFloat(segs[2]), scale = parseFloat(segs[3]);
+            if (!isNaN(x) && !isNaN(y) && !isNaN(scale)) layout = { x, y, scale };
+          } else if (segs.length === 2) {
+            slot = segs[0];
+            id = segs[1];
+          } else {
+            id = part;
+          }
           const product = products.find(prod => (prod.link || "").includes("goods_id=" + id));
-          return product ? { slot, product } : null;
+          return product ? { slot, product, layout } : null;
         })
         .filter(Boolean);
     }
@@ -2610,6 +2625,11 @@
       editingOutfitId = null;
       currentOutfitSlots = {};
 
+      const layoutMatches = matches.filter(m => m.layout);
+      currentOutfitLayout = layoutMatches.length
+        ? layoutMatches.map(m => ({ link: m.product.link, image: m.product.image, x: m.layout.x, y: m.layout.y, scale: m.layout.scale }))
+        : null;
+
       // Use the visitor's slot choice when available; anything without a
       // recognized slot (legacy proposals) falls back to the next free slot.
       let fallbackIdx = 0;
@@ -2634,9 +2654,10 @@
       document.getElementById("outfit-save-btn").textContent = "Save outfit";
       document.getElementById("outfit-cancel-btn").style.display = "none";
       document.getElementById("outfit-form").scrollIntoView({ behavior: "smooth", block: "center" });
+      const layoutNote = currentOutfitLayout ? " (dressing room arrangement included 🧵)" : "";
       showToast(proposerName
-        ? `💡 Proposal from ${proposerName} loaded — adjust slots, then Save.`
-        : "💡 Proposal loaded into the outfit builder — adjust slots, then Save.");
+        ? `💡 Proposal from ${proposerName} loaded${layoutNote} — adjust slots, then Save.`
+        : `💡 Proposal loaded into the outfit builder${layoutNote} — adjust slots, then Save.`);
     }
 
     gcConnectBtn.addEventListener("click", () => {
