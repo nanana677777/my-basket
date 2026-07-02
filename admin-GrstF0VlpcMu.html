@@ -2183,8 +2183,19 @@
       if (editingPersonId) {
         const person = leaderboard.find(p => p.id === editingPersonId);
         if (person) {
+          const oldProducts = person.products || [];
+          const newlyAdded = currentPersonProducts.filter(link => !oldProducts.includes(link));
           person.name = name;
           person.products = [...currentPersonProducts];
+
+          if (newlyAdded.length) {
+            const addedItems = newlyAdded.map(link => products.find(p => p.link === link)).filter(Boolean);
+            const total = personTotal(person).toFixed(2);
+            const detail = addedItems.length === 1
+              ? `+ ${addedItems[0].title} for ${name} — total ${total} €`
+              : `+ ${addedItems.length} items for ${name} — total ${total} €`;
+            notifyDiscord("leaderboard", detail, addedItems[0] ? addedItems[0].image : null);
+          }
         }
         pushLeaderboard("Update leaderboard entry: " + name);
       } else {
