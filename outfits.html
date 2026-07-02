@@ -216,7 +216,7 @@
   #arrange-board {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1.15;
+    aspect-ratio: 2 / 3;
     border-radius: 18px;
     border: 2px dashed rgba(255,158,203,0.25);
     background:
@@ -227,6 +227,8 @@
   }
   .arrange-item {
     position: absolute;
+    width: 23%;
+    aspect-ratio: 1 / 1;
     transform: translate(-50%, -50%);
   }
   .arrange-item img {
@@ -524,8 +526,7 @@
         el.className = "arrange-item";
         el.style.left = it.x + "%";
         el.style.top = it.y + "%";
-        el.style.width = (92 * (it.scale || 1)) + "px";
-        el.style.height = (92 * (it.scale || 1)) + "px";
+        el.style.width = (23 * (it.scale || 1)) + "%";
         el.innerHTML = `<img src="${it.image}" alt="">`;
         board.appendChild(el);
       });
