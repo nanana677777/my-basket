@@ -337,5 +337,66 @@
       }
     },
     "proposedBy": "Nana677"
+  },
+  {
+    "id": "outfit_1783028360548",
+    "name": "Pajamas :3",
+    "slots": {
+      "top": {
+        "title": "Women's Satin Pajama Set Long Sleeve & Pants Lace Trim Cute Slim Fit Loungewear Sleepwear 2-Piece",
+        "image": "https://img.kwcdn.com/product/fancy/4e3d02d7-6421-4ba8-9471-c2d3a6a9b813.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "15,81",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601102346532914&sku_id=17604249936444&_oak_page_source=501"
+      },
+      "bottom": {
+        "title": "Women'S Autumn And Winter Warm Slippers with a Bow Design, Stylish Indoor Slippers for The Living Room.",
+        "image": "https://img.kwcdn.com/product/fancy/a60cc142-5502-40a9-81a7-2722de340421.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "3,86",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099602917102&sku_id=17595021435394&_oak_page_source=501"
+      },
+      "shoes": {
+        "title": "1 Cinnamon Dog Headband\nSanrio Cinnamoroll Vintage-Inspired Plush Velvet Bow Headband - Soft Non-Slip Hair Tie with Blue & White Checkered Bow, Cute Daily Hair Accessory for Women, Valentine’s Day Gift, Single Piece",
+        "image": "https://img.kwcdn.com/product/open/f5bdac41229748ac9bd70b2200bb71d7-goods.jpeg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "3,02",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601101449896608&sku_id=17599904252707&_oak_page_source=501"
+      },
+      "accessory": {
+        "title": "55.88cm/Sky Blue\nWhite Blue Gradient Synthetic Wig Women'S Long Curly Casual Hairstyle Natural Wig",
+        "image": "https://img.kwcdn.com/product/fancy/baed6547-9264-44b3-a7f5-74ed8caf359d.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "price": "11,93",
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099667682787&sku_id=17592784784685&_oak_page_source=501"
+      }
+    },
+    "proposedBy": "Nana677",
+    "layout": [
+      {
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601102346532914&sku_id=17604249936444&_oak_page_source=501",
+        "image": "https://img.kwcdn.com/product/fancy/4e3d02d7-6421-4ba8-9471-c2d3a6a9b813.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "x": 50,
+        "y": 58,
+        "scale": 2.2
+      },
+      {
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099602917102&sku_id=17595021435394&_oak_page_source=501",
+        "image": "https://img.kwcdn.com/product/fancy/a60cc142-5502-40a9-81a7-2722de340421.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "x": 50,
+        "y": 84,
+        "scale": 1.43
+      },
+      {
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601101449896608&sku_id=17599904252707&_oak_page_source=501",
+        "image": "https://img.kwcdn.com/product/open/f5bdac41229748ac9bd70b2200bb71d7-goods.jpeg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "x": 42,
+        "y": 23,
+        "scale": 1.59
+      },
+      {
+        "link": "https://www.temu.com/goods.html?_bg_fs=1&goods_id=601099667682787&sku_id=17592784784685&_oak_page_source=501",
+        "image": "https://img.kwcdn.com/product/fancy/baed6547-9264-44b3-a7f5-74ed8caf359d.jpg?imageView2/2/w/300/q/70/format/avif%7CimageVqr/2",
+        "x": 50,
+        "y": 25,
+        "scale": 2.03
+      }
+    ]
   }
 ]
