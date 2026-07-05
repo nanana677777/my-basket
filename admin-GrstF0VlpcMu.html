@@ -871,6 +871,12 @@
     </div>
 
     <div class="card">
+      <h2>📌 Sent Picks</h2>
+      <p class="sub" style="margin:0 0 14px;">Visitors can send you their favorited items (via the 📌 button on the public site). Same GoatCounter token as Outfit Proposals above — refreshes together.</p>
+      <div id="selections-list"><div class="empty-state">Connect your GoatCounter API token above to load sent picks.</div></div>
+    </div>
+
+    <div class="card">
       <h2>💬 Comments</h2>
       <p class="sub" style="margin:0 0 14px;">Visitors can leave a comment on <a href="./comments.html" target="_blank" style="color:var(--accent);">the comments page</a>. Pending ones are stored as GoatCounter hits too (same token as Outfit Proposals above) — approve to publish them to <code>comments.json</code>, or dismiss to hide them from this list.</p>
 
@@ -2518,7 +2524,9 @@
     const gcDisconnectBtn = document.getElementById("gc-token-disconnect-btn");
     const proposalsRefreshBtn = document.getElementById("proposals-refresh-btn");
     const proposalsListEl = document.getElementById("proposals-list");
+    const selectionsListEl = document.getElementById("selections-list");
     let loadedProposals = [];
+    let loadedSelections = [];
 
     function setGcConnectedUI(connected) {
       gcConnectBtn.style.display = connected ? "none" : "inline-block";
@@ -2534,6 +2542,16 @@
       const d = getDismissed();
       if (!d.includes(path)) d.push(path);
       localStorage.setItem(DISMISSED_KEY, JSON.stringify(d));
+    }
+
+    const DISMISSED_SELECTIONS_KEY = "dismissedSelections";
+    function getDismissedSelections() {
+      try { return JSON.parse(localStorage.getItem(DISMISSED_SELECTIONS_KEY)) || []; } catch (e) { return []; }
+    }
+    function dismissSelection(path) {
+      const d = getDismissedSelections();
+      if (!d.includes(path)) d.push(path);
+      localStorage.setItem(DISMISSED_SELECTIONS_KEY, JSON.stringify(d));
     }
 
     async function loadProposals() {
@@ -2571,6 +2589,10 @@
         const dismissedA = getDismissedAMA();
         pendingAMA = all.filter(p => p.path && /^\/?ama-proposal\//.test(p.path) && !dismissedA.includes(p.path));
         renderPendingAMA();
+
+        const dismissedS = getDismissedSelections();
+        loadedSelections = all.filter(p => p.path && /^\/?selection\//.test(p.path) && !dismissedS.includes(p.path));
+        renderSelections();
       } catch (e) {
         console.error("loadProposals error:", e);
         proposalsListEl.innerHTML = `<div class="empty-state">Couldn't load proposals — check your token and connection.</div>`;
@@ -2641,6 +2663,48 @@
           dismissProposal(loadedProposals[parseInt(btn.dataset.dismissProposal)].path);
           loadedProposals = loadedProposals.filter(p => p.path !== loadedProposals[parseInt(btn.dataset.dismissProposal)]?.path);
           loadProposals();
+        });
+      });
+    }
+
+    function matchSelectionProducts(path) {
+      const ids = path.replace(/^\/?selection\//, "").split(",").filter(Boolean);
+      return ids.map(id => products.find(prod => (prod.link || "").includes("goods_id=" + id))).filter(Boolean);
+    }
+
+    function renderSelections() {
+      if (!loadedSelections.length) {
+        selectionsListEl.innerHTML = `<div class="empty-state" style="padding:14px 0;">No sent picks yet.</div>`;
+        return;
+      }
+
+      selectionsListEl.innerHTML = loadedSelections.map((p, i) => {
+        const matched = matchSelectionProducts(p.path);
+        const name = (p.title || "Selection: Anonymous").replace(/^Selection:\s*/i, "").replace(/</g, "&lt;") || "Anonymous";
+        const total = matched.reduce((sum, prod) => sum + (parseFloat((prod.price || "0").toString().replace(",", ".")) || 0), 0).toFixed(2);
+        const thumbs = matched.length
+          ? matched.slice(0, 5).map(prod => `<img src="${prod.image}" alt="">`).join("")
+          : `<span style="font-size:11px;color:var(--muted);">No matching items found</span>`;
+        return `
+          <div class="product-row">
+            <div class="proposal-thumbs">${thumbs}</div>
+            <div class="info">
+              <div class="title">${name}</div>
+              <div class="price">${matched.length} item${matched.length === 1 ? "" : "s"} · ${total} €</div>
+            </div>
+            <div class="actions">
+              <button class="btn-ghost" data-dismiss-selection="${i}">Dismiss</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      selectionsListEl.querySelectorAll("[data-dismiss-selection]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.dataset.dismissSelection);
+          dismissSelection(loadedSelections[idx].path);
+          loadedSelections = loadedSelections.filter((_, j) => j !== idx);
+          renderSelections();
         });
       });
     }
