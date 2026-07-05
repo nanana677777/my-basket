@@ -978,6 +978,47 @@
         box-shadow: 0 4px 14px rgba(255, 196, 0, 0.6), 0 0 18px rgba(255, 158, 203, 0.4);
       }
 
+      #currency-toggle {
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #7df9ff, #c9a6ff);
+        color: #1b1b26;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(125, 249, 255, 0.35);
+        position: relative;
+      }
+      #currency-toggle:hover { transform: translateY(-2px) scale(1.05); }
+      #currency-toggle:active { transform: scale(0.95); }
+      #currency-dropdown {
+        display: none;
+        position: fixed;
+        z-index: 2700;
+        background: #1b1b26;
+        border: 1px solid rgba(255,158,203,0.3);
+        border-radius: 16px;
+        padding: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        flex-direction: column;
+        gap: 2px;
+        min-width: 140px;
+      }
+      #currency-dropdown.open { display: flex; }
+      .currency-opt {
+        padding: 9px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #cfc9d8;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .currency-opt:hover { background: rgba(255,158,203,0.12); color: #fff; }
+      .currency-opt.active { background: linear-gradient(135deg, #7df9ff, #c9a6ff); color: #1b1b26; }
+
       /* 🙈 Hide product title in grid view (keep it in list view) */
       .gallery:not(.list-view) .card-info a {
         display: none;
@@ -3082,6 +3123,13 @@
       <button id="view-toggle">🎴 List View</button>
       <button id="cloud-toggle">☁️ Cloud View</button>
       <button id="vote-toggle">👍 Vote Mode</button>
+      <button id="currency-toggle">💱 EUR</button>
+    </div>
+    <div id="currency-dropdown">
+      <div class="currency-opt active" data-cur="EUR">🇪🇺 EUR €</div>
+      <div class="currency-opt" data-cur="USD">🇺🇸 USD $</div>
+      <div class="currency-opt" data-cur="GBP">🇬🇧 GBP £</div>
+      <div class="currency-opt" data-cur="CAD">🇨🇦 CAD $</div>
     </div>
 
     <div
@@ -3197,7 +3245,7 @@
         document.getElementById("modal-img").src = product.image;
         document.getElementById("modal-img").alt = product.title;
         document.getElementById("modal-title").textContent = product.title || "";
-        document.getElementById("modal-price").textContent = `💰 ${product.price || "?"} €`;
+        document.getElementById("modal-price").textContent = `💰 ${fmtPrice(product.price || 0)}`;
         document.getElementById("modal-link").href = product.link;
         const modalSource = getProductSource(product.link);
         document.getElementById("modal-link").textContent =
@@ -3229,7 +3277,7 @@
         });
 
         // 𝕏 Share this item — text + price, link to this page (its og: tags now show this product as the preview)
-        const shareText = `${product.title || "Check this out"} — 💰 ${priceClean} €`;
+        const shareText = `${product.title || "Check this out"} — 💰 ${fmtPrice(priceClean)}`;
         const shareUrl = location.origin + location.pathname + "?" + params.toString();
         const xIntent = "https://twitter.com/intent/tweet?" + new URLSearchParams({
           text: shareText,
@@ -3314,7 +3362,7 @@
               <div class="modal-similar-item" data-link="${(p.link || "").replace(/"/g, "&quot;")}">
                 <img src="${p.image}" alt="" loading="lazy">
                 <div class="modal-similar-name">${(p.title || "").replace(/</g, "&lt;")}</div>
-                ${p.price ? `<div class="modal-similar-price">💰 ${p.price} €</div>` : ""}
+                ${p.price ? `<div class="modal-similar-price">💰 ${fmtPrice(p.price)}</div>` : ""}
               </div>
             `
               )
@@ -3803,8 +3851,8 @@
         const resetBtn = document.getElementById("price-filter-reset");
         if (!minLabel || !maxLabel || !fill) return;
 
-        minLabel.textContent = activePriceMin.toFixed(2).replace(/\.00$/, "") + " €";
-        maxLabel.textContent = activePriceMax.toFixed(2).replace(/\.00$/, "") + " €";
+        minLabel.textContent = fmtPrice(activePriceMin);
+        maxLabel.textContent = fmtPrice(activePriceMax);
 
         const range = (priceBounds.max - priceBounds.min) || 1;
         const leftPct = ((activePriceMin - priceBounds.min) / range) * 100;
@@ -4069,7 +4117,7 @@
 
         document.getElementById("counter").innerHTML =
           `<span class="total-badge">
-          🧺 ${products.length} items • 💰 ${total.toFixed(2)} €
+          🧺 ${products.length} items • 💰 ${fmtPrice(total)}
         </span>`;
 
         renderPieChart(products);
@@ -4084,7 +4132,7 @@
             <img src="${product.image}" alt="${product.title}" style="width:100%;border-radius:14px;margin-bottom:8px;cursor:pointer;">
             <div class="card-info">
               <a href="${product.link}" target="_blank" onclick="event.stopPropagation()">${product.title || ""}</a>
-              <div class="price-badge">💰 ${product.price || "?"} €</div>
+              <div class="price-badge">💰 ${product.price ? fmtPrice(product.price) : "?"}</div>
             </div>
             <div class="source-pin ${source.cls}" title="From ${source.label}">${source.emoji}</div>
             <div class="heartFav ${favorites.includes(product.link) ? "favorited" : ""}">♥</div>
@@ -4293,6 +4341,87 @@
       function priceNumber(p) {
         return parseFloat((p || "0").replace(",", "."));
       }
+
+      // 💱 Currency conversion — live rates fetched once per session from
+      // frankfurter.app (free, keyless, ECB data). All prices in products.json
+      // are stored in EUR; this only affects display, never the underlying data,
+      // filtering math, or anything sent to the admin/Discord.
+      const CURRENCY_META = {
+        EUR: { symbol: "€", prefix: false },
+        USD: { symbol: "$", prefix: true },
+        GBP: { symbol: "£", prefix: true },
+        CAD: { symbol: "CA$", prefix: true },
+      };
+      let activeCurrency = localStorage.getItem("nanaCurrency") || "EUR";
+      let currencyRates = { EUR: 1, USD: 1, GBP: 1, CAD: 1 };
+
+      async function loadCurrencyRates() {
+        try {
+          const cached = sessionStorage.getItem("nanaCurrencyRates");
+          if (cached) {
+            currencyRates = JSON.parse(cached);
+            return;
+          }
+          const res = await fetch("https://api.frankfurter.app/latest?from=EUR&to=USD,GBP,CAD");
+          const data = await res.json();
+          currencyRates = { EUR: 1, USD: data.rates.USD, GBP: data.rates.GBP, CAD: data.rates.CAD };
+          sessionStorage.setItem("nanaCurrencyRates", JSON.stringify(currencyRates));
+        } catch (e) {
+          currencyRates = { EUR: 1, USD: 1, GBP: 1, CAD: 1 };
+        }
+      }
+
+      function fmtPrice(eurValue) {
+        const n = typeof eurValue === "number" ? eurValue : priceNumber(eurValue);
+        const rate = currencyRates[activeCurrency] || 1;
+        const converted = n * rate;
+        const meta = CURRENCY_META[activeCurrency] || CURRENCY_META.EUR;
+        const formatted = converted.toFixed(2).replace(/\.00$/, "");
+        return meta.prefix ? meta.symbol + formatted : formatted + " " + meta.symbol;
+      }
+
+      function refreshAllPrices() {
+        try {
+          if (typeof rawProducts !== "undefined" && rawProducts.length) displayProducts(rawProducts);
+        } catch (e) {
+          console.error("refreshAllPrices: displayProducts failed, price slider labels still updated", e);
+        }
+        if (typeof updatePriceSliderUI === "function") updatePriceSliderUI();
+      }
+
+      (function setupCurrencyToggle() {
+        const btn = document.getElementById("currency-toggle");
+        const dropdown = document.getElementById("currency-dropdown");
+        if (!btn || !dropdown) return;
+
+        function positionDropdown() {
+          const r = btn.getBoundingClientRect();
+          dropdown.style.top = r.bottom + 8 + "px";
+          dropdown.style.left = Math.max(8, r.right - 140) + "px";
+        }
+
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          positionDropdown();
+          dropdown.classList.toggle("open");
+        });
+        document.addEventListener("click", (e) => {
+          if (!dropdown.contains(e.target) && e.target !== btn) dropdown.classList.remove("open");
+        });
+        dropdown.querySelectorAll(".currency-opt").forEach((opt) => {
+          if (opt.dataset.cur === activeCurrency) opt.classList.add("active");
+          opt.addEventListener("click", () => {
+            activeCurrency = opt.dataset.cur;
+            localStorage.setItem("nanaCurrency", activeCurrency);
+            dropdown.querySelectorAll(".currency-opt").forEach((o) => o.classList.toggle("active", o === opt));
+            btn.textContent = "💱 " + activeCurrency;
+            dropdown.classList.remove("open");
+            refreshAllPrices();
+          });
+        });
+        btn.textContent = "💱 " + activeCurrency;
+        loadCurrencyRates().then(refreshAllPrices);
+      })();
 
       // Sorting buttons that respect wishlist filter
       // Sorting now goes through the centralized filter pipeline (getFilteredProducts),
@@ -4763,7 +4892,7 @@
           if (!pool.length) {
             pickResultTitle.textContent = "";
             pickResultPrice.textContent = "";
-            pickBudgetNote.textContent = `😢 Nothing under ${budget.toFixed(2)} € — try raising your budget!`;
+            pickBudgetNote.textContent = `😢 Nothing under ${fmtPrice(budget)} — try raising your budget!`;
             return;
           }
         }
@@ -4801,7 +4930,7 @@
             img.src = finalPick.image;
             pickStage.classList.remove("spinning");
             pickResultTitle.textContent = finalPick.title || "Untitled";
-            pickResultPrice.textContent = finalPick.price ? `💰 ${finalPick.price} €` : "";
+            pickResultPrice.textContent = finalPick.price ? `💰 ${fmtPrice(finalPick.price)}` : "";
             if (finalPick.link) {
               pickViewBtn.href = finalPick.link;
               pickViewBtn.classList.remove("hidden");
@@ -5103,7 +5232,7 @@
           <img src="${product.image || ""}" alt="" loading="lazy">
           <div class="swipe-info">
             <div class="swipe-title">${(product.title || "Untitled").replace(/</g, "&lt;")}</div>
-            ${priceClean ? `<div class="swipe-price">💰 ${priceClean} €</div>` : ""}
+            ${priceClean ? `<div class="swipe-price">💰 ${fmtPrice(priceClean)}</div>` : ""}
             ${product.category ? `<div class="swipe-category">🏷️ ${product.category.replace(/</g, "&lt;")}</div>` : ""}
           </div>
           <div class="swipe-side-actions">
@@ -5259,7 +5388,7 @@
       function renderCard(item, imgEl, titleEl, priceEl, hidePrice) {
         imgEl.src = item.image || "";
         titleEl.textContent = item.title || "Untitled";
-        priceEl.textContent = `💰 ${item.price} €`;
+        priceEl.textContent = `💰 ${fmtPrice(item.price)}`;
         priceEl.classList.toggle("hl-hidden", !!hidePrice);
       }
 
@@ -5423,7 +5552,7 @@
           bubble.title = product.title || "";
           bubble.innerHTML = `
             <img src="${product.image}" alt="" loading="lazy">
-            <div class="cloud-price-tag">💰 ${product.price} €</div>
+            <div class="cloud-price-tag">💰 ${fmtPrice(product.price)}</div>
           `;
           bubble.addEventListener("click", () => {
             if (product.link) window.open(product.link, "_blank");
