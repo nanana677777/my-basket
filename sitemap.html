@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Site Map · My Basket</title>
+<style>
+  :root {
+    --bg: #121218;
+    --panel: #1b1b26;
+    --pink: #ff9ecb;
+    --violet: #c9a6ff;
+    --cyan: #7df9ff;
+    --gold: #ffd24c;
+    --mint: #baffc9;
+    --text: #f3f3f7;
+    --muted: #b8b2c4;
+    --border: rgba(255,158,203,0.15);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--pink); }
+
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, var(--gold), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 36px;
+  }
+
+  .hub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 520px) {
+    .hub-grid { grid-template-columns: 1fr; }
+  }
+
+  .hub-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .hub-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(255,158,203,0.4);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  }
+  .hub-card .emoji {
+    font-size: 30px;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 0 10px rgba(255,158,203,0.3));
+  }
+  .hub-card .title {
+    font-size: 15px;
+    font-weight: 800;
+  }
+  .hub-card .desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .hub-card .glow {
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--pink); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="./index.html">← Back to the basket</a>
+
+    <h1>🗺️ Site Map</h1>
+    <p class="subtitle">Every corner of My Basket, in one place</p>
+
+    <div class="hub-grid">
+      <a class="hub-card" href="./index.html">
+        <div class="glow" style="background:var(--pink);"></div>
+        <span class="emoji">🧺</span>
+        <div class="title">Wishlist</div>
+        <div class="desc">The full list — browse, vote, favorite, and play with the tools.</div>
+      </a>
+
+      <a class="hub-card" href="./outfits.html">
+        <div class="glow" style="background:var(--violet);"></div>
+        <span class="emoji">👗</span>
+        <div class="title">Complete Looks</div>
+        <div class="desc">Full outfits assembled from wishlist pieces, some proposed by visitors.</div>
+      </a>
+
+      <a class="hub-card" href="./leaderboard.html">
+        <div class="glow" style="background:var(--gold);"></div>
+        <span class="emoji">🏆</span>
+        <div class="title">Leaderboard</div>
+        <div class="desc">The lovely people who've gifted something from the list.</div>
+      </a>
+
+      <a class="hub-card" href="./comments.html">
+        <div class="glow" style="background:var(--cyan);"></div>
+        <span class="emoji">💬</span>
+        <div class="title">Comments</div>
+        <div class="desc">Leave a note, react to others, or send a quick voice message.</div>
+      </a>
+
+      <a class="hub-card" href="./ama.html">
+        <div class="glow" style="background:var(--mint);"></div>
+        <span class="emoji">🎙️</span>
+        <div class="title">AMA</div>
+        <div class="desc">Ask me anything — questions get answered right on the page.</div>
+      </a>
+
+      <a class="hub-card" href="./stats.html">
+        <div class="glow" style="background:var(--pink);"></div>
+        <span class="emoji">📊</span>
+        <div class="title">Stats</div>
+        <div class="desc">The numbers behind the wishlist — prices, categories, top picks.</div>
+      </a>
+
+      <a class="hub-card" href="./timeline.html">
+        <div class="glow" style="background:var(--violet);"></div>
+        <span class="emoji">🕰️</span>
+        <div class="title">Timeline</div>
+        <div class="desc">How the list has grown, week by week.</div>
+      </a>
+
+      <a class="hub-card" href="./dna.html">
+        <div class="glow" style="background:var(--gold);"></div>
+        <span class="emoji">🧬</span>
+        <div class="title">Style DNA</div>
+        <div class="desc">My style archetype, decoded straight from the data.</div>
+      </a>
+
+      <a class="hub-card" href="./about.html">
+        <div class="glow" style="background:var(--cyan);"></div>
+        <span class="emoji">ℹ️</span>
+        <div class="title">About</div>
+        <div class="desc">Who's behind this list, and why it exists.</div>
+      </a>
+    </div>
+
+    <footer>
+      Lost? This page always has you covered. &nbsp;·&nbsp;
+      <a href="./index.html">🧺 Back to the basket</a>
+    </footer>
+  </div>
+  <script data-goatcounter="https://nana677.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  <script src="./badges.js"></script>
+</body>
+</html>
