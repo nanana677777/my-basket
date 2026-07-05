@@ -41,7 +41,7 @@
 
   const TRACKED_PAGES = [
     "index.html", "outfits.html", "leaderboard.html", "comments.html",
-    "ama.html", "stats.html", "timeline.html", "dna.html", "about.html",
+    "ama.html", "stats.html", "timeline.html", "dna.html", "about.html", "sitemap.html",
   ];
 
   function getUnlocked() {
