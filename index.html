@@ -3847,7 +3847,9 @@
         if (typeof unlockBadge === "function") unlockBadge("first-vote");
 
         const votedProduct = (typeof rawProducts !== "undefined" ? rawProducts : []).find((p) => getVoteId(p.link) === pid);
-        notifyDiscord("vote", votedProduct ? votedProduct.title : pid, votedProduct ? votedProduct.image : null);
+        const voterLabel = typeof getVisitorLabel === "function" ? getVisitorLabel() : "";
+        const voteDetail = (voterLabel ? voterLabel + " voted for " : "") + (votedProduct ? votedProduct.title : pid);
+        notifyDiscord("vote", voteDetail, votedProduct ? votedProduct.image : null);
 
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({
@@ -6600,6 +6602,7 @@
       updateSendSelectionVisibility();
     })();
   </script>
+  <script src="./identity.js"></script>
   <script src="./badges.js"></script>
 </body>
 </html>
