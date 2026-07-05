@@ -4610,11 +4610,16 @@
             currencyRates = JSON.parse(cached);
             return;
           }
-          const res = await fetch("https://api.frankfurter.app/latest?from=EUR&to=USD,GBP,CAD");
+          const res = await fetch("https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD,GBP,CAD");
+          if (!res.ok) throw new Error("frankfurter fetch failed: " + res.status);
           const data = await res.json();
+          if (!data.rates || !data.rates.USD || !data.rates.GBP || !data.rates.CAD) {
+            throw new Error("frankfurter response missing expected rates");
+          }
           currencyRates = { EUR: 1, USD: data.rates.USD, GBP: data.rates.GBP, CAD: data.rates.CAD };
           sessionStorage.setItem("nanaCurrencyRates", JSON.stringify(currencyRates));
         } catch (e) {
+          console.error("Currency rates unavailable, staying 1:1 with EUR:", e);
           currencyRates = { EUR: 1, USD: 1, GBP: 1, CAD: 1 };
         }
       }
