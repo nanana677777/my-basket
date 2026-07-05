@@ -6576,6 +6576,13 @@
         const extra = items.length > 4 ? ` +${items.length - 4} more` : "";
         const detail = (name ? name + "'s picks: " : "") + titles + extra + ` — ${items.length} items, ${total} €`;
 
+        const ids = items.map((p) => (typeof getVoteId === "function" ? getVoteId(p.link) : null)).filter(Boolean);
+        const path = "/selection/" + ids.join(",");
+        const title = "Selection: " + (name || "Anonymous");
+        if (window.goatcounter && window.goatcounter.count) {
+          window.goatcounter.count({ path: path, title: title, event: true });
+        }
+
         if (typeof notifyDiscord === "function") {
           notifyDiscord("selection", detail, items[0] ? items[0].image : null);
         }
