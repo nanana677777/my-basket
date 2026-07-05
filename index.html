@@ -374,6 +374,109 @@
           0 4px 12px rgba(255, 105, 180, 0.4),
           0 0 10px rgba(255, 158, 203, 0.3);
       }
+      #send-selection-btn {
+        display: none;
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #c9a6ff, #ff9ecb);
+        color: #1b1b26;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(201, 166, 255, 0.35);
+      }
+      #send-selection-btn.show { display: inline-block; }
+      #send-selection-btn:hover { transform: translateY(-2px) scale(1.05); }
+      #send-selection-btn:active { transform: scale(0.95); }
+
+      #selection-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 4300;
+        background: rgba(8,8,14,0.8);
+        backdrop-filter: blur(10px);
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      #selection-overlay.open { display: flex; }
+      #selection-panel {
+        width: 100%;
+        max-width: 340px;
+        max-height: 82vh;
+        overflow-y: auto;
+        background: #1b1b26;
+        border: 1px solid rgba(201,166,255,0.35);
+        border-radius: 24px;
+        padding: 24px 20px;
+        box-shadow: 0 0 60px rgba(201,166,255,0.18), 0 20px 50px rgba(0,0,0,0.6);
+        font-family: inherit;
+        color: #fff;
+        text-align: center;
+        position: relative;
+      }
+      #selection-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #selection-close:hover { background: rgba(201,166,255,0.2); }
+      #selection-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #c9a6ff;
+        text-shadow: 0 0 12px rgba(201,166,255,0.4);
+        margin-bottom: 4px;
+      }
+      #selection-count { font-size: 12.5px; color: #9c96a8; margin-bottom: 14px; }
+      #selection-name {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(201,166,255,0.35);
+        background: #14141c;
+        color: #fff;
+        outline: none;
+        font-size: 13px;
+        text-align: center;
+        font-family: inherit;
+        margin-bottom: 14px;
+        box-sizing: border-box;
+      }
+      #selection-send-btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #c9a6ff, #ff9ecb);
+        color: #1b1b26;
+        font-weight: 800;
+        font-size: 13.5px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      #selection-send-btn:disabled { opacity: 0.4; cursor: default; }
+      #selection-thanks {
+        display: none;
+        text-align: center;
+      }
+      #selection-thanks.show { display: block; }
+      #selection-thanks .big { font-size: 36px; margin-bottom: 8px; }
+      #selection-thanks p { color: #cfc9d8; font-size: 13px; }
       #wishlist-toggle:hover {
         transform: translateY(-2px) scale(1.05);
         box-shadow:
@@ -3261,6 +3364,7 @@
     <input type="file" id="jsonLoader" accept=".json" />
     <div class="action-bar">
       <div id="wishlist-toggle">Show Wishlist ❤️</div>
+      <button id="send-selection-btn">📌 Send my picks to Nana</button>
       <button id="clear-basket" style="display:none;">Reset Basket</button>
       <button id="tint-toggle">🎨 Color Tint: ON</button>
       <button id="view-toggle">🎴 List View</button>
@@ -3641,6 +3745,7 @@
         }
 
         localStorage.setItem("temuFavorites", JSON.stringify(favorites));
+        if (typeof updateSendSelectionVisibility === "function") updateSendSelectionVisibility();
       }
 
       // ⭐ Vote system — uses GoatCounter (already loaded on this page) as the
@@ -4843,6 +4948,21 @@
           <div id="starter-total-value"></div>
         </div>
         <button id="starter-regenerate">🔄 Try another combo</button>
+      </div>
+    </div>
+
+    <!-- 📌 Send my selection to Nana -->
+    <div id="selection-overlay">
+      <div id="selection-panel">
+        <button id="selection-close" title="Close">✕</button>
+        <div id="selection-title">📌 Send my picks</div>
+        <div id="selection-count"></div>
+        <input id="selection-name" type="text" placeholder="Your name (optional)" maxlength="40" />
+        <button id="selection-send-btn">✨ Send to Nana</button>
+        <div id="selection-thanks">
+          <div class="big">🎉</div>
+          <p>Sent! Nana will take a look at your picks 💌</p>
+        </div>
       </div>
     </div>
 
@@ -6354,6 +6474,73 @@
       });
     })();
   </script>
-    <script src="./badges.js"></script>
+    <script>
+    // 📌 Send my picks — sends the visitor's own favorited items to Nana as a
+    // simple list (distinct from the dressing room: no layout/arrangement,
+    // just "here's what I'd love"). Reuses the existing favorites system.
+    (function () {
+      const btn = document.getElementById("send-selection-btn");
+      const overlay = document.getElementById("selection-overlay");
+      const closeBtn = document.getElementById("selection-close");
+      const countEl = document.getElementById("selection-count");
+      const nameInput = document.getElementById("selection-name");
+      const sendBtn = document.getElementById("selection-send-btn");
+      const thanksEl = document.getElementById("selection-thanks");
+
+      if (!btn || !overlay) return;
+
+      window.updateSendSelectionVisibility = function () {
+        btn.classList.toggle("show", typeof favorites !== "undefined" && favorites.length > 0);
+      };
+
+      function getFavoritedProducts() {
+        const list = typeof rawProducts !== "undefined" ? rawProducts : [];
+        return list.filter((p) => favorites.includes(p.link));
+      }
+
+      function openSelection() {
+        const items = getFavoritedProducts();
+        const total = items.reduce((s, p) => s + priceNumber(p.price), 0);
+        countEl.textContent = items.length + " item" + (items.length === 1 ? "" : "s") + " • " +
+          (typeof fmtPrice === "function" ? fmtPrice(total) : total.toFixed(2) + " €");
+        sendBtn.disabled = false;
+        sendBtn.textContent = "✨ Send to Nana";
+        thanksEl.classList.remove("show");
+        overlay.classList.add("open");
+      }
+      function closeSelection() {
+        overlay.classList.remove("open");
+      }
+
+      function sendSelection() {
+        const items = getFavoritedProducts();
+        if (!items.length) return;
+        sendBtn.disabled = true;
+        sendBtn.textContent = "Sending…";
+
+        const name = nameInput.value.trim();
+        const total = items.reduce((s, p) => s + priceNumber(p.price), 0).toFixed(2);
+        const titles = items.slice(0, 4).map((p) => p.title || "item").join(", ");
+        const extra = items.length > 4 ? ` +${items.length - 4} more` : "";
+        const detail = (name ? name + "'s picks: " : "") + titles + extra + ` — ${items.length} items, ${total} €`;
+
+        if (typeof notifyDiscord === "function") {
+          notifyDiscord("selection", detail, items[0] ? items[0].image : null);
+        }
+
+        thanksEl.classList.add("show");
+        setTimeout(closeSelection, 2200);
+      }
+
+      btn.addEventListener("click", openSelection);
+      closeBtn.addEventListener("click", closeSelection);
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) closeSelection(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && overlay.classList.contains("open")) closeSelection(); });
+      sendBtn.addEventListener("click", sendSelection);
+
+      updateSendSelectionVisibility();
+    })();
+  </script>
+  <script src="./badges.js"></script>
 </body>
 </html>
