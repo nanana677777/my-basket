@@ -442,7 +442,41 @@
         text-shadow: 0 0 12px rgba(201,166,255,0.4);
         margin-bottom: 4px;
       }
-      #selection-count { font-size: 12.5px; color: #9c96a8; margin-bottom: 14px; }
+      #selection-count { font-size: 12.5px; color: #9c96a8; margin-bottom: 10px; }
+      #selection-list {
+        max-height: 220px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 14px;
+        text-align: left;
+      }
+      .selection-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 7px 10px;
+      }
+      .selection-item img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+      .selection-item-info { flex: 1; min-width: 0; }
+      .selection-item-title {
+        font-size: 12px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .selection-item-price { font-size: 11px; color: #c9a6ff; font-weight: 700; margin-top: 1px; }
       #selection-name {
         width: 100%;
         padding: 10px 14px;
@@ -4962,6 +4996,7 @@
         <button id="selection-close" title="Close">✕</button>
         <div id="selection-title">📌 Send my picks</div>
         <div id="selection-count"></div>
+        <div id="selection-list"></div>
         <input id="selection-name" type="text" placeholder="Your name (optional)" maxlength="40" />
         <button id="selection-send-btn">✨ Send to Nana</button>
         <div id="selection-thanks">
@@ -6508,6 +6543,18 @@
         const total = items.reduce((s, p) => s + priceNumber(p.price), 0);
         countEl.textContent = items.length + " item" + (items.length === 1 ? "" : "s") + " • " +
           (typeof fmtPrice === "function" ? fmtPrice(total) : total.toFixed(2) + " €");
+
+        const listEl = document.getElementById("selection-list");
+        listEl.innerHTML = items.map((p) => `
+          <div class="selection-item">
+            <img src="${p.image}" alt="">
+            <div class="selection-item-info">
+              <div class="selection-item-title">${(p.title || "Untitled").replace(/</g, "&lt;")}</div>
+              <div class="selection-item-price">${typeof fmtPrice === "function" ? fmtPrice(p.price) : (p.price || "?") + " €"}</div>
+            </div>
+          </div>
+        `).join("");
+
         sendBtn.disabled = false;
         sendBtn.textContent = "✨ Send to Nana";
         thanksEl.classList.remove("show");
