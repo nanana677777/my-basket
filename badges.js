@@ -299,8 +299,10 @@
     const panel = document.getElementById("nb-panel");
     if (!panel) return;
     const unlocked = getUnlocked();
+    const label = typeof window.getVisitorLabel === "function" ? window.getVisitorLabel() : "";
+    const title = label ? label + "'s badges" : "My badges";
     let html =
-      '<div id="nb-panel-head"><h3>🏅 My badges</h3>' +
+      '<div id="nb-panel-head"><h3>🏅 ' + title + '</h3>' +
       '<button id="nb-close" title="Close">✕</button></div>' +
       '<div id="nb-progress">' + unlocked.length + " / " + BADGES.length + " unlocked</div>";
     BADGES.forEach((b) => {
