@@ -858,30 +858,27 @@
 
     <div class="card">
       <h2>💡 Outfit Proposals</h2>
-      <p class="sub" style="margin:0 0 14px;">Visitors can propose outfit combos from the wishlist (via the 💡 button on the public site). Proposals are stored as GoatCounter hits, not in this repo — review them here, then build/save the ones you like as a real outfit above.</p>
+      <p class="sub" style="margin:0 0 14px;">Visitors can propose outfit combos from the wishlist (via the 💡 button on the public site). A GitHub Action syncs these from GoatCounter into <code>proposals.json</code> every 15 min — review them here, then build/save the ones you like as a real outfit above.</p>
 
-      <div id="gc-token-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-        <input id="gc-api-token" type="password" placeholder="GoatCounter API token (Settings → API on goatcounter.com)" style="flex:1;min-width:220px;" />
-        <button class="btn-primary" id="gc-token-connect-btn">Connect</button>
-        <button class="btn-ghost" id="gc-token-disconnect-btn" style="display:none;">Disconnect</button>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="btn-primary" id="proposals-refresh-btn">🔄 Refresh proposals</button>
+        <span id="proposals-updated-at" class="sub" style="margin:0;"></span>
       </div>
-
-      <button class="btn-primary" id="proposals-refresh-btn" style="display:none;margin-bottom:14px;">🔄 Refresh proposals</button>
-      <div id="proposals-list"><div class="empty-state">Connect your GoatCounter API token to load proposals.</div></div>
+      <div id="proposals-list"><div class="empty-state">Loading…</div></div>
     </div>
 
     <div class="card">
       <h2>📌 Sent Picks</h2>
-      <p class="sub" style="margin:0 0 14px;">Visitors can send you their favorited items (via the 📌 button on the public site). Same GoatCounter token as Outfit Proposals above — refreshes together.</p>
-      <div id="selections-list"><div class="empty-state">Connect your GoatCounter API token above to load sent picks.</div></div>
+      <p class="sub" style="margin:0 0 14px;">Visitors can send you their favorited items (via the 📌 button on the public site). Synced from GoatCounter together with Outfit Proposals above.</p>
+      <div id="selections-list"><div class="empty-state">Loading…</div></div>
     </div>
 
     <div class="card">
       <h2>💬 Comments</h2>
-      <p class="sub" style="margin:0 0 14px;">Visitors can leave a comment on <a href="./comments.html" target="_blank" style="color:var(--accent);">the comments page</a>. Pending ones are stored as GoatCounter hits too (same token as Outfit Proposals above) — approve to publish them to <code>comments.json</code>, or dismiss to hide them from this list.</p>
+      <p class="sub" style="margin:0 0 14px;">Visitors can leave a comment on <a href="./comments.html" target="_blank" style="color:var(--accent);">the comments page</a>. Pending ones are synced from GoatCounter too — approve to publish them to <code>comments.json</code>, or dismiss to hide them from this list.</p>
 
       <h3 style="font-size:13px;color:var(--muted);margin:0 0 8px;">Pending</h3>
-      <div id="pending-comments-list"><div class="empty-state">Connect your GoatCounter API token above to load pending comments.</div></div>
+      <div id="pending-comments-list"><div class="empty-state">Loading…</div></div>
 
       <h3 style="font-size:13px;color:var(--muted);margin:18px 0 8px;">Published</h3>
       <div id="approved-comments-list"><div class="empty-state">No comments published yet.</div></div>
@@ -889,10 +886,10 @@
 
     <div class="card">
       <h2>🎙️ Ask Me Anything</h2>
-      <p class="sub" style="margin:0 0 14px;">Visitors can ask a question on <a href="./ama.html" target="_blank" style="color:var(--accent);">the AMA page</a> (same GoatCounter token as above). Write an answer and publish to make the Q&A go live.</p>
+      <p class="sub" style="margin:0 0 14px;">Visitors can ask a question on <a href="./ama.html" target="_blank" style="color:var(--accent);">the AMA page</a>. Write an answer and publish to make the Q&A go live.</p>
 
       <h3 style="font-size:13px;color:var(--muted);margin:0 0 8px;">Pending questions</h3>
-      <div id="pending-ama-list"><div class="empty-state">Connect your GoatCounter API token above to load pending questions.</div></div>
+      <div id="pending-ama-list"><div class="empty-state">Loading…</div></div>
 
       <h3 style="font-size:13px;color:var(--muted);margin:18px 0 8px;">Published Q&A</h3>
       <div id="published-ama-list"><div class="empty-state">No questions answered yet.</div></div>
@@ -2509,31 +2506,21 @@
       resetOutfitForm();
     });
 
-    // ─── 💡 Outfit Proposals (read from GoatCounter, no extra backend) ───
+    // ─── 💡 Outfit Proposals (read from proposals.json, synced by a GitHub Action) ───
     // Public visitors "vote" an outfit combo by hitting a fake path like
     // /outfit-proposal/<id1>,<id2>,... (same trick as the vote system).
-    // We read them back here with a GoatCounter *API* token (different from
-    // the public counter.json reads used elsewhere) since listing *all*
-    // paths requires authentication.
-    const GC_BASE = "https://nana677.goatcounter.com";
+    // GoatCounter's authenticated /api/v0/paths endpoint doesn't send CORS
+    // headers, so a browser on GitHub Pages can never call it directly.
+    // Instead, .github/workflows/sync-proposals.yml polls it server-side
+    // with a token kept as a repo secret, and commits the filtered results
+    // to proposals.json — which this page fetches same-origin, no CORS.
     const DISMISSED_KEY = "dismissedOutfitProposals";
-    let gcToken = localStorage.getItem("gcApiToken") || "";
-
-    const gcTokenInput = document.getElementById("gc-api-token");
-    const gcConnectBtn = document.getElementById("gc-token-connect-btn");
-    const gcDisconnectBtn = document.getElementById("gc-token-disconnect-btn");
     const proposalsRefreshBtn = document.getElementById("proposals-refresh-btn");
+    const proposalsUpdatedAtEl = document.getElementById("proposals-updated-at");
     const proposalsListEl = document.getElementById("proposals-list");
     const selectionsListEl = document.getElementById("selections-list");
     let loadedProposals = [];
     let loadedSelections = [];
-
-    function setGcConnectedUI(connected) {
-      gcConnectBtn.style.display = connected ? "none" : "inline-block";
-      gcDisconnectBtn.style.display = connected ? "inline-block" : "none";
-      gcTokenInput.style.display = connected ? "none" : "block";
-      proposalsRefreshBtn.style.display = connected ? "inline-block" : "none";
-    }
 
     function getDismissed() {
       try { return JSON.parse(localStorage.getItem(DISMISSED_KEY)) || []; } catch (e) { return []; }
@@ -2555,47 +2542,39 @@
     }
 
     async function loadProposals() {
-      if (!gcToken) return;
       proposalsListEl.innerHTML = `<div class="empty-state">Loading…</div>`;
       document.getElementById("pending-comments-list").innerHTML = `<div class="empty-state">Loading…</div>`;
       document.getElementById("pending-ama-list").innerHTML = `<div class="empty-state">Loading…</div>`;
       try {
-        let all = [];
-        let after = null;
-        for (let page = 0; page < 5; page++) {
-          const url = GC_BASE + "/api/v0/paths" + (after ? ("?after=" + after) : "");
-          const res = await fetch(url, { headers: { "Authorization": "Bearer " + gcToken } });
-          if (res.status === 401 || res.status === 403) {
-            showToast("❌ GoatCounter token invalid or missing permission", true);
-            proposalsListEl.innerHTML = `<div class="empty-state">Token rejected — check it has stats-read permission.</div>`;
-            return;
-          }
-          if (!res.ok) throw new Error("GoatCounter API error " + res.status);
-          const data = await res.json();
-          const list = data.paths || (Array.isArray(data) ? data : []);
-          all = all.concat(list);
-          if (!data.more || !list.length) break;
-          after = list[list.length - 1].id;
-        }
+        // Cache-bust: GitHub Pages/CDN can serve a stale copy of proposals.json otherwise.
+        const res = await fetch("./proposals.json?_=" + Date.now());
+        if (!res.ok) throw new Error("proposals.json fetch error " + res.status);
+        const data = await res.json();
 
         const dismissed = getDismissed();
-        loadedProposals = all.filter(p => p.path && /^\/?outfit-proposal\//.test(p.path) && !dismissed.includes(p.path));
+        loadedProposals = (data.outfitProposals || []).filter(p => p.path && !dismissed.includes(p.path));
         renderProposals();
 
         const dismissedC = getDismissedComments();
-        pendingComments = all.filter(p => p.path && /^\/?comment-proposal\//.test(p.path) && !dismissedC.includes(p.path));
+        pendingComments = (data.pendingComments || []).filter(p => p.path && !dismissedC.includes(p.path));
         renderPendingComments();
 
         const dismissedA = getDismissedAMA();
-        pendingAMA = all.filter(p => p.path && /^\/?ama-proposal\//.test(p.path) && !dismissedA.includes(p.path));
+        pendingAMA = (data.pendingAMA || []).filter(p => p.path && !dismissedA.includes(p.path));
         renderPendingAMA();
 
         const dismissedS = getDismissedSelections();
-        loadedSelections = all.filter(p => p.path && /^\/?selection\//.test(p.path) && !dismissedS.includes(p.path));
+        loadedSelections = (data.selections || []).filter(p => p.path && !dismissedS.includes(p.path));
         renderSelections();
+
+        if (proposalsUpdatedAtEl) {
+          proposalsUpdatedAtEl.textContent = data.updatedAt
+            ? "Last synced: " + new Date(data.updatedAt).toLocaleString()
+            : "";
+        }
       } catch (e) {
         console.error("loadProposals error:", e);
-        proposalsListEl.innerHTML = `<div class="empty-state">Couldn't load proposals — check your token and connection.</div>`;
+        proposalsListEl.innerHTML = `<div class="empty-state">Couldn't load proposals.json — check the sync-proposals workflow has run at least once.</div>`;
       }
     }
 
@@ -2751,29 +2730,9 @@
         : `💡 Proposal loaded into the outfit builder${layoutNote} — adjust slots, then Save.`);
     }
 
-    gcConnectBtn.addEventListener("click", () => {
-      const val = gcTokenInput.value.trim();
-      if (!val) { showToast("Paste your GoatCounter API token first.", true); return; }
-      gcToken = val;
-      localStorage.setItem("gcApiToken", gcToken);
-      setGcConnectedUI(true);
-      loadProposals();
-    });
-
-    gcDisconnectBtn.addEventListener("click", () => {
-      gcToken = "";
-      localStorage.removeItem("gcApiToken");
-      gcTokenInput.value = "";
-      setGcConnectedUI(false);
-      proposalsListEl.innerHTML = `<div class="empty-state">Connect your GoatCounter API token to load proposals.</div>`;
-    });
-
     proposalsRefreshBtn.addEventListener("click", loadProposals);
 
-    if (gcToken) {
-      setGcConnectedUI(true);
-      loadProposals();
-    }
+    loadProposals();
   </script>
 </body>
 </html>
