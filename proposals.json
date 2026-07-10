@@ -1,7 +1,91 @@
 {
-  "updatedAt": null,
-  "outfitProposals": [],
-  "pendingComments": [],
-  "pendingAMA": [],
-  "selections": []
+  "updatedAt": "2026-07-10T16:38:15.741Z",
+  "outfitProposals": [
+    {
+      "id": 93928774,
+      "path": "outfit-proposal/601102346532914:50:58:2.20,601099602917102:50:84:1.43,601101449896608:42:23:1.59,601099667682787:50:25:2.03",
+      "title": "Outfit proposal: Pajamas :3 ||| Nana677"
+    }
+  ],
+  "pendingComments": [
+    {
+      "id": 93263278,
+      "path": "comment-proposal/1782492958083-5kl6",
+      "title": "Anonymous ||| So cutee hope I will see you in these outfit ; )"
+    },
+    {
+      "id": 93263335,
+      "path": "comment-proposal/1782493024431-lv3e",
+      "title": "Anonymous ||| So cute, I hope I will see you in these outfit! ; )"
+    },
+    {
+      "id": 93385926,
+      "path": "comment-proposal/1782653749795-gck2",
+      "title": "dfg ||| dfg"
+    },
+    {
+      "id": 93526393,
+      "path": "comment-proposal/1782765757777-1txg",
+      "title": "Anonymous ||| test"
+    },
+    {
+      "id": 93532883,
+      "path": "comment-proposal/1782767905551-6mhn",
+      "title": "test ||| test"
+    },
+    {
+      "id": 93819022,
+      "path": "comment-proposal/1782946176759-3w1l",
+      "title": "Nana677 ||| Nya~"
+    },
+    {
+      "id": 93263278,
+      "path": "comment-proposal/1782492958083-5kl6",
+      "title": "Anonymous ||| So cutee hope I will see you in these outfit ; )"
+    },
+    {
+      "id": 93263335,
+      "path": "comment-proposal/1782493024431-lv3e",
+      "title": "Anonymous ||| So cute, I hope I will see you in these outfit! ; )"
+    },
+    {
+      "id": 93385926,
+      "path": "comment-proposal/1782653749795-gck2",
+      "title": "dfg ||| dfg"
+    },
+    {
+      "id": 93526393,
+      "path": "comment-proposal/1782765757777-1txg",
+      "title": "Anonymous ||| test"
+    },
+    {
+      "id": 93532883,
+      "path": "comment-proposal/1782767905551-6mhn",
+      "title": "test ||| test"
+    },
+    {
+      "id": 93819022,
+      "path": "comment-proposal/1782946176759-3w1l",
+      "title": "Nana677 ||| Nya~"
+    }
+  ],
+  "pendingAMA": [
+    {
+      "id": 93695852,
+      "path": "ama-proposal/1782852922203-yp62",
+      "title": "tr ||| test"
+    },
+    {
+      "id": 93695852,
+      "path": "ama-proposal/1782852922203-yp62",
+      "title": "tr ||| test"
+    }
+  ],
+  "selections": [
+    {
+      "id": 94157001,
+      "path": "selection/601101066418417,601099602917102",
+      "title": "Selection: Anonymous"
+    }
+  ]
 }
