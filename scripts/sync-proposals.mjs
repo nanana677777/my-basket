@@ -24,7 +24,7 @@ async function fetchWithRetry(url, opts, { retries = 5, baseDelayMs = 1000 } = {
 
     if (res.ok) return res;
 
-    const retryable = res.status === 429 || res.status >= 500;
+    const retryable = res.status === 429 || res.status === 404 || res.status >= 500;
     if (!retryable || attempt === retries) {
       const body = await res.text().catch(() => "");
       throw new Error(`GoatCounter API error ${res.status}: ${body}`);
